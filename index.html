@@ -524,7 +524,7 @@ async function elevenCall(text,voiceId){
   var key=cfg().eleven;
   if(!key){toast('ElevenLabs API key not set.','error');return null;}
   try{
-    var res=await fetch('/.netlify/functions/elevenlabs',{
+    var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/elevenlabs',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({text:text,voice_id:voiceId,apiKey:key})
