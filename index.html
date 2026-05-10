@@ -339,8 +339,8 @@ audio{width:100%;border-radius:8px;margin-top:8px}
           </div>
           <div id="voice-out" style="display:none">
             <div class="sec">Generated audio</div>
-            <audio id="audio-player" controls></audio>
-            <div style="margin-top:10px"><a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a></div>
+            <audio id="audio-player" controls style="width:100%;margin-bottom:10px" preload="auto"></audio><div style="display:flex;gap:8px;flex-wrap:wrap"><a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a><button class="btn" onclick="var a=document.getElementById('audio-player');a.play()">▶ Play</button></div>
+            
           </div>
         </div>
       </div>
@@ -530,7 +530,8 @@ async function elevenCall(text,voiceId){
     var d=await res.json();
     if(d.audio_base64){
       var bytes=Uint8Array.from(atob(d.audio_base64),function(c){return c.charCodeAt(0);});
-      return URL.createObjectURL(new Blob([bytes],{type:'audio/mpeg'}));
+      var blob=new Blob([bytes],{type:'audio/mpeg'});
+      return URL.createObjectURL(blob);
     }
     toast('ElevenLabs error','error');return null;
   }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
