@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Studio — MYCUTIEPIE</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8f8f6;--bg2:#fff;--bg3:#f0efea;--text:#1a1a18;--text2:#6b6b67;--text3:#9a9a96;--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);--accent:#1a1a18;--info-bg:#e6f1fb;--info:#0c447c;--success-bg:#eaf3de;--success:#3b6d11;--warn-bg:#faeeda;--warn:#854f0b;--radius:8px;--radius-lg:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.login-box{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:40px;width:360px;text-align:center}
+.login-logo{font-size:32px;margin-bottom:8px}
+.login-title{font-size:20px;font-weight:600;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.login-box input{width:100%;padding:10px 14px;font-size:14px;border:0.5px solid var(--border2);border-radius:var(--radius);margin-bottom:10px;font-family:inherit}
+.login-box button{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:14px;cursor:pointer;font-family:inherit}
+.login-error{color:#a32d2d;font-size:12px;margin-bottom:8px;display:none}
+#setup{display:none;min-height:100vh;background:var(--bg);padding:32px}
+.setup-box{max-width:560px;margin:0 auto;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:32px}
+.setup-title{font-size:20px;font-weight:600;margin-bottom:6px}
+.setup-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.field input{width:100%;padding:8px 12px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);font-family:inherit}
+.field input:focus{outline:none;border-color:var(--accent)}
+.setup-box button{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit}
+#studio{display:none;min-height:100vh}
+.studio{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border)}
+.logo-title{font-size:15px;font-weight:600}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.sidebar-sec{padding:10px 16px 5px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text3)}
+.sbtn{display:flex;align-items:center;gap:7px;padding:7px 14px;font-size:13px;color:var(--text2);cursor:pointer;border-radius:6px;margin:1px 8px;border:none;background:transparent;width:calc(100% - 16px);text-align:left;transition:all .12s}
+.sbtn:hover{background:var(--bg3);color:var(--text)}
+.sbtn.on{background:var(--accent);color:#fff}
+.ch-select{padding:12px 16px;border-top:0.5px solid var(--border);margin-top:auto}
+.ch-select select{width:100%;font-size:12px;padding:6px 8px;border:0.5px solid var(--border2);border-radius:6px;background:var(--bg);font-family:inherit}
+.main{padding:0;overflow-y:auto}
+.panel{display:none;padding:28px 30px}
+.panel.on{display:block}
+.panel-title{font-size:19px;font-weight:600;margin-bottom:4px}
+.panel-sub{font-size:13px;color:var(--text2);margin-bottom:22px}
+.sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:18px 0 8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px}
+.card-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.card-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.niche-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.niche-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:all .12s}
+.niche-card:hover{border-color:var(--border2)}
+.niche-card.on{border:2px solid var(--accent);background:var(--bg3)}
+.niche-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.niche-cpm{font-size:11px;color:var(--success);font-weight:500}
+.niche-comp{font-size:10px;color:var(--text3)}
+.kw-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.kw-item{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color .12s}
+.kw-item:hover{border-color:var(--border2)}
+.kw-item.on{border-color:var(--accent);background:var(--info-bg)}
+.kw-term{font-size:13px;font-weight:500}
+.kw-badges{display:flex;gap:5px}
+.badge{font-size:10px;padding:2px 6px;border-radius:999px}
+.b-vol{background:var(--success-bg);color:var(--success)}
+.b-cpm{background:var(--warn-bg);color:var(--warn)}
+.b-comp{background:var(--bg3);color:var(--text3)}
+.btn{padding:8px 16px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--bg2);color:var(--text);transition:all .12s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn:hover{background:var(--bg3)}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn.primary:hover{opacity:.9}
+.btn.success{background:var(--success-bg);color:var(--success);border-color:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.fld input,.fld select,.fld textarea{width:100%;padding:8px 12px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-family:inherit}
+.fld textarea{min-height:120px;resize:vertical;line-height:1.6}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--accent)}
+.out-box{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;min-height:160px;max-height:480px;overflow-y:auto;word-break:break-word}
+.tabs{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:16px;overflow-x:auto}
+.tab{padding:7px 14px;font-size:13px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text2);white-space:nowrap;font-family:inherit}
+.tab.on{color:var(--text);border-bottom-color:var(--accent);font-weight:500}
+.tab-pnl{display:none}
+.tab-pnl.on{display:block}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tag{font-size:12px;padding:3px 9px;background:var(--bg3);border-radius:999px;color:var(--text2);cursor:pointer;border:0.5px solid var(--border)}
+.tag:hover{border-color:var(--border2);color:var(--text)}
+.tag.on{background:var(--accent);color:#fff;border-color:transparent}
+.toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:9999}
+.toast{background:var(--text);color:#fff;padding:9px 14px;border-radius:var(--radius);font-size:13px;animation:fadeIn .2s}
+
+.yts-loader-overlay{position:fixed;inset:0;background:rgba(10,10,10,.75);z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column}
+.yts-loader-overlay.on{display:flex}
+.yts-loader-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 48px;text-align:center;max-width:360px}
+.yts-loader-spin{width:44px;height:44px;border:3px solid rgba(99,102,241,.2);border-top-color:#6366F1;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+.yts-loader-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+.yts-loader-msg{font-size:13px;color:var(--text2);min-height:18px}
+.yts-loader-hint{font-size:11px;color:var(--text3);margin-top:12px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+audio{width:100%;margin-top:10px;border-radius:var(--radius)}
+.vlib-item{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.vlib-title{font-size:13px;font-weight:500}
+.vlib-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.s-draft{background:var(--warn-bg);color:var(--warn);font-size:10px;padding:2px 7px;border-radius:999px}
+.s-done{background:var(--success-bg);color:var(--success);font-size:10px;padding:2px 7px;border-radius:999px}
+.info-note{background:var(--info-bg);border-radius:var(--radius);padding:10px 13px;font-size:12px;color:var(--info);line-height:1.5;margin-bottom:12px}
+@media(max-width:700px){.studio{grid-template-columns:1fr}.sidebar{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">🎬</div>
+    <div class="login-title">YouTube Studio</div>
+    <div class="login-sub">MYCUTIEPIE Production System</div>
+    <div class="login-error" id="login-err">Incorrect password</div>
+    <input type="password" id="pw-input" placeholder="Enter password..." onkeydown="if(event.key==='Enter')doLogin()" />
+    <button onclick="doLogin()">Enter Studio</button>
+  </div>
+</div>
+
+<!-- SETUP (first time) -->
+<div id="setup">
+  <div class="setup-box">
+    <div class="setup-title">⚙️ First time setup</div>
+    <div class="setup-sub">Enter your API keys. These are saved in your browser only — never sent anywhere except directly to Claude and ElevenLabs.</div>
+    <div class="field"><label>Claude API Key (from console.anthropic.com)</label><input type="password" id="setup-claude" placeholder="sk-ant-..." /></div>
+    <div class="field"><label>ElevenLabs API Key (from elevenlabs.io → Profile)</label><input type="password" id="setup-eleven" placeholder="Your ElevenLabs key..." /></div>
+    <div class="field"><label>Studio Password (you choose — share with your team)</label><input type="text" id="setup-pw" placeholder="e.g. studio2025" /></div>
+    <button onclick="saveSetup()">Save & Enter Studio</button>
+  </div>
+</div>
+
+<!-- STUDIO -->
+<div id="studio">
+<div class="studio">
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">🎬 YouTube Studio</div>
+    <div class="logo-sub">MYCUTIEPIE v1.0</div>
+  </div>
+  <div class="sidebar-sec">Create</div>
+  <button class="sbtn on" onclick="showPanel('niche',this)">🎯 Niche & Keywords</button>
+  <button class="sbtn" onclick="showPanel('outline',this)">📋 Idea & Outline</button>
+  <button class="sbtn" onclick="showPanel('script',this)">✍️ Full Script</button>
+  <button class="sbtn" onclick="showPanel('voice',this)">🎙️ Voice & Audio</button>
+  <button class="sbtn" onclick="showPanel('export',this)">📦 Export Package</button>
+  <div class="sidebar-sec">Manage</div>
+  <button class="sbtn" onclick="showPanel('channels',this)">📡 Channels</button>
+  <button class="sbtn" onclick="showPanel('library',this)">🗂️ Video Library</button>
+  <div class="ch-select">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:5px">Active channel</div>
+    <select id="active-ch" onchange="chChanged()"><option value="">— select —</option></select>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- NICHE -->
+<div class="panel on" id="panel-niche">
+  <div class="panel-title">Niche & Keyword Research</div>
+  <div class="panel-sub">Select your niche and the best keyword for your next video</div>
+  <div class="sec">Select niche</div>
+  <div class="niche-grid" id="niche-grid"></div>
+  <div id="sub-section" style="display:none">
+    <div class="sec">Sub-niches</div>
+    <div class="tag-cloud" id="sub-tags"></div>
+    <div id="sub-detail" style="margin-bottom:12px"></div>
+  </div>
+  <div id="kw-section" style="display:none">
+    <div class="sec">Top keywords — click to select</div>
+    <div class="kw-list" id="kw-list"></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <input type="text" id="custom-kw" placeholder="Or type your own keyword..." style="flex:1;padding:8px 12px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius)" />
+      <button class="btn" onclick="useCustomKw()">Use →</button>
+    </div>
+  </div>
+  <div id="niche-actions" style="display:none;margin-top:18px">
+    <button class="btn primary" onclick="goTo('outline')">Continue to Outline →</button>
+    <button class="btn" onclick="analyzeKw()" style="margin-left:8px">Analyze keyword with AI</button>
+  </div>
+  <div id="kw-analysis" style="display:none;margin-top:14px">
+    <div class="sec">AI keyword analysis</div>
+    <div class="out-box" id="kw-out"></div>
+  </div>
+</div>
+
+<!-- OUTLINE -->
+<div class="panel" id="panel-outline">
+  <div class="panel-title">Idea & Outline</div>
+  <div class="panel-sub">Generate your video structure and approve it before writing the full script</div>
+  <div class="grid2">
+    <div>
+      <div class="fld"><label>Video topic or title idea</label><input type="text" id="topic-in" placeholder="e.g. The LTCM Collapse — What Went Wrong" /></div>
+      <div class="fld"><label>Format</label><select id="fmt-sel"><option value="Deep Dive">Deep Dive (10–14 min)</option><option value="Listicle">Listicle (7–10 min)</option><option value="Tutorial">Tutorial (8–12 min)</option><option value="Story / Case Study">Story / Case Study (10–14 min)</option><option value="Failure Autopsy">Failure Autopsy (12–16 min)</option></select></div>
+      <div class="fld"><label>Psychological angle (optional)</label><input type="text" id="psych-in" placeholder="e.g. loss aversion, sunk cost, contrarian thinking..." /></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" onclick="genOutline()">Generate outline with AI</button>
+        <button class="btn" onclick="clearOutline()">Clear</button>
+      </div>
+    </div>
+    <div>
+      <div class="sec" style="margin-top:0">Quick ideas for your niche</div>
+      <div id="quick-ideas"></div>
+    </div>
+  </div>
+  <div id="outline-result" style="display:none;margin-top:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="sec" style="margin:0">Generated outline — review and approve</div>
+      <div>
+        <button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('outline-box')">Copy</button>
+        <button class="btn success" onclick="approveOutline()" style="margin-left:6px;font-size:12px;padding:5px 11px">✓ Approve → Script</button>
+      </div>
+    </div>
+    <div class="out-box" id="outline-box"></div>
+    <div class="fld" style="margin-top:10px"><label>Add notes or modifications</label><textarea id="outline-notes" placeholder="Any specific requirements, examples to include..." style="min-height:70px"></textarea></div>
+  </div>
+</div>
+
+<!-- SCRIPT -->
+<div class="panel" id="panel-script">
+  <div class="panel-title">Full Script Engine</div>
+  <div class="panel-sub">Complete 9-section production script — hook, narration, SEO, thumbnail brief, B-roll, Kling prompts</div>
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="fld"><label>Final video title</label><input type="text" id="final-title" placeholder="The exact YouTube title..." /></div>
+    <div class="fld"><label>Tone</label><select id="tone-sel"><option value="authoritative but accessible — intelligent friend, not professor">Authoritative & Accessible</option><option value="cinematic documentary narrator">Cinematic / Documentary</option><option value="sharp and direct — no filler, maximum impact">Sharp & Direct</option><option value="warm and educational">Warm & Educational</option></select></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="btn primary" onclick="genScript()" id="gen-btn">Generate full 9-section script</button>
+    <button class="btn" onclick="genSEOOnly()">SEO only</button>
+  </div>
+  <div id="script-result" style="display:none">
+    <div class="tabs">
+      <button class="tab on" onclick="showSTab('full',this)">Full Script</button>
+      <button class="tab" onclick="showSTab('seo',this)">SEO Metadata</button>
+      <button class="tab" onclick="showSTab('thumb',this)">Thumbnail Brief</button>
+      <button class="tab" onclick="showSTab('broll',this)">B-Roll</button>
+      <button class="tab" onclick="showSTab('kling',this)">Kling Prompts</button>
+    </div>
+    <div class="tab-pnl on" id="stab-full"><div style="text-align:right;margin-bottom:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('s-full')">Copy all</button></div><div class="out-box" id="s-full"></div></div>
+    <div class="tab-pnl" id="stab-seo"><div style="text-align:right;margin-bottom:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('s-seo')">Copy</button></div><div class="out-box" id="s-seo"></div></div>
+    <div class="tab-pnl" id="stab-thumb"><div style="text-align:right;margin-bottom:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('s-thumb')">Copy</button></div><div class="out-box" id="s-thumb"></div></div>
+    <div class="tab-pnl" id="stab-broll"><div style="text-align:right;margin-bottom:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('s-broll')">Copy</button></div><div class="out-box" id="s-broll"></div></div>
+    <div class="tab-pnl" id="stab-kling">
+      <div class="info-note">Ready-to-use prompts for Kling, Seedance or Google Veo. One prompt per B-roll scene.</div>
+      <div style="text-align:right;margin-bottom:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('s-kling')">Copy all prompts</button></div>
+      <div class="out-box" id="s-kling"></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn primary" onclick="saveVideo()">Save to library</button>
+      <button class="btn" onclick="goTo('voice')">Continue to voice →</button>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE -->
+<div class="panel" id="panel-voice">
+  <div class="panel-title">Voice & Audio</div>
+  <div class="panel-sub">Generate AI voiceover or format for a human voice actor</div>
+  <div class="tabs">
+    <button class="tab on" onclick="showVTab('ai',this)">AI Voiceover (ElevenLabs)</button>
+    <button class="tab" onclick="showVTab('human',this)">Human Voice Actor</button>
+  </div>
+  <div class="tab-pnl on" id="vtab-ai">
+    <div class="grid2">
+      <div>
+        <div class="fld"><label>Narration text (paste script narration only)</label><textarea id="voice-text" placeholder="Paste the narration here..." style="min-height:180px"></textarea></div>
+        <div class="fld"><label>Voice</label><select id="voice-id"><option value="pNInz6obpgDQGcFmaJgB">Adam — authoritative, deep</option><option value="EXAVITQu4vr4xnSDxMaL">Sarah — warm, professional</option><option value="VR6AewLTigWG4xSOukaG">Arnold — documentary</option><option value="onwK4e9ZLuTAKqWW03F9">Daniel — British, authoritative</option></select></div>
+        <button class="btn primary" onclick="genVoice()">Generate voiceover</button>
+      </div>
+      <div id="voice-out" style="display:none">
+        <div class="sec">Generated audio</div>
+        <audio id="audio-player" controls></audio>
+        <div style="margin-top:10px"><a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-pnl" id="vtab-human">
+    <div class="info-note">Formats your script with tone, pacing and emotion instructions for each section — ready to send to a voice actor.</div>
+    <div class="fld"><label>Narration text</label><textarea id="human-text" placeholder="Paste narration here..." style="min-height:140px"></textarea></div>
+    <div class="fld"><label>Voice character</label><select id="human-char"><option value="authoritative documentary narrator — calm, measured, expert">Documentary narrator</option><option value="confident professional — hedge fund manager talking to a friend">Confident professional</option><option value="cinematic thriller narrator — tension, urgency">Cinematic / thriller</option><option value="warm educator — approachable, clear">Warm educator</option></select></div>
+    <button class="btn primary" onclick="fmtActor()">Format for voice actor</button>
+    <div id="actor-out" style="display:none;margin-top:14px"><div style="text-align:right;margin-bottom:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyEl('actor-box')">Copy</button></div><div class="out-box" id="actor-box"></div></div>
+  </div>
+</div>
+
+<!-- EXPORT -->
+<div class="panel" id="panel-export">
+  <div class="panel-title">Export Package</div>
+  <div class="panel-sub">Complete package for your video production team</div>
+  <div id="export-info" style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:16px;font-size:13px;color:var(--text2)">No video in progress. Go through Niche → Outline → Script first.</div>
+  <div class="sec">What's included</div>
+  <div class="grid3" style="margin-bottom:18px">
+    <div class="card"><div class="card-title">📄 Full script</div><div class="card-desc">Hook, narration, all 9 sections. Ready for teleprompter.</div></div>
+    <div class="card"><div class="card-title">🎬 Kling/Veo prompts</div><div class="card-desc">One prompt per B-roll scene. Paste into Kling or Seedance.</div></div>
+    <div class="card"><div class="card-title">🖼️ Thumbnail brief</div><div class="card-desc">Two concepts with Midjourney prompt, colors and text overlay.</div></div>
+    <div class="card"><div class="card-title">🔍 SEO metadata</div><div class="card-desc">Title, description, all tags, chapters, upload time.</div></div>
+    <div class="card"><div class="card-title">🎙️ Voiceover</div><div class="card-desc">.mp3 file or formatted script for human voice actor.</div></div>
+    <div class="card"><div class="card-title">✅ Checklist</div><div class="card-desc">Pre-publish checklist for editor and channel manager.</div></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn primary" onclick="exportTxt()">Export .txt</button>
+    <button class="btn" onclick="copyPkg()">Copy to clipboard</button>
+  </div>
+</div>
+
+<!-- CHANNELS -->
+<div class="panel" id="panel-channels">
+  <div class="panel-title">Channel Management</div>
+  <div class="panel-sub">Create and manage multiple YouTube channels</div>
+  <div class="grid2">
+    <div>
+      <div class="sec" style="margin-top:0">Add / edit channel</div>
+      <input type="hidden" id="edit-ch-id" value="" />
+      <div class="fld"><label>Channel name</label><input type="text" id="ch-name" placeholder="Risk Intelligence" /></div>
+      <div class="fld"><label>YouTube handle</label><input type="text" id="ch-handle" placeholder="@RiskIntelligence" /></div>
+      <div class="fld"><label>Primary niche</label><select id="ch-niche"><option value="Finance & Investing">Finance & Investing</option><option value="Legal">Legal</option><option value="Real Estate">Real Estate</option><option value="SaaS / B2B">SaaS / B2B</option><option value="Insurance">Insurance</option><option value="Psychology / TV Series">Psychology / TV Series</option></select></div>
+      <div class="fld"><label>Sub-niche</label><input type="text" id="ch-sub" placeholder="Risk & Reward / Mind Behind the Screen..." /></div>
+      <div class="fld"><label>Channel tone</label><textarea id="ch-tone" placeholder="e.g. Authoritative but accessible. Intelligent friend, not professor." style="min-height:70px"></textarea></div>
+      <div style="display:flex;gap:8px"><button class="btn primary" onclick="saveCh()">Save channel</button><button class="btn" onclick="clearChForm()">Clear</button></div>
+    </div>
+    <div>
+      <div class="sec" style="margin-top:0">Your channels</div>
+      <div id="ch-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIBRARY -->
+<div class="panel" id="panel-library">
+  <div class="panel-title">Video Library</div>
+  <div class="panel-sub">All videos produced — select active channel to filter</div>
+  <div id="vid-library"></div>
+</div>
+
+</div>
+</div>
+</div>
+
+
+<div class="yts-loader-overlay" id="yts-loader">
+  <div class="yts-loader-box">
+    <div class="yts-loader-spin"></div>
+    <div class="yts-loader-title">Claude is working</div>
+    <div class="yts-loader-msg" id="yts-loader-msg">Analyzing your brief...</div>
+    <div class="yts-loader-hint">This takes 20–60 seconds</div>
+  </div>
+</div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const NICHES={finance:{name:'Finance & Investing',cpm:'$15–22',comp:'Medium',subs:['Wealth building','Risk & reward','Greed & consequences','Investment psychology','Contrarian thinking'],subDesc:{'Risk & reward':'Investment psychology, risk tolerance, decision science. Attracts high-income investors. Highest CPM in Finance.','Greed & consequences':'Financial crimes, collapses, cautionary tales. Highest virality. Very shareable.','Investment psychology':'Why smart people make bad financial decisions. Cross-audience appeal.','Contrarian thinking':'Being right before everyone else. Very shareable among investors.','Wealth building':'How ordinary people build wealth. Huge audience, evergreen demand.'},keywords:[{term:'investment risk management',vol:'High',cpm:'$18',comp:'Medium'},{term:'why smart investors lose money',vol:'Medium',cpm:'$20',comp:'Low'},{term:'behavioral finance explained',vol:'High',cpm:'$16',comp:'Medium'},{term:'pattern recognition investing',vol:'Medium',cpm:'$20',comp:'Low'},{term:'contrarian investing psychology',vol:'Low',cpm:'$20',comp:'Very Low'},{term:'hedge fund risk management',vol:'Low',cpm:'$19',comp:'Very Low'}],ideas:['The Psychology of Risk: Why Smart Investors Make Terrible Decisions','5 Risk Mistakes That Cost Investors Everything','The LTCM Collapse — What Went Wrong and Why It Still Matters','Michael Burry\'s Real Edge — It\'s Not Intelligence','How Smart People Miss the Obvious: The Psychology of Blind Spots']},legal:{name:'Legal',cpm:'$14–18',comp:'Low',subs:['Consumer rights','Business law','Fraud detection','Interrogation & truth'],subDesc:{'Interrogation & truth':'How lawyers, detectives and executives extract truth. Almost no competition.','Business law':'Contracts, NDAs, liability. Attracts business owners = premium audience.','Fraud detection':'Very shareable. High share rate boosts organic reach.','Consumer rights':'What most people don\'t know about their legal protections.'},keywords:[{term:'legal loopholes corporations use',vol:'Medium',cpm:'$17',comp:'Low'},{term:'contract clauses that protect you',vol:'Medium',cpm:'$18',comp:'Low'},{term:'interrogation psychology techniques',vol:'Low',cpm:'$16',comp:'Very Low'},{term:'NDA what you need to know',vol:'High',cpm:'$15',comp:'Medium'}],ideas:['The One Document That Can Save Your Business','Harvey Specter\'s Legal Psychology','The Art of Asking the Right Question','5 Contract Clauses That Will Protect You']},saas:{name:'SaaS / B2B',cpm:'$15–20',comp:'Medium',subs:['Reading people','Executive presence','B2B negotiation','Sales psychology'],subDesc:{'Reading people':'Micro-expressions, behavioral tells. Highest watch time. The Mentalist effect.','Executive presence':'How top performers command rooms. Audience = professionals with purchasing power.','B2B negotiation':'Deal-making psychology. Directly applicable = bookmarked.','Sales psychology':'Science of influence. Two niche audiences in one video.'},keywords:[{term:'how to read anyone in 60 seconds',vol:'High',cpm:'$18',comp:'Low'},{term:'executive presence techniques',vol:'Medium',cpm:'$19',comp:'Low'},{term:'B2B negotiation psychology',vol:'Medium',cpm:'$18',comp:'Low'},{term:'body language for sales professionals',vol:'High',cpm:'$16',comp:'Medium'}],ideas:['How to Read Anyone in 60 Seconds','How to Walk Into Any Room Like You Own It','The Psychology of Persuasion','B2B Negotiation: 5 Moves That Close Any Deal']},insurance:{name:'Insurance & Fraud',cpm:'$13–18',comp:'Low',subs:['Financial fraud','Scam detection','Policy blind spots','Identity protection'],subDesc:{'Financial fraud':'Highest virality. Shares naturally between professionals.','Scam detection':'High search intent. How-to format = bookmarked.','Policy blind spots':'Controversy + practical value = shares.','Identity protection':'Fastest growing concern. Low competition.'},keywords:[{term:'how con artists target smart people',vol:'Medium',cpm:'$16',comp:'Low'},{term:'5 red flags before a financial scam',vol:'Medium',cpm:'$15',comp:'Low'},{term:'fraud protection for business owners',vol:'Medium',cpm:'$17',comp:'Low'},{term:'identity theft protection tips',vol:'High',cpm:'$14',comp:'Medium'}],ideas:['How Con Artists Target Smart People','5 Red Flags That Always Precede a Financial Scam','The 4 Psychological Stages of a Con','How Identity Theft Really Happens']},psychology:{name:'Psychology / TV Series',cpm:'$12–20',comp:'Very Low',subs:['Character psychology','Scene breakdowns','Negotiation frameworks','Decision making'],subDesc:{'Character psychology':'Deep analysis of one character\'s framework. Almost no competition.','Scene breakdowns':'One scene, one principle, one application. High watch time.','Negotiation frameworks':'Suits/Billions mapped to real deals. Finance CPM territory.','Decision making':'Breaking Bad/Big Short mapped to investing. Highest CPM angle.'},keywords:[{term:'psychology of Harvey Specter suits',vol:'High',cpm:'$16',comp:'Very Low'},{term:'Patrick Jane reading people mentalist',vol:'Medium',cpm:'$17',comp:'Very Low'},{term:'Bobby Axelrod investment psychology',vol:'Low',cpm:'$18',comp:'Very Low'},{term:'Walter White psychology sunk cost',vol:'Medium',cpm:'$15',comp:'Very Low'}],ideas:['Harvey Specter\'s Real Psychological Edge','How Patrick Jane Actually Reads People','Why Logan Roy Raised Children Who Could Never Replace Him','Walter White\'s Real Problem — It Was Never Pride']}};
+
+let ST={niche:null,subniche:null,keyword:null,outline:null,script:null,seo:null,thumb:null,broll:null,kling:null,title:null,channels:[],videos:[],activeChId:null};
+
+function cfg(){return{claude:localStorage.getItem('yts_claude')||'',eleven:localStorage.getItem('yts_eleven')||'',pw:localStorage.getItem('yts_pw')||''}}
+
+function doLogin(){
+  const v=document.getElementById('pw-input').value;
+  const c=cfg();
+  if(!c.pw){document.getElementById('login').style.display='none';document.getElementById('setup').style.display='flex';return}
+  if(v===c.pw){document.getElementById('login').style.display='none';document.getElementById('studio').style.display='block';initStudio()}
+  else{document.getElementById('login-err').style.display='block'}
+}
+
+function saveSetup(){
+  const ck=document.getElementById('setup-claude').value.trim();
+  const ek=document.getElementById('setup-eleven').value.trim();
+  const pw=document.getElementById('setup-pw').value.trim();
+  if(!pw){alert('Set a password first.');return}
+  localStorage.setItem('yts_claude',ck);
+  localStorage.setItem('yts_eleven',ek);
+  localStorage.setItem('yts_pw',pw);
+  document.getElementById('setup').style.display='none';
+  document.getElementById('studio').style.display='block';
+  initStudio();
+}
+
+function initStudio(){
+  ST.channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
+  ST.videos=JSON.parse(localStorage.getItem('yts_videos')||'[]');
+  renderNicheGrid();
+  renderChSelector();
+}
+
+async function claudeCall(prompt,system){
+  const key=cfg().claude;
+  if(!key){toast('Claude API key not set — go to Setup','error');return null;}
+  showLoader();
+  try{
+    const res=await fetch('/.netlify/functions/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,system:system||'',apiKey:key})
+    });
+    const d=await res.json();
+    hideLoader();
+    if(d.text)return d.text;
+    toast('Claude: '+(d.error||'no response'),'error');return null;
+  }catch(e){hideLoader();toast('Claude: '+e.message,'error');return null;}
+}
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:system||'You are an expert YouTube content strategist.',messages:[{role:'user',content:prompt}]})});
+  const d=await res.json();
+  if(d.content&&d.content[0])return d.content[0].text;
+  toast('Claude error: '+(d.error?.message||'unknown'),'error');return null;
+}
+
+async function elevenCall(text,voiceId){
+  const key=cfg().eleven;
+  if(!key){toast('ElevenLabs API key not set.','error');return null;}
+  try{
+    const res=await fetch('/.netlify/functions/elevenlabs',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text,voice_id:voiceId,apiKey:key})
+    });
+    const d=await res.json();
+    if(d.audio_base64)return URL.createObjectURL(new Blob([Uint8Array.from(atob(d.audio_base64),c=>c.charCodeAt(0))],{type:'audio/mpeg'}));
+    toast('ElevenLabs error','error');return null;
+  }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
+}
+  const res=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{method:'POST',headers:{'xi-api-key':key,'Content-Type':'application/json','Accept':'audio/mpeg'},body:JSON.stringify({text,model_id:'eleven_monolingual_v1',voice_settings:{stability:0.5,similarity_boost:0.75}})});
+  if(!res.ok){toast('ElevenLabs error: '+res.status,'error');return null}
+  const blob=await res.blob();
+  return URL.createObjectURL(blob);
+}
+
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(id==='channels')renderChList();
+  if(id==='library')renderLibrary();
+  if(id==='outline')renderQuickIdeas();
+  if(id==='export')renderExportInfo();
+}
+
+function goTo(id){
+  const btn=document.querySelector(`.sbtn[onclick="showPanel('${id}',this)"]`);
+  showPanel(id,btn);
+}
+
+function renderNicheGrid(){
+  document.getElementById('niche-grid').innerHTML=Object.entries(NICHES).map(([k,v])=>`<div class="niche-card${ST.niche===k?' on':''}" onclick="selectNiche('${k}')"><div class="niche-name">${v.name}</div><div class="niche-cpm">${v.cpm} CPM</div><div class="niche-comp">Competition: ${v.comp}</div></div>`).join('');
+}
+
+function selectNiche(k){
+  ST.niche=k;ST.subniche=null;ST.keyword=null;
+  renderNicheGrid();
+  const n=NICHES[k];
+  document.getElementById('sub-section').style.display='block';
+  document.getElementById('sub-tags').innerHTML=n.subs.map(s=>`<span class="tag${ST.subniche===s?' on':''}" onclick="selectSub('${s.replace(/'/g,"\\'")}')">${s}</span>`).join('');
+  document.getElementById('sub-detail').innerHTML='';
+  document.getElementById('kw-section').style.display='block';
+  renderKws(k);
+  document.getElementById('niche-actions').style.display='block';
+}
+
+function selectSub(s){
+  ST.subniche=s;
+  document.querySelectorAll('#sub-tags .tag').forEach(t=>t.classList.remove('on'));
+  event.target.classList.add('on');
+  const desc=NICHES[ST.niche].subDesc[s]||'';
+  document.getElementById('sub-detail').innerHTML=desc?`<div style="background:var(--success-bg);border-radius:var(--radius);padding:9px 13px;font-size:12px;color:var(--success)">${s} — ${desc}</div>`:'';
+}
+
+function renderKws(k){
+  document.getElementById('kw-list').innerHTML=NICHES[k].keywords.map(kw=>`<div class="kw-item${ST.keyword===kw.term?' on':''}" onclick="selectKw('${kw.term.replace(/'/g,"\\'")}')"><div class="kw-term">${kw.term}</div><div class="kw-badges"><span class="badge b-vol">${kw.vol}</span><span class="badge b-cpm">${kw.cpm}</span><span class="badge b-comp">${kw.comp} comp</span></div></div>`).join('');
+}
+
+function selectKw(t){ST.keyword=t;renderKws(ST.niche);toast('Keyword: '+t)}
+function useCustomKw(){const v=document.getElementById('custom-kw').value.trim();if(v){ST.keyword=v;toast('Keyword: '+v)}}
+
+async function analyzeKw(){
+  if(!ST.keyword){toast('Select a keyword first.','warn');return}
+  document.getElementById('kw-analysis').style.display='block';
+  document.getElementById('kw-out').textContent='Analyzing with Claude AI...';
+  const r=await claudeCall(`Analyze this YouTube keyword for a ${NICHES[ST.niche].name} channel: "${ST.keyword}"\n\n1. Search intent — what is the viewer looking for?\n2. CPM assessment — which advertisers will bid on this?\n3. Competition gaps — what angle is missing?\n4. 5 video title variations optimized for CTR\n5. 3 related long-tail keywords with lower competition\n6. Recommended video format`,'You are a YouTube SEO expert specializing in high-CPM niches.');
+  if(r)document.getElementById('kw-out').textContent=r;
+}
+
+function renderQuickIdeas(){
+  const div=document.getElementById('quick-ideas');
+  if(!ST.niche){div.innerHTML='<div style="font-size:13px;color:var(--text3)">Select a niche first.</div>';return}
+  div.innerHTML=NICHES[ST.niche].ideas.map(i=>`<div style="padding:7px 11px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:5px;cursor:pointer;font-size:13px;color:var(--text2)" onclick="document.getElementById('topic-in').value='${i.replace(/'/g,"\\'")}';toast('Topic loaded')">${i}</div>`).join('');
+}
+
+async function genOutline(){
+  const topic=document.getElementById('topic-in').value.trim();
+  if(!topic){toast('Enter a topic first.','warn');return}
+  const fmt=document.getElementById('fmt-sel').value;
+  const psych=document.getElementById('psych-in').value.trim();
+  const niche=ST.niche?NICHES[ST.niche].name:'Finance';
+  ST.title=topic;
+  document.getElementById('outline-result').style.display='block';
+  document.getElementById('outline-box').textContent='Claude is generating your outline...';
+  const r=await claudeCall(`Generate a detailed YouTube video outline:\n\nTitle: "${topic}"\nFormat: ${fmt}\nNiche: ${niche}\nKeyword: ${ST.keyword||'not specified'}\nPsychological angle: ${psych||'not specified'}\n\n1. HOOK CONCEPT (first 30 seconds) — specific counter-intuitive premise\n2. CORE THESIS — single main insight, one sentence\n3. STRUCTURE — each section with: title, key point, real case/example, actionable takeaway\n4. EMOTIONAL ARC — how the video feels at start/middle/end\n5. THE CLOSE — checklist or framework the viewer walks away with\n6. WHY THIS WILL PERFORM — specific viral and CPM reasons\n\nBe specific. Name real people, companies, studies, events.`,'You are an expert YouTube content strategist for high-CPM educational content.');
+  if(r){ST.outline=r;document.getElementById('outline-box').textContent=r}
+}
+
+function clearOutline(){document.getElementById('topic-in').value='';document.getElementById('outline-box').textContent='';document.getElementById('outline-result').style.display='none';ST.outline=null}
+
+function approveOutline(){
+  if(!ST.outline){toast('Generate an outline first.','warn');return}
+  const notes=document.getElementById('outline-notes').value;
+  if(notes)ST.outline+='\n\nADDITIONAL REQUIREMENTS:\n'+notes;
+  document.getElementById('final-title').value=document.getElementById('topic-in').value;
+  goTo('script');
+  setTimeout(genScript,400);
+}
+
+async function genScript(){
+  showLoader();
+  const title=document.getElementById('final-title').value.trim()||ST.title||'Untitled';
+  const tone=document.getElementById('tone-sel').value;
+  const niche=ST.niche?NICHES[ST.niche].name:'Finance';
+  ST.title=title;
+  document.getElementById('script-result').style.display='block';
+  document.getElementById('s-full').textContent='Claude is writing your full script...';
+  document.getElementById('gen-btn').disabled=true;
+  const outline=ST.outline?`\n\nAPPROVED OUTLINE:\n${ST.outline}`:'';
+  const r=await claudeCall(`Write a complete 9-section YouTube video production script:\n\nTITLE: "${title}"\nNICHE: ${niche}\nKEYWORD: ${ST.keyword||'not specified'}\nTONE: ${tone}${outline}\n\nDELIVER ALL 9 SECTIONS:\n\n## SECTION 1: FILE HEADER\nChannel, format, target length, niche, CPM estimate.\n\n## SECTION 2: SEO METADATA\nFinal title, A/B title, description 150 chars, full description 200-350 words, 14-18 tags, category, upload time, end screen, card timestamps.\n\n## SECTION 3: THUMBNAIL BRIEF\nTwo complete concepts each with: visual description, exact text overlay, color palette, expression, Midjourney prompt.\n\n## SECTION 4: HOOK (0:00-0:35)\nComplete narration. Counter-intuitive premise. Never starts with greeting. Camera direction in parentheses.\n\n## SECTION 5: INTRO BRIDGE (0:35-1:10)\nTransition narration. Frames topic. Preview without giving content.\n\n## SECTION 6: MAIN CONTENT\nNumbered sections. Each: timestamp, full narration (spoken word, direct address), real case/data with specific names and numbers, B-roll direction in italics, on-screen text callout.\n\n## SECTION 7: CLOSE & CTA\nSummary checklist. Subscribe reason. Next video link with why. End screen.\n\n## SECTION 8: B-ROLL SHOT LIST\nTable: Timestamp | Shot description | Production notes. Minimum 12 shots.\n\n## SECTION 9: KLING/VEO PROMPTS\nFor each B-roll scene:\nSCENE [N]: [timestamp]\nPROMPT: [detailed cinematic prompt for Kling/Seedance/Google Veo — subject, action, camera movement, lighting, mood, style, duration]\n---\n\nWrite every section completely. Use real names, real cases, real numbers. Narration in spoken word style.`,'You are an expert YouTube script writer for high-CPM educational content. Always write complete, production-ready scripts with all 9 sections.');
+  document.getElementById('gen-btn').disabled=false;
+  if(r){
+    hideLoader();ST.script=r;
+    document.getElementById('s-full').textContent=r;
+    const seo=r.match(/SECTION 2[:\s]*SEO METADATA([\s\S]*?)(?=##\s*SECTION 3|$)/i);
+    const thumb=r.match(/SECTION 3[:\s]*THUMBNAIL BRIEF([\s\S]*?)(?=##\s*SECTION 4|$)/i);
+    const broll=r.match(/SECTION 8[:\s]*B.ROLL SHOT LIST([\s\S]*?)(?=##\s*SECTION 9|$)/i);
+    const kling=r.match(/SECTION 9[:\s]*KLING[\/\s]*VEO PROMPTS([\s\S]*?)$/i);
+    if(seo){ST.seo=seo[1].trim();document.getElementById('s-seo').textContent=ST.seo}
+    if(thumb){ST.thumb=thumb[1].trim();document.getElementById('s-thumb').textContent=ST.thumb}
+    if(broll){ST.broll=broll[1].trim();document.getElementById('s-broll').textContent=ST.broll}
+    if(kling){ST.kling=kling[1].trim();document.getElementById('s-kling').textContent=ST.kling}
+    toast('Full script generated ✓','success');
+  }
+}
+
+async function genSEOOnly(){
+  const title=document.getElementById('final-title').value.trim();
+  if(!title){toast('Enter a title first.','warn');return}
+  document.getElementById('script-result').style.display='block';
+  document.getElementById('s-seo').textContent='Generating SEO package...';
+  const r=await claudeCall(`Generate a complete YouTube SEO package for:\nTitle: "${title}"\nNiche: ${ST.niche?NICHES[ST.niche].name:'Finance'}\nKeyword: ${ST.keyword||'not specified'}\n\nInclude: optimized title, A/B title, description 150 chars, full description 250-350 words, 16 tags, best upload time, end screen, 8 chapter markers`,'You are a YouTube SEO expert.');
+  if(r){ST.seo=r;document.getElementById('s-seo').textContent=r;showSTab('seo',null)}
+}
+
+function showSTab(id,btn){
+  document.querySelectorAll('#script-result .tab-pnl').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('#script-result .tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('stab-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+}
+
+function showVTab(id,btn){
+  document.querySelectorAll('#panel-voice .tab-pnl').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('#panel-voice .tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('vtab-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+}
+
+function saveVideo(){
+  if(!ST.title){toast('Generate a script first.','warn');return}
+  const v={id:Date.now(),channelId:ST.activeChId,title:ST.title,niche:ST.niche?NICHES[ST.niche].name:'',keyword:ST.keyword||'',outline:ST.outline||'',script:ST.script||'',seo:ST.seo||'',thumb:ST.thumb||'',status:'complete',date:new Date().toLocaleDateString()};
+  ST.videos.push(v);
+  localStorage.setItem('yts_videos',JSON.stringify(ST.videos));
+  toast('Video saved to library ✓','success');
+}
+
+async function genVoice(){
+  const text=document.getElementById('voice-text').value.trim();
+  const vid=document.getElementById('voice-id').value;
+  if(!text){toast('Add text first.','warn');return}
+  if(text.length>5000){toast('Text too long — max 5000 chars per call.','warn');return}
+  toast('Generating voiceover...');
+  const url=await elevenCall(text,vid);
+  if(url){
+    document.getElementById('audio-player').src=url;
+    document.getElementById('audio-dl').href=url;
+    document.getElementById('voice-out').style.display='block';
+    toast('Voiceover ready ✓','success');
+  }
+}
+
+async function fmtActor(){
+  const text=document.getElementById('human-text').value.trim();
+  const char=document.getElementById('human-char').value;
+  if(!text){toast('Add narration first.','warn');return}
+  document.getElementById('actor-out').style.display='block';
+  document.getElementById('actor-box').textContent='Formatting for voice actor...';
+  const r=await claudeCall(`Format this narration for a human voice actor.\n\nVoice character: ${char}\n\nFor each paragraph add:\n- Tone instruction [CALM] [TENSE] [REVEALING] etc.\n- Pacing note [SLOW] [MEASURED] [FASTER]\n- Emotion cue\n- Emphasis on key words [EMPHASIZE: word]\n\nNARRATION:\n${text}`,'You are a professional voice director formatting scripts for documentary narration.');
+  if(r)document.getElementById('actor-box').textContent=r;
+}
+
+function renderExportInfo(){
+  const div=document.getElementById('export-info');
+  if(ST.title)div.innerHTML=`<strong>${ST.title}</strong><br><span style="font-size:12px;color:var(--text3)">Niche: ${ST.niche?NICHES[ST.niche].name:'—'} · Keyword: ${ST.keyword||'—'}</span>`;
+}
+
+function buildPkg(){
+  return`YOUTUBE VIDEO PRODUCTION PACKAGE — MYCUTIEPIE\n${'='.repeat(50)}\nTitle: ${ST.title||'Untitled'}\nNiche: ${ST.niche?NICHES[ST.niche].name:'—'}\nKeyword: ${ST.keyword||'—'}\nDate: ${new Date().toLocaleDateString()}\n\n${'='.repeat(50)}\nSEO METADATA\n${'='.repeat(50)}\n${ST.seo||'(not generated)'}\n\n${'='.repeat(50)}\nTHUMBNAIL BRIEF\n${'='.repeat(50)}\n${ST.thumb||'(not generated)'}\n\n${'='.repeat(50)}\nFULL SCRIPT\n${'='.repeat(50)}\n${ST.script||'(not generated)'}\n\n${'='.repeat(50)}\nKLING / VEO PROMPTS — B-ROLL VISUALS\n${'='.repeat(50)}\n${ST.kling||'(not generated)'}\n\n${'='.repeat(50)}\nPRE-PUBLISH CHECKLIST\n${'='.repeat(50)}\n□ Script reviewed and approved\n□ Voiceover recorded / generated\n□ All B-roll scenes generated (see Kling prompts)\n□ Thumbnail designed (see brief)\n□ Title finalized (max 60 chars)\n□ Description written (first 150 chars = hook)\n□ All tags added\n□ Chapters added to description\n□ End screen configured\n□ Cards scheduled\n□ Upload at optimal time (see SEO metadata)\n□ Pinned comment posted immediately after upload\n□ Thumbnail tested at 120px width`;
+}
+
+function exportTxt(){
+  const b=new Blob([buildPkg()],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(ST.title||'video').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_package.txt';a.click();
+  toast('Package downloaded ✓','success');
+}
+
+function copyPkg(){navigator.clipboard.writeText(buildPkg()).then(()=>toast('Package copied ✓','success'))}
+
+function renderChSelector(){
+  const sel=document.getElementById('active-ch');
+  sel.innerHTML='<option value="">— select —</option>';
+  ST.channels.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)});
+}
+
+function chChanged(){ST.activeChId=document.getElementById('active-ch').value||null}
+
+function saveCh(){
+  const name=document.getElementById('ch-name').value.trim();
+  if(!name){toast('Name required.','warn');return}
+  const id=document.getElementById('edit-ch-id').value||Date.now().toString();
+  const ch={id,name,handle:document.getElementById('ch-handle').value,niche:document.getElementById('ch-niche').value,subniche:document.getElementById('ch-sub').value,tone:document.getElementById('ch-tone').value};
+  const idx=ST.channels.findIndex(c=>c.id===id);
+  if(idx>=0)ST.channels[idx]=ch;else ST.channels.push(ch);
+  localStorage.setItem('yts_channels',JSON.stringify(ST.channels));
+  renderChList();renderChSelector();clearChForm();
+  toast('Channel saved ✓','success');
+}
+
+function renderChList(){
+  document.getElementById('ch-list').innerHTML=ST.channels.length?ST.channels.map(c=>`<div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:500">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.handle||''} · ${c.niche||''}</div></div><div style="display:flex;gap:5px"><button class="btn" style="font-size:11px;padding:4px 8px" onclick="editCh('${c.id}')">Edit</button><button class="btn" style="font-size:11px;padding:4px 8px" onclick="useCh('${c.id}','${c.name}')">Use</button></div></div>`).join(''):'<div style="font-size:13px;color:var(--text3)">No channels yet.</div>';
+}
+
+function editCh(id){const c=ST.channels.find(x=>x.id===id);if(!c)return;document.getElementById('edit-ch-id').value=c.id;document.getElementById('ch-name').value=c.name;document.getElementById('ch-handle').value=c.handle||'';document.getElementById('ch-niche').value=c.niche||'Finance & Investing';document.getElementById('ch-sub').value=c.subniche||'';document.getElementById('ch-tone').value=c.tone||''}
+function useCh(id,name){document.getElementById('active-ch').value=id;ST.activeChId=id;toast('Active: '+name)}
+function clearChForm(){document.getElementById('edit-ch-id').value='';['ch-name','ch-handle','ch-sub','ch-tone'].forEach(i=>document.getElementById(i).value='')}
+
+function renderLibrary(){
+  const vids=ST.activeChId?ST.videos.filter(v=>v.channelId===ST.activeChId):ST.videos;
+  document.getElementById('vid-library').innerHTML=vids.length?vids.map(v=>`<div class="vlib-item"><div><div class="vlib-title">${v.title||'(untitled)'}</div><div class="vlib-meta">${v.niche||''} · ${v.keyword||''} · ${v.date||''}</div></div><span class="${v.status==='complete'?'s-done':'s-draft'}">${v.status}</span></div>`).join(''):'<div style="font-size:13px;color:var(--text3)">No videos yet. Select an active channel or create your first video.</div>';
+}
+
+function copyEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('Copied ✓'))}
+
+function toast(msg,type='default'){
+  const w=document.getElementById('toasts');
+  const t=document.createElement('div');t.className='toast';
+  t.style.background=type==='error'?'#a32d2d':type==='warn'?'#854f0b':type==='success'?'#3b6d11':'#1a1a18';
+  t.textContent=msg;w.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+
+// Init
+const c=cfg();
+if(!c.pw){document.getElementById('login').style.display='none';document.getElementById('setup').style.display='flex'}
+</script>
+</body>
+</html>
