@@ -502,7 +502,7 @@ async function claudeCall(prompt,system){
   if(!key){toast('Claude API key not set — go to Setup','error');return null;}
   showLoader();
   try{
-    var res=await fetch('/.netlify/functions/claude',{
+    var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/claude',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({prompt:prompt,system:system||'',apiKey:key})
