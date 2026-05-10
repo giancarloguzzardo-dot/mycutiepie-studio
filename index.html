@@ -7,7 +7,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;min-height:100vh}
-/* LOGIN */
 #login{min-height:100vh;display:flex;align-items:center;justify-content:center}
 .login-box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:40px;width:360px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
 .login-box h1{font-size:22px;font-weight:700;margin:12px 0 4px}
@@ -15,12 +14,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .login-box input{width:100%;padding:11px 14px;font-size:14px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:10px;outline:none;color:#111}
 .login-box input:focus{border-color:#6366F1}
 .login-err{color:#ef4444;font-size:13px;margin-bottom:8px;display:none}
-/* SETUP */
 #setup{min-height:100vh;display:none;align-items:center;justify-content:center}
 .setup-box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:36px;width:480px;max-width:95vw}
 .setup-box h2{font-size:20px;font-weight:700;margin-bottom:4px}
 .setup-box p{font-size:13px;color:#6b7280;margin-bottom:24px}
-/* STUDIO */
 #studio{display:none;min-height:100vh}
 .layout{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
 .sidebar{background:#fff;border-right:1px solid #e5e7eb;padding:0}
@@ -40,7 +37,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .panel.on{display:block}
 .panel-title{font-size:26px;font-weight:700;margin-bottom:4px}
 .panel-sub{font-size:13px;color:#6b7280;margin-bottom:28px}
-/* NICHE */
 .niche-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px}
 .nc{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;transition:.12s}
 .nc:hover{border-color:#6366F1}
@@ -49,7 +45,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nc-name{font-size:12px;font-weight:600;margin-bottom:2px}
 .nc-cpm{font-size:11px;font-weight:600;color:#059669}
 .nc-comp{font-size:10px;color:#9ca3af}
-/* KW */
 .kw-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .kw-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
 .kw-item:hover{border-color:#6366F1}
@@ -60,41 +55,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .bv{background:#d1fae5;color:#065f46}
 .bc{background:#fef3c7;color:#92400e}
 .bco{background:#f3f4f6;color:#6b7280}
-/* TAGS */
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .tag{font-size:12px;font-weight:500;padding:5px 12px;border-radius:999px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280}
 .tag:hover{border-color:#6366F1}
 .tag.on{background:#6366F1;color:#fff;border-color:#6366F1}
-/* FIELDS */
 .fld{margin-bottom:14px}
 .fld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:5px}
 .fld input,.fld select,.fld textarea{width:100%;padding:10px 13px;font-size:13px;border:1px solid #e5e7eb;border-radius:9px;background:#fff;color:#111;font-family:inherit}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:#6366F1}
 .fld textarea{min-height:110px;resize:vertical;line-height:1.7}
-/* BUTTONS */
 .btn{padding:9px 18px;font-size:13px;font-weight:600;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1px solid #e5e7eb;background:#fff;color:#111}
 .btn:hover{background:#f9fafb}
 .btn.primary{background:#6366F1;color:#fff;border:none}
 .btn.primary:hover{background:#4f46e5}
 .btn.success{background:#d1fae5;color:#065f46;border:none}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-/* OUTPUT */
 .out-box{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:#374151;white-space:pre-wrap;min-height:150px;max-height:480px;overflow-y:auto;word-break:break-word}
-/* TABS */
 .tabs{display:flex;border-bottom:1px solid #e5e7eb;margin-bottom:16px}
 .tab{padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:#6b7280;font-family:inherit;white-space:nowrap}
 .tab:hover{color:#111}
 .tab.on{color:#6366F1;border-bottom-color:#6366F1}
 .tab-pnl{display:none}
 .tab-pnl.on{display:block}
-/* GRID */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-/* CARD */
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
 .card-title{font-size:13px;font-weight:600;margin-bottom:3px}
 .card-desc{font-size:11px;color:#9ca3af;line-height:1.5}
-/* LOADER */
 #loader{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center}
 #loader.on{display:flex}
 .loader-box{background:#fff;border-radius:16px;padding:36px 48px;text-align:center;max-width:340px}
@@ -103,15 +90,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .loader-title{font-size:15px;font-weight:600;margin-bottom:6px}
 .loader-msg{font-size:13px;color:#6b7280;min-height:18px}
 .loader-hint{font-size:11px;color:#9ca3af;margin-top:10px}
-/* TOASTS */
 .toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:9999}
 .toast{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;animation:tIn .18s ease}
 @keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-/* VID ITEMS */
 .vid-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .s-draft{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
 .s-done{background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
-/* CHANNEL PICKER */
 #picker{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;background:#f9fafb}
 .picker-title{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;background:linear-gradient(135deg,#6366F1,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .picker-sub{font-size:14px;color:#6b7280;margin-bottom:36px}
@@ -122,7 +106,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ch-name{font-size:17px;font-weight:700;margin-bottom:2px}
 .ch-handle{font-size:12px;color:#9ca3af;margin-bottom:8px;font-family:monospace}
 .ch-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px}
-/* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .overlay.on{display:flex}
 .modal{background:#fff;border-radius:18px;padding:28px;width:480px;max-width:100%;max-height:88vh;overflow-y:auto}
@@ -139,8 +122,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
 <div id="login">
   <div class="login-box">
     <div style="font-size:48px">🎬</div>
@@ -151,21 +132,15 @@ audio{width:100%;border-radius:8px;margin-top:8px}
     <button class="btn primary" style="width:100%;justify-content:center" id="login-btn">Enter Studio</button>
   </div>
 </div>
-
-<!-- SETUP -->
 <div id="setup" style="display:none;min-height:100vh;align-items:center;justify-content:center">
   <div class="setup-box">
     <h2>⚙️ First time setup</h2>
     <p>Your API keys are saved in your browser only — never shared.</p>
     <div class="fld"><label>Claude API Key</label><input type="password" id="s-claude" placeholder="sk-ant-..." /></div>
-    <div class="fld"><label>ElevenLabs API Key</label><input type="password" id="s-eleven" placeholder="Your ElevenLabs key..." /></div>
-    <div class="fld"><label>YouTube Data API Key (optional)</label><input type="password" id="s-yt" placeholder="AIza..." /></div>
     <div class="fld"><label>Studio Password</label><input type="text" id="s-pw" placeholder="Choose a password..." /></div>
     <button class="btn primary" id="setup-btn">Save & Enter Studio</button>
   </div>
 </div>
-
-<!-- CHANNEL PICKER -->
 <div id="picker">
   <div style="font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:12px">MYCUTIEPIE ✦ Production System</div>
   <div class="picker-title">YouTube Studio</div>
@@ -173,19 +148,11 @@ audio{width:100%;border-radius:8px;margin-top:8px}
   <div class="ch-grid" id="ch-grid"></div>
   <button class="btn primary" id="add-ch-btn">+ New channel</button>
 </div>
-
-<!-- STUDIO -->
 <div id="studio">
 <div class="layout">
   <div class="sidebar">
-    <div class="sb-logo">
-      <h2>🎬 YouTube Studio</h2>
-      <span>MYCUTIEPIE v1.0</span>
-    </div>
-    <div class="sb-ch">
-      <div class="sb-ch-name" id="sb-name">Channel</div>
-      <div class="sb-ch-sub" id="sb-sub">—</div>
-    </div>
+    <div class="sb-logo"><h2>🎬 YouTube Studio</h2><span>MYCUTIEPIE v1.0</span></div>
+    <div class="sb-ch"><div class="sb-ch-name" id="sb-name">Channel</div><div class="sb-ch-sub" id="sb-sub">—</div></div>
     <div class="sb-sec">Create</div>
     <div class="si on" data-panel="niche">🎯 Niche & Keywords</div>
     <div class="si" data-panel="outline">📋 Idea & Outline</div>
@@ -202,8 +169,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
     </div>
   </div>
   <div class="main">
-
-    <!-- NICHE -->
     <div class="panel on" id="panel-niche">
       <div class="panel-title">Niche & Keywords</div>
       <div class="panel-sub">Select niche, sub-niche and keyword for your next video</div>
@@ -231,8 +196,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
         <div class="out-box" id="kw-out"></div>
       </div>
     </div>
-
-    <!-- OUTLINE -->
     <div class="panel" id="panel-outline">
       <div class="panel-title">Idea & Outline</div>
       <div class="panel-sub">Generate your video structure and approve before the full script</div>
@@ -271,8 +234,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
         <div class="fld" style="margin-top:10px"><label>Notes or modifications</label><textarea id="outline-notes" placeholder="Any specific requirements..." style="min-height:60px"></textarea></div>
       </div>
     </div>
-
-    <!-- SCRIPT -->
     <div class="panel" id="panel-script">
       <div class="panel-title">Full Script Engine</div>
       <div class="panel-sub">Complete 9-section production script — narration, SEO, thumbnail, B-roll, Kling prompts</div>
@@ -314,8 +275,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
         </div>
       </div>
     </div>
-
-    <!-- VOICE -->
     <div class="panel" id="panel-voice">
       <div class="panel-title">Voice & Audio</div>
       <div class="panel-sub">Generate AI voiceover or format for a human voice actor</div>
@@ -339,8 +298,10 @@ audio{width:100%;border-radius:8px;margin-top:8px}
           </div>
           <div id="voice-out" style="display:none">
             <div class="sec">Generated audio</div>
-            <audio id="audio-player" controls style="width:100%;margin-bottom:10px" preload="auto"></audio><div style="display:flex;gap:8px;flex-wrap:wrap"><a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a><button class="btn" onclick="var a=document.getElementById('audio-player');a.play()">▶ Play</button></div>
-            
+            <audio id="audio-player" controls style="width:100%;margin-bottom:10px" preload="auto"></audio>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a>
+            </div>
           </div>
         </div>
       </div>
@@ -359,8 +320,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
         <div id="actor-out" style="display:none;margin-top:12px"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="actor-box">Copy</button></div><div class="out-box" id="actor-box"></div></div>
       </div>
     </div>
-
-    <!-- EXPORT -->
     <div class="panel" id="panel-export">
       <div class="panel-title">Export Package</div>
       <div class="panel-sub">Complete package for your production team</div>
@@ -382,19 +341,14 @@ audio{width:100%;border-radius:8px;margin-top:8px}
         <button class="btn" id="copy-pkg-btn">Copy to clipboard</button>
       </div>
     </div>
-
-    <!-- LIBRARY -->
     <div class="panel" id="panel-library">
       <div class="panel-title">Video Library</div>
       <div class="panel-sub">All videos for this channel</div>
       <div id="vid-library"></div>
     </div>
-
   </div>
 </div>
 </div>
-
-<!-- CHANNEL MODAL -->
 <div class="overlay" id="ch-overlay">
   <div class="modal">
     <h2>New Channel</h2>
@@ -422,8 +376,6 @@ audio{width:100%;border-radius:8px;margin-top:8px}
     </div>
   </div>
 </div>
-
-<!-- LOADER -->
 <div id="loader">
   <div class="loader-box">
     <div class="loader-spin"></div>
@@ -432,16 +384,12 @@ audio{width:100%;border-radius:8px;margin-top:8px}
     <div class="loader-hint">This takes 20–60 seconds</div>
   </div>
 </div>
-
 <div class="toast-wrap" id="toasts"></div>
-
 <script>
-// ===== CONFIG =====
-var COLORS = ['#6366F1','#EC4899','#F59E0B','#10B981','#3B82F6','#EF4444','#8B5CF6','#06B6D4','#F97316'];
-var EMOJIS = ['🎬','📺','💰','🧠','⚖️','🛡️','💻','🎯','🔥','🚀','💡','⚡'];
-var selColor = COLORS[0], selEmoji = EMOJIS[0];
-
-var NICHES = {
+var COLORS=['#6366F1','#EC4899','#F59E0B','#10B981','#3B82F6','#EF4444','#8B5CF6','#06B6D4','#F97316'];
+var EMOJIS=['🎬','📺','💰','🧠','⚖️','🛡️','💻','🎯','🔥','🚀','💡','⚡'];
+var selColor=COLORS[0],selEmoji=EMOJIS[0];
+var NICHES={
   finance:{name:'Finance & Investing',icon:'💰',cpm:'$15–22',comp:'Medium',color:'#F59E0B',
     subs:['Wealth building','Risk & reward','Greed & consequences','Investment psychology','Contrarian thinking'],
     subDesc:{'Risk & reward':'Investment psychology. Attracts high-income investors. Highest CPM in Finance.','Greed & consequences':'Financial crimes and collapses. Highest virality.','Investment psychology':'Why smart people make bad financial decisions.','Contrarian thinking':'Being right before everyone else.','Wealth building':'How ordinary people build wealth.'},
@@ -468,475 +416,80 @@ var NICHES = {
     keywords:[{term:'psychology of Harvey Specter suits',vol:'High',cpm:'$16',comp:'Very Low'},{term:'Patrick Jane reading people mentalist',vol:'Medium',cpm:'$17',comp:'Very Low'},{term:'Bobby Axelrod investment psychology',vol:'Low',cpm:'$18',comp:'Very Low'},{term:'Walter White psychology sunk cost',vol:'Medium',cpm:'$15',comp:'Very Low'}],
     ideas:['Harvey Specter\'s Real Psychological Edge','How Patrick Jane Actually Reads People','Why Logan Roy Raised Children Who Could Never Replace Him','Walter White\'s Real Problem']}
 };
-
-// ===== STATE =====
-var ST = {niche:null,subniche:null,keyword:null,outline:null,script:null,seo:null,thumb:null,broll:null,kling:null,title:null,channel:null,videoId:null};
-
-// ===== STORAGE =====
-function cfg(){return{claude:localStorage.getItem('yts_claude')||'',eleven:localStorage.getItem('yts_eleven')||'',yt:localStorage.getItem('yts_yt')||'',pw:localStorage.getItem('yts_pw')||''};}
-
-// ===== LOADER =====
+var ST={niche:null,subniche:null,keyword:null,outline:null,script:null,seo:null,thumb:null,broll:null,kling:null,title:null,channel:null,videoId:null};
+function cfg(){return{claude:localStorage.getItem('yts_claude')||'',pw:localStorage.getItem('yts_pw')||''};}
 var _lmsgs=['Reading your brief...','Analyzing the niche...','Writing the hook...','Building the structure...','Adding real cases and data...','Almost ready...'];
 var _lint=null,_lidx=0;
-function showLoader(){
-  var el=document.getElementById('loader');
-  if(el)el.classList.add('on');
-  _lidx=0;
-  var m=document.getElementById('loader-msg');
-  if(m)m.textContent=_lmsgs[0];
-  _lint=setInterval(function(){
-    _lidx=(_lidx+1)%_lmsgs.length;
-    var mm=document.getElementById('loader-msg');
-    if(mm)mm.textContent=_lmsgs[_lidx];
-  },3000);
-}
-function hideLoader(){
-  var el=document.getElementById('loader');
-  if(el)el.classList.remove('on');
-  if(_lint){clearInterval(_lint);_lint=null;}
-}
-
-// ===== CLAUDE VIA NETLIFY FUNCTION =====
+function showLoader(){var el=document.getElementById('loader');if(el)el.classList.add('on');_lidx=0;var m=document.getElementById('loader-msg');if(m)m.textContent=_lmsgs[0];_lint=setInterval(function(){_lidx=(_lidx+1)%_lmsgs.length;var mm=document.getElementById('loader-msg');if(mm)mm.textContent=_lmsgs[_lidx];},3000);}
+function hideLoader(){var el=document.getElementById('loader');if(el)el.classList.remove('on');if(_lint){clearInterval(_lint);_lint=null;}}
 async function claudeCall(prompt,system){
   var key=cfg().claude;
   if(!key){toast('Claude API key not set — go to Setup','error');return null;}
   showLoader();
   try{
     var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/claude',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({prompt:prompt,system:system||'',apiKey:key})
     });
-    var d=await res.json();
-    hideLoader();
+    var d=await res.json();hideLoader();
     if(d.text)return d.text;
-    toast('Claude: '+(d.error||'no response'),'error');
-    return null;
-  }catch(e){
-    hideLoader();
-    toast('Claude: '+e.message,'error');
-    return null;
-  }
+    toast('Claude: '+(d.error||'no response'),'error');return null;
+  }catch(e){hideLoader();toast('Claude: '+e.message,'error');return null;}
 }
-
-// ===== ELEVENLABS VIA NETLIFY FUNCTION =====
 async function elevenCall(text,voiceId){
   try{
     var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/elevenlabs',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({text:text,voice_id:voiceId})
     });
     var blob=await res.blob();
+    if(blob.type==='application/json'||blob.size<1000){
+      var txt=await blob.text();
+      toast('ElevenLabs: '+txt.slice(0,100),'error');return null;
+    }
     return URL.createObjectURL(blob);
   }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
 }
-
-// ===== AUTH =====
-function init(){
-  var c=cfg();
-  if(!c.pw){
-    document.getElementById('login').style.display='none';
-    document.getElementById('setup').style.display='flex';
-  }
-}
-
-document.getElementById('login-btn').addEventListener('click',function(){
-  var v=document.getElementById('pw-in').value;
-  var c=cfg();
-  if(v===c.pw){
-    document.getElementById('login').style.display='none';
-    loadPicker();
-  } else {
-    document.getElementById('login-err').style.display='block';
-  }
-});
-
-document.getElementById('pw-in').addEventListener('keydown',function(e){
-  if(e.key==='Enter') document.getElementById('login-btn').click();
-});
-
-document.getElementById('setup-btn').addEventListener('click',function(){
-  var pw=document.getElementById('s-pw').value.trim();
-  if(!pw){alert('Please set a password.');return;}
-  localStorage.setItem('yts_claude',document.getElementById('s-claude').value.trim());
-  localStorage.setItem('yts_eleven',document.getElementById('s-eleven').value.trim());
-  localStorage.setItem('yts_yt',document.getElementById('s-yt').value.trim());
-  localStorage.setItem('yts_pw',pw);
-  document.getElementById('setup').style.display='none';
-  loadPicker();
-});
-
-document.getElementById('logout-btn').addEventListener('click',function(){
-  document.getElementById('studio').style.display='none';
-  document.getElementById('login').style.display='flex';
-});
-
-document.getElementById('back-btn').addEventListener('click',function(){
-  document.getElementById('studio').style.display='none';
-  loadPicker();
-});
-
-// ===== CHANNEL PICKER =====
-function loadPicker(){
-  document.getElementById('picker').style.display='flex';
-  renderPicker();
-}
-
-function renderPicker(){
-  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
-  var grid=document.getElementById('ch-grid');
-  if(!channels.length){
-    grid.innerHTML='<div style="color:#9ca3af;font-size:13px;padding:20px 0">No channels yet. Create your first channel.</div>';
-    return;
-  }
-  grid.innerHTML=channels.map(function(c,i){
-    return '<div class="ch-card" data-idx="'+i+'">'
-      +'<span class="ch-emoji">'+(c.emoji||'🎬')+'</span>'
-      +'<div class="ch-name">'+c.name+'</div>'
-      +'<div class="ch-handle">'+(c.handle||'')+'</div>'
-      +'<div class="ch-badge" style="background:'+(c.color||'#6366F1')+'1a;color:'+(c.color||'#6366F1')+'">'+(c.niche||'')+'</div>'
-      +'</div>';
-  }).join('');
-  grid.querySelectorAll('.ch-card').forEach(function(el){
-    el.addEventListener('click',function(){
-      var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
-      selectChannel(channels[parseInt(el.dataset.idx)]);
-    });
-  });
-}
-
-function selectChannel(ch){
-  ST.channel=ch;
-  document.getElementById('picker').style.display='none';
-  document.getElementById('studio').style.display='block';
-  document.getElementById('sb-name').textContent=ch.name;
-  document.getElementById('sb-sub').textContent=(ch.niche||'')+(ch.subniche?' · '+ch.subniche:'');
-  renderNiches();
-  renderQuickIdeas();
-  loadLib();
-}
-
+function init(){var c=cfg();if(!c.pw){document.getElementById('login').style.display='none';document.getElementById('setup').style.display='flex';}}
+document.getElementById('login-btn').addEventListener('click',function(){var v=document.getElementById('pw-in').value;var c=cfg();if(v===c.pw){document.getElementById('login').style.display='none';loadPicker();}else{document.getElementById('login-err').style.display='block';}});
+document.getElementById('pw-in').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('login-btn').click();});
+document.getElementById('setup-btn').addEventListener('click',function(){var pw=document.getElementById('s-pw').value.trim();if(!pw){alert('Please set a password.');return;}localStorage.setItem('yts_claude',document.getElementById('s-claude').value.trim());localStorage.setItem('yts_pw',pw);document.getElementById('setup').style.display='none';loadPicker();});
+document.getElementById('logout-btn').addEventListener('click',function(){document.getElementById('studio').style.display='none';document.getElementById('login').style.display='flex';});
+document.getElementById('back-btn').addEventListener('click',function(){document.getElementById('studio').style.display='none';loadPicker();});
+function loadPicker(){document.getElementById('picker').style.display='flex';renderPicker();}
+function renderPicker(){var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');var grid=document.getElementById('ch-grid');if(!channels.length){grid.innerHTML='<div style="color:#9ca3af;font-size:13px;padding:20px 0">No channels yet. Create your first channel.</div>';return;}grid.innerHTML=channels.map(function(c,i){return'<div class="ch-card" data-idx="'+i+'"><span class="ch-emoji">'+(c.emoji||'🎬')+'</span><div class="ch-name">'+c.name+'</div><div class="ch-handle">'+(c.handle||'')+'</div><div class="ch-badge" style="background:'+(c.color||'#6366F1')+'1a;color:'+(c.color||'#6366F1')+'">'+(c.niche||'')+'</div></div>';}).join('');grid.querySelectorAll('.ch-card').forEach(function(el){el.addEventListener('click',function(){var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');selectChannel(channels[parseInt(el.dataset.idx)]);});});}
+function selectChannel(ch){ST.channel=ch;document.getElementById('picker').style.display='none';document.getElementById('studio').style.display='block';document.getElementById('sb-name').textContent=ch.name;document.getElementById('sb-sub').textContent=(ch.niche||'')+(ch.subniche?' · '+ch.subniche:'');renderNiches();renderQuickIdeas();loadLib();}
 document.getElementById('add-ch-btn').addEventListener('click',openChModal);
-
-// ===== CHANNEL MODAL =====
-function openChModal(){
-  selColor=COLORS[0];selEmoji=EMOJIS[0];
-  var cp=document.getElementById('col-picker');
-  cp.innerHTML=COLORS.map(function(c){return '<div class="col-opt'+(c===selColor?' on':'')+'" style="background:'+c+'" data-color="'+c+'"></div>';}).join('');
-  cp.querySelectorAll('.col-opt').forEach(function(el){
-    el.addEventListener('click',function(){selColor=el.dataset.color;cp.querySelectorAll('.col-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});
-  });
-  var ep=document.getElementById('emo-picker');
-  ep.innerHTML=EMOJIS.map(function(e){return '<div class="emo-opt'+(e===selEmoji?' on':'')+'" data-emoji="'+e+'">'+e+'</div>';}).join('');
-  ep.querySelectorAll('.emo-opt').forEach(function(el){
-    el.addEventListener('click',function(){selEmoji=el.dataset.emoji;ep.querySelectorAll('.emo-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});
-  });
-  document.getElementById('ch-overlay').classList.add('on');
-}
+function openChModal(){selColor=COLORS[0];selEmoji=EMOJIS[0];var cp=document.getElementById('col-picker');cp.innerHTML=COLORS.map(function(c){return'<div class="col-opt'+(c===selColor?' on':'')+'" style="background:'+c+'" data-color="'+c+'"></div>';}).join('');cp.querySelectorAll('.col-opt').forEach(function(el){el.addEventListener('click',function(){selColor=el.dataset.color;cp.querySelectorAll('.col-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});});var ep=document.getElementById('emo-picker');ep.innerHTML=EMOJIS.map(function(e){return'<div class="emo-opt'+(e===selEmoji?' on':'')+'" data-emoji="'+e+'">'+e+'</div>';}).join('');ep.querySelectorAll('.emo-opt').forEach(function(el){el.addEventListener('click',function(){selEmoji=el.dataset.emoji;ep.querySelectorAll('.emo-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});});document.getElementById('ch-overlay').classList.add('on');}
 document.getElementById('cancel-ch-btn').addEventListener('click',function(){document.getElementById('ch-overlay').classList.remove('on');});
-document.getElementById('save-ch-btn').addEventListener('click',function(){
-  var name=document.getElementById('ch-name').value.trim();
-  if(!name){toast('Channel name required.','error');return;}
-  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
-  var ch={name:name,handle:document.getElementById('ch-handle').value,niche:document.getElementById('ch-niche').value,subniche:document.getElementById('ch-sub').value,tone:document.getElementById('ch-tone').value,color:selColor,emoji:selEmoji,videos:[]};
-  channels.push(ch);
-  localStorage.setItem('yts_channels',JSON.stringify(channels));
-  document.getElementById('ch-overlay').classList.remove('on');
-  toast('Channel saved ✓','success');
-  renderPicker();
-});
-
-// ===== NAVIGATION =====
-document.querySelectorAll('.si').forEach(function(el){
-  el.addEventListener('click',function(){
-    document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-    el.classList.add('on');
-    var p=el.dataset.panel;
-    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-    document.getElementById('panel-'+p).classList.add('on');
-    if(p==='outline')renderQuickIdeas();
-    if(p==='export')renderExportInfo();
-    if(p==='library')loadLib();
-  });
-});
-
-// ===== TABS =====
-document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(tab){
-  tab.addEventListener('click',function(){
-    document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-    tab.classList.add('on');
-    document.querySelectorAll('#panel-script .tab-pnl').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('stab-'+tab.dataset.tab).classList.add('on');
-  });
-});
-document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(tab){
-  tab.addEventListener('click',function(){
-    document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
-    tab.classList.add('on');
-    document.querySelectorAll('#panel-voice .tab-pnl').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('vtab-'+tab.dataset.tab).classList.add('on');
-  });
-});
-
-// ===== COPY BUTTONS =====
-document.querySelectorAll('[data-copy]').forEach(function(btn){
-  btn.addEventListener('click',function(){
-    var text=document.getElementById(btn.dataset.copy).textContent;
-    navigator.clipboard.writeText(text).then(function(){toast('Copied ✓');});
-  });
-});
-
-// ===== NICHE =====
-function renderNiches(){
-  var grid=document.getElementById('niche-grid');
-  grid.innerHTML=Object.entries(NICHES).map(function(e){
-    var k=e[0],v=e[1],on=ST.niche===k;
-    return '<div class="nc'+(on?' on':'')+'" data-niche="'+k+'" style="'+(on?'border-color:'+v.color+';background:'+v.color+'11':'')+'">'+
-      '<div class="nc-icon">'+v.icon+'</div>'+
-      '<div class="nc-name">'+v.name+'</div>'+
-      '<div class="nc-cpm">'+v.cpm+' CPM</div>'+
-      '<div class="nc-comp">Competition: '+v.comp+'</div>'+
-      '</div>';
-  }).join('');
-  grid.querySelectorAll('.nc').forEach(function(el){
-    el.addEventListener('click',function(){selectNiche(el.dataset.niche);});
-  });
-}
-
-function selectNiche(k){
-  ST.niche=k;ST.subniche=null;ST.keyword=null;
-  renderNiches();
-  var n=NICHES[k];
-  document.getElementById('sub-sec').style.display='block';
-  var st=document.getElementById('sub-tags');
-  st.innerHTML=n.subs.map(function(s){return '<span class="tag" data-sub="'+s+'">'+s+'</span>';}).join('');
-  st.querySelectorAll('.tag').forEach(function(el){
-    el.addEventListener('click',function(){
-      ST.subniche=el.dataset.sub;
-      st.querySelectorAll('.tag').forEach(function(t){t.classList.remove('on');});
-      el.classList.add('on');
-      var desc=n.subDesc[el.dataset.sub]||'';
-      document.getElementById('sub-detail').innerHTML=desc?'<div style="background:#f0fdf4;border-radius:9px;padding:9px 13px;font-size:12px;color:#065f46;margin-bottom:10px">'+el.dataset.sub+' — '+desc+'</div>':'';
-    });
-  });
-  document.getElementById('sub-detail').innerHTML='';
-  document.getElementById('kw-sec').style.display='block';
-  renderKws(k);
-  document.getElementById('niche-actions').style.display='flex';
-}
-
-function renderKws(k){
-  var kl=document.getElementById('kw-list');
-  kl.innerHTML=NICHES[k].keywords.map(function(kw){
-    return '<div class="kw-item'+(ST.keyword===kw.term?' on':'')+'" data-term="'+kw.term.replace(/"/g,'&quot;')+'">'+
-      '<div class="kw-term">'+kw.term+'</div>'+
-      '<div class="badges"><span class="badge bv">'+kw.vol+'</span><span class="badge bc">'+kw.cpm+'</span><span class="badge bco">'+kw.comp+'</span></div>'+
-      '</div>';
-  }).join('');
-  kl.querySelectorAll('.kw-item').forEach(function(el){
-    el.addEventListener('click',function(){
-      ST.keyword=el.dataset.term;
-      renderKws(k);
-      toast('Keyword: '+el.dataset.term);
-    });
-  });
-}
-
-document.getElementById('use-kw-btn').addEventListener('click',function(){
-  var v=document.getElementById('custom-kw').value.trim();
-  if(v){ST.keyword=v;toast('Keyword: '+v);}
-});
-
-document.getElementById('go-outline-btn').addEventListener('click',function(){
-  if(!ST.niche){toast('Select a niche first.','error');return;}
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="outline"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-outline').classList.add('on');
-  renderQuickIdeas();
-});
-
-document.getElementById('analyze-kw-btn').addEventListener('click',async function(){
-  if(!ST.keyword){toast('Select a keyword first.','error');return;}
-  document.getElementById('kw-analysis').style.display='block';
-  document.getElementById('kw-out').textContent='Analyzing...';
-  var r=await claudeCall('Analyze this YouTube keyword for a '+(ST.niche?NICHES[ST.niche].name:'Finance')+' channel: "'+ST.keyword+'"\n\n1. Search intent\n2. CPM assessment\n3. Competition gaps\n4. 5 video title variations optimized for CTR\n5. 3 related long-tail keywords with lower competition\n6. Recommended format','You are a YouTube SEO expert.');
-  if(r)document.getElementById('kw-out').textContent=r;
-});
-
-// ===== OUTLINE =====
-function renderQuickIdeas(){
-  var d=document.getElementById('quick-ideas');
-  if(!ST.niche){d.innerHTML='<div style="font-size:13px;color:#9ca3af">Select a niche first.</div>';return;}
-  d.innerHTML=NICHES[ST.niche].ideas.map(function(idea){
-    return '<div style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:6px;cursor:pointer;font-size:13px;color:#6b7280" data-idea="'+idea.replace(/"/g,'&quot;')+'">'+idea+'</div>';
-  }).join('');
-  d.querySelectorAll('[data-idea]').forEach(function(el){
-    el.addEventListener('click',function(){document.getElementById('topic-in').value=el.dataset.idea;});
-  });
-}
-
-document.getElementById('gen-outline-btn').addEventListener('click',async function(){
-  var topic=document.getElementById('topic-in').value.trim();
-  if(!topic){toast('Enter a topic first.','error');return;}
-  ST.title=topic;
-  document.getElementById('outline-res').style.display='block';
-  document.getElementById('outline-box').textContent='Claude is generating your outline...';
-  var r=await claudeCall(
-    'Generate a detailed YouTube video outline:\n\nTitle: "'+topic+'"\nFormat: '+document.getElementById('fmt-sel').value+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\nPsychological angle: '+(document.getElementById('psych-in').value||'not specified')+'\n\n1. HOOK CONCEPT — specific counter-intuitive premise\n2. CORE THESIS — single main insight, one sentence\n3. STRUCTURE — each section: title, key point, real case with names, actionable takeaway\n4. EMOTIONAL ARC — start/middle/end\n5. THE CLOSE — checklist the viewer walks away with\n6. WHY THIS WILL PERFORM — viral and CPM reasons\n\nBe specific. Name real people, companies, events.',
-    'You are an expert YouTube content strategist for high-CPM educational content.'
-  );
-  if(r){ST.outline=r;document.getElementById('outline-box').textContent=r;}
-});
-
-document.getElementById('clear-outline-btn').addEventListener('click',function(){
-  document.getElementById('topic-in').value='';
-  document.getElementById('outline-box').textContent='';
-  document.getElementById('outline-res').style.display='none';
-  ST.outline=null;
-});
-
-document.getElementById('copy-outline-btn').addEventListener('click',function(){
-  navigator.clipboard.writeText(document.getElementById('outline-box').textContent).then(function(){toast('Copied ✓');});
-});
-
-document.getElementById('approve-outline-btn').addEventListener('click',function(){
-  if(!ST.outline){toast('Generate an outline first.','error');return;}
-  var notes=document.getElementById('outline-notes').value;
-  if(notes)ST.outline+='\n\nADDITIONAL REQUIREMENTS:\n'+notes;
-  document.getElementById('final-title').value=document.getElementById('topic-in').value;
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="script"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-script').classList.add('on');
-  setTimeout(function(){document.getElementById('gen-script-btn').click();},400);
-});
-
-// ===== SCRIPT =====
-document.getElementById('gen-script-btn').addEventListener('click',async function(){
-  var title=document.getElementById('final-title').value.trim()||ST.title||'Untitled';
-  ST.title=title;
-  document.getElementById('script-res').style.display='block';
-  document.getElementById('s-full').textContent='Claude is writing your full script...';
-  ['s-seo','s-thumb','s-broll','s-kling'].forEach(function(id){document.getElementById(id).textContent='';});
-  document.getElementById('gen-script-btn').disabled=true;
-  var r=await claudeCall(
-    'Write a complete 9-section YouTube production script:\n\nTITLE: "'+title+'"\nNICHE: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKEYWORD: '+(ST.keyword||'not specified')+'\nTONE: '+document.getElementById('tone-sel').value+(ST.outline?'\n\nAPPROVED OUTLINE:\n'+ST.outline:'')+'\n\n## SECTION 1: FILE HEADER\n## SECTION 2: SEO METADATA\nTitle, A/B title, 150-char description, full description 250 words, 14-18 tags, best upload time, end screen, chapters.\n## SECTION 3: THUMBNAIL BRIEF\nTwo concepts each with: visual, text overlay, palette, Midjourney prompt.\n## SECTION 4: HOOK (0:00–0:35)\nComplete narration. Counter-intuitive opening. Never starts with greeting.\n## SECTION 5: INTRO BRIDGE (0:35–1:10)\n## SECTION 6: MAIN CONTENT\nNumbered sections. Each: timestamp, full narration with real names/numbers, B-roll direction, on-screen text.\n## SECTION 7: CLOSE & CTA\n## SECTION 8: B-ROLL SHOT LIST\nTable: Timestamp | Shot | Notes. Min 12 shots.\n## SECTION 9: KLING/VEO PROMPTS\nSCENE [N]: [timestamp]\nPROMPT: [cinematic prompt]\n---\nWrite every section completely.',
-    'You are an expert YouTube script writer for high-CPM educational content. Always write all 9 sections completely.'
-  );
-  document.getElementById('gen-script-btn').disabled=false;
-  if(!r)return;
-  ST.script=r;
-  document.getElementById('s-full').textContent=r;
-  var seo=r.match(/SECTION 2[\s\S]*?SEO METADATA([\s\S]*?)(?=##\s*SECTION 3|$)/i);
-  var th=r.match(/SECTION 3[\s\S]*?THUMBNAIL BRIEF([\s\S]*?)(?=##\s*SECTION 4|$)/i);
-  var br=r.match(/SECTION 8[\s\S]*?B.ROLL([\s\S]*?)(?=##\s*SECTION 9|$)/i);
-  var kl=r.match(/SECTION 9[\s\S]*?KLING[\s\S]*?PROMPTS([\s\S]*?)$/i);
-  if(seo){ST.seo=seo[1].trim();document.getElementById('s-seo').textContent=ST.seo;}
-  if(th){ST.thumb=th[1].trim();document.getElementById('s-thumb').textContent=ST.thumb;}
-  if(br){ST.broll=br[1].trim();document.getElementById('s-broll').textContent=ST.broll;}
-  if(kl){ST.kling=kl[1].trim();document.getElementById('s-kling').textContent=ST.kling;}
-  toast('Full script ready ✓','success');
-});
-
-document.getElementById('gen-seo-btn').addEventListener('click',async function(){
-  var title=document.getElementById('final-title').value.trim();
-  if(!title){toast('Enter a title first.','error');return;}
-  document.getElementById('script-res').style.display='block';
-  document.getElementById('s-seo').textContent='Generating SEO package...';
-  var r=await claudeCall('SEO package for:\nTitle: "'+title+'"\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\n\nInclude: optimized title, A/B title, 150-char description, full description 250 words, 16 tags, best upload time, 8 chapters','YouTube SEO expert.');
-  if(r){ST.seo=r;document.getElementById('s-seo').textContent=r;}
-});
-
-document.getElementById('save-video-btn').addEventListener('click',function(){
-  if(!ST.title){toast('Generate a script first.','error');return;}
-  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
-  var chIdx=channels.findIndex(function(c){return c.name===ST.channel.name;});
-  if(chIdx<0)return;
-  if(!channels[chIdx].videos)channels[chIdx].videos=[];
-  channels[chIdx].videos.push({id:Date.now(),title:ST.title,niche:ST.niche?NICHES[ST.niche].name:'',keyword:ST.keyword||'',script:ST.script||'',seo:ST.seo||'',status:'complete',date:new Date().toLocaleDateString()});
-  localStorage.setItem('yts_channels',JSON.stringify(channels));
-  toast('Saved to library ✓','success');
-});
-
-document.getElementById('go-voice-btn').addEventListener('click',function(){
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="voice"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-voice').classList.add('on');
-});
-
-// ===== VOICE =====
-document.getElementById('gen-voice-btn').addEventListener('click',async function(){
-  var text=document.getElementById('voice-text').value.trim();
-  var vid=document.getElementById('voice-id').value;
-  if(!text){toast('Add text first.','error');return;}
-  if(text.length>5000){toast('Max 5000 chars per call.','error');return;}
-  toast('Generating voiceover...');
-  var url=await elevenCall(text,vid);
-  if(url){
-    document.getElementById('audio-player').src=url;
-    document.getElementById('audio-dl').href=url;
-    document.getElementById('voice-out').style.display='block';
-    toast('Voiceover ready ✓','success');
-  }
-});
-
-document.getElementById('fmt-actor-btn').addEventListener('click',async function(){
-  var text=document.getElementById('actor-text').value.trim();
-  var char=document.getElementById('actor-char').value;
-  if(!text){toast('Add narration first.','error');return;}
-  document.getElementById('actor-out').style.display='block';
-  document.getElementById('actor-box').textContent='Formatting...';
-  var r=await claudeCall('Format this narration for a human voice actor.\nVoice: '+char+'\n\nFor each paragraph add: tone [CALM/TENSE/REVEALING], pacing [SLOW/MEASURED/FASTER], emotion cue, emphasis [EMPHASIZE: word]\n\nNARRATION:\n'+text,'You are a professional voice director.');
-  if(r)document.getElementById('actor-box').textContent=r;
-});
-
-// ===== EXPORT =====
-function renderExportInfo(){
-  if(ST.title)document.getElementById('export-info').innerHTML='<strong>'+ST.title+'</strong><br><span style="font-size:12px;color:#9ca3af">Niche: '+(ST.niche?NICHES[ST.niche].name:'—')+' · Keyword: '+(ST.keyword||'—')+'</span>';
-}
-
-function buildPkg(){
-  return 'YOUTUBE VIDEO PRODUCTION PACKAGE — MYCUTIEPIE\n'+'='.repeat(48)+'\nTitle: '+(ST.title||'Untitled')+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'—')+'\nKeyword: '+(ST.keyword||'—')+'\nDate: '+new Date().toLocaleDateString()+'\n\n'+'='.repeat(48)+'\nSEO METADATA\n'+'='.repeat(48)+'\n'+(ST.seo||'(not generated)')+'\n\n'+'='.repeat(48)+'\nFULL SCRIPT\n'+'='.repeat(48)+'\n'+(ST.script||'(not generated)')+'\n\n'+'='.repeat(48)+'\nKLING / VEO PROMPTS\n'+'='.repeat(48)+'\n'+(ST.kling||'(not generated)')+'\n\n'+'='.repeat(48)+'\nPRE-PUBLISH CHECKLIST\n'+'='.repeat(48)+'\n□ Script reviewed\n□ Voiceover complete\n□ B-roll generated\n□ Thumbnail designed\n□ SEO metadata added\n□ Chapters added\n□ Pinned comment ready';
-}
-
-document.getElementById('export-btn').addEventListener('click',function(){
-  var b=new Blob([buildPkg()],{type:'text/plain'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(ST.title||'video').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_package.txt';a.click();
-  toast('Downloaded ✓','success');
-});
-
-document.getElementById('copy-pkg-btn').addEventListener('click',function(){
-  navigator.clipboard.writeText(buildPkg()).then(function(){toast('Copied ✓','success');});
-});
-
-// ===== LIBRARY =====
-function loadLib(){
-  if(!ST.channel)return;
-  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
-  var ch=channels.find(function(c){return c.name===ST.channel.name;});
-  var videos=ch&&ch.videos?ch.videos:[];
-  var d=document.getElementById('vid-library');
-  if(!videos.length){d.innerHTML='<div style="font-size:13px;color:#9ca3af;padding:12px 0">No videos yet for this channel.</div>';return;}
-  d.innerHTML=videos.map(function(v){
-    return '<div class="vid-item"><div><div style="font-size:13px;font-weight:600">'+(v.title||'(untitled)')+'</div><div style="font-size:11px;color:#9ca3af;margin-top:1px">'+(v.niche||'')+' · '+(v.date||'')+'</div></div><span class="'+(v.status==='complete'?'s-done':'s-draft')+'">'+(v.status)+'</span></div>';
-  }).join('');
-}
-
-// ===== TOAST =====
-function toast(msg,type){
-  type=type||'default';
-  var w=document.getElementById('toasts');
-  var t=document.createElement('div');t.className='toast';
-  var bg={default:'#1f2937',success:'#065f46',error:'#7f1d1d',warn:'#78350f'};
-  t.style.background=bg[type]||bg.default;
-  t.textContent=msg;w.appendChild(t);
-  setTimeout(function(){t.remove();},3000);
-}
-
-// ===== START =====
+document.getElementById('save-ch-btn').addEventListener('click',function(){var name=document.getElementById('ch-name').value.trim();if(!name){toast('Channel name required.','error');return;}var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');var ch={name:name,handle:document.getElementById('ch-handle').value,niche:document.getElementById('ch-niche').value,subniche:document.getElementById('ch-sub').value,tone:document.getElementById('ch-tone').value,color:selColor,emoji:selEmoji,videos:[]};channels.push(ch);localStorage.setItem('yts_channels',JSON.stringify(channels));document.getElementById('ch-overlay').classList.remove('on');toast('Channel saved ✓','success');renderPicker();});
+document.querySelectorAll('.si').forEach(function(el){el.addEventListener('click',function(){document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});el.classList.add('on');var p=el.dataset.panel;document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});document.getElementById('panel-'+p).classList.add('on');if(p==='outline')renderQuickIdeas();if(p==='export')renderExportInfo();if(p==='library')loadLib();});});
+document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});tab.classList.add('on');document.querySelectorAll('#panel-script .tab-pnl').forEach(function(p){p.classList.remove('on');});document.getElementById('stab-'+tab.dataset.tab).classList.add('on');});});
+document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});tab.classList.add('on');document.querySelectorAll('#panel-voice .tab-pnl').forEach(function(p){p.classList.remove('on');});document.getElementById('vtab-'+tab.dataset.tab).classList.add('on');});});
+document.querySelectorAll('[data-copy]').forEach(function(btn){btn.addEventListener('click',function(){var text=document.getElementById(btn.dataset.copy).textContent;navigator.clipboard.writeText(text).then(function(){toast('Copied ✓');});});});
+function renderNiches(){var grid=document.getElementById('niche-grid');grid.innerHTML=Object.entries(NICHES).map(function(e){var k=e[0],v=e[1],on=ST.niche===k;return'<div class="nc'+(on?' on':'')+'" data-niche="'+k+'" style="'+(on?'border-color:'+v.color+';background:'+v.color+'11':'')+'"><div class="nc-icon">'+v.icon+'</div><div class="nc-name">'+v.name+'</div><div class="nc-cpm">'+v.cpm+' CPM</div><div class="nc-comp">Competition: '+v.comp+'</div></div>';}).join('');grid.querySelectorAll('.nc').forEach(function(el){el.addEventListener('click',function(){selectNiche(el.dataset.niche);});});}
+function selectNiche(k){ST.niche=k;ST.subniche=null;ST.keyword=null;renderNiches();var n=NICHES[k];document.getElementById('sub-sec').style.display='block';var st=document.getElementById('sub-tags');st.innerHTML=n.subs.map(function(s){return'<span class="tag" data-sub="'+s+'">'+s+'</span>';}).join('');st.querySelectorAll('.tag').forEach(function(el){el.addEventListener('click',function(){ST.subniche=el.dataset.sub;st.querySelectorAll('.tag').forEach(function(t){t.classList.remove('on');});el.classList.add('on');var desc=n.subDesc[el.dataset.sub]||'';document.getElementById('sub-detail').innerHTML=desc?'<div style="background:#f0fdf4;border-radius:9px;padding:9px 13px;font-size:12px;color:#065f46;margin-bottom:10px">'+el.dataset.sub+' — '+desc+'</div>':'';});});document.getElementById('sub-detail').innerHTML='';document.getElementById('kw-sec').style.display='block';renderKws(k);document.getElementById('niche-actions').style.display='flex';}
+function renderKws(k){var kl=document.getElementById('kw-list');kl.innerHTML=NICHES[k].keywords.map(function(kw){return'<div class="kw-item'+(ST.keyword===kw.term?' on':'')+'" data-term="'+kw.term.replace(/"/g,'&quot;')+'"><div class="kw-term">'+kw.term+'</div><div class="badges"><span class="badge bv">'+kw.vol+'</span><span class="badge bc">'+kw.cpm+'</span><span class="badge bco">'+kw.comp+'</span></div></div>';}).join('');kl.querySelectorAll('.kw-item').forEach(function(el){el.addEventListener('click',function(){ST.keyword=el.dataset.term;renderKws(k);toast('Keyword: '+el.dataset.term);});});}
+document.getElementById('use-kw-btn').addEventListener('click',function(){var v=document.getElementById('custom-kw').value.trim();if(v){ST.keyword=v;toast('Keyword: '+v);}});
+document.getElementById('go-outline-btn').addEventListener('click',function(){if(!ST.niche){toast('Select a niche first.','error');return;}document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});document.querySelector('.si[data-panel="outline"]').classList.add('on');document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});document.getElementById('panel-outline').classList.add('on');renderQuickIdeas();});
+document.getElementById('analyze-kw-btn').addEventListener('click',async function(){if(!ST.keyword){toast('Select a keyword first.','error');return;}document.getElementById('kw-analysis').style.display='block';document.getElementById('kw-out').textContent='Analyzing...';var r=await claudeCall('Analyze this YouTube keyword for a '+(ST.niche?NICHES[ST.niche].name:'Finance')+' channel: "'+ST.keyword+'"\n\n1. Search intent\n2. CPM assessment\n3. Competition gaps\n4. 5 video title variations optimized for CTR\n5. 3 related long-tail keywords with lower competition\n6. Recommended format','You are a YouTube SEO expert.');if(r)document.getElementById('kw-out').textContent=r;});
+function renderQuickIdeas(){var d=document.getElementById('quick-ideas');if(!ST.niche){d.innerHTML='<div style="font-size:13px;color:#9ca3af">Select a niche first.</div>';return;}d.innerHTML=NICHES[ST.niche].ideas.map(function(idea){return'<div style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:6px;cursor:pointer;font-size:13px;color:#6b7280" data-idea="'+idea.replace(/"/g,'&quot;')+'">'+idea+'</div>';}).join('');d.querySelectorAll('[data-idea]').forEach(function(el){el.addEventListener('click',function(){document.getElementById('topic-in').value=el.dataset.idea;});});}
+document.getElementById('gen-outline-btn').addEventListener('click',async function(){var topic=document.getElementById('topic-in').value.trim();if(!topic){toast('Enter a topic first.','error');return;}ST.title=topic;document.getElementById('outline-res').style.display='block';document.getElementById('outline-box').textContent='Claude is generating your outline...';var r=await claudeCall('Generate a detailed YouTube video outline:\n\nTitle: "'+topic+'"\nFormat: '+document.getElementById('fmt-sel').value+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\nPsychological angle: '+(document.getElementById('psych-in').value||'not specified')+'\n\n1. HOOK CONCEPT — specific counter-intuitive premise\n2. CORE THESIS — single main insight, one sentence\n3. STRUCTURE — each section: title, key point, real case with names, actionable takeaway\n4. EMOTIONAL ARC — start/middle/end\n5. THE CLOSE — checklist the viewer walks away with\n6. WHY THIS WILL PERFORM — viral and CPM reasons\n\nBe specific. Name real people, companies, events.','You are an expert YouTube content strategist for high-CPM educational content.');if(r){ST.outline=r;document.getElementById('outline-box').textContent=r;}});
+document.getElementById('clear-outline-btn').addEventListener('click',function(){document.getElementById('topic-in').value='';document.getElementById('outline-box').textContent='';document.getElementById('outline-res').style.display='none';ST.outline=null;});
+document.getElementById('copy-outline-btn').addEventListener('click',function(){navigator.clipboard.writeText(document.getElementById('outline-box').textContent).then(function(){toast('Copied ✓');});});
+document.getElementById('approve-outline-btn').addEventListener('click',function(){if(!ST.outline){toast('Generate an outline first.','error');return;}var notes=document.getElementById('outline-notes').value;if(notes)ST.outline+='\n\nADDITIONAL REQUIREMENTS:\n'+notes;document.getElementById('final-title').value=document.getElementById('topic-in').value;document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});document.querySelector('.si[data-panel="script"]').classList.add('on');document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});document.getElementById('panel-script').classList.add('on');setTimeout(function(){document.getElementById('gen-script-btn').click();},400);});
+document.getElementById('gen-script-btn').addEventListener('click',async function(){var title=document.getElementById('final-title').value.trim()||ST.title||'Untitled';ST.title=title;document.getElementById('script-res').style.display='block';document.getElementById('s-full').textContent='Claude is writing your full script...';['s-seo','s-thumb','s-broll','s-kling'].forEach(function(id){document.getElementById(id).textContent='';});document.getElementById('gen-script-btn').disabled=true;var r=await claudeCall('Write a complete 9-section YouTube production script:\n\nTITLE: "'+title+'"\nNICHE: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKEYWORD: '+(ST.keyword||'not specified')+'\nTONE: '+document.getElementById('tone-sel').value+(ST.outline?'\n\nAPPROVED OUTLINE:\n'+ST.outline:'')+'\n\n## SECTION 1: FILE HEADER\n## SECTION 2: SEO METADATA\nTitle, A/B title, 150-char description, full description 250 words, 14-18 tags, best upload time, end screen, chapters.\n## SECTION 3: THUMBNAIL BRIEF\nTwo concepts each with: visual, text overlay, palette, Midjourney prompt.\n## SECTION 4: HOOK (0:00–0:35)\nComplete narration. Counter-intuitive opening. Never starts with greeting.\n## SECTION 5: INTRO BRIDGE (0:35–1:10)\n## SECTION 6: MAIN CONTENT\nNumbered sections. Each: timestamp, full narration with real names/numbers, B-roll direction, on-screen text.\n## SECTION 7: CLOSE & CTA\n## SECTION 8: B-ROLL SHOT LIST\nTable: Timestamp | Shot | Notes. Min 12 shots.\n## SECTION 9: KLING/VEO PROMPTS\nSCENE [N]: [timestamp]\nPROMPT: [cinematic prompt]\n---\nWrite every section completely.','You are an expert YouTube script writer for high-CPM educational content. Always write all 9 sections completely.');document.getElementById('gen-script-btn').disabled=false;if(!r)return;ST.script=r;document.getElementById('s-full').textContent=r;var seo=r.match(/SECTION 2[\s\S]*?SEO METADATA([\s\S]*?)(?=##\s*SECTION 3|$)/i);var th=r.match(/SECTION 3[\s\S]*?THUMBNAIL BRIEF([\s\S]*?)(?=##\s*SECTION 4|$)/i);var br=r.match(/SECTION 8[\s\S]*?B.ROLL([\s\S]*?)(?=##\s*SECTION 9|$)/i);var kl=r.match(/SECTION 9[\s\S]*?KLING[\s\S]*?PROMPTS([\s\S]*?)$/i);if(seo){ST.seo=seo[1].trim();document.getElementById('s-seo').textContent=ST.seo;}if(th){ST.thumb=th[1].trim();document.getElementById('s-thumb').textContent=ST.thumb;}if(br){ST.broll=br[1].trim();document.getElementById('s-broll').textContent=ST.broll;}if(kl){ST.kling=kl[1].trim();document.getElementById('s-kling').textContent=ST.kling;}toast('Full script ready ✓','success');});
+document.getElementById('gen-seo-btn').addEventListener('click',async function(){var title=document.getElementById('final-title').value.trim();if(!title){toast('Enter a title first.','error');return;}document.getElementById('script-res').style.display='block';document.getElementById('s-seo').textContent='Generating SEO package...';var r=await claudeCall('SEO package for:\nTitle: "'+title+'"\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\n\nInclude: optimized title, A/B title, 150-char description, full description 250 words, 16 tags, best upload time, 8 chapters','YouTube SEO expert.');if(r){ST.seo=r;document.getElementById('s-seo').textContent=r;}});
+document.getElementById('save-video-btn').addEventListener('click',function(){if(!ST.title){toast('Generate a script first.','error');return;}var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');var chIdx=channels.findIndex(function(c){return c.name===ST.channel.name;});if(chIdx<0)return;if(!channels[chIdx].videos)channels[chIdx].videos=[];channels[chIdx].videos.push({id:Date.now(),title:ST.title,niche:ST.niche?NICHES[ST.niche].name:'',keyword:ST.keyword||'',script:ST.script||'',seo:ST.seo||'',status:'complete',date:new Date().toLocaleDateString()});localStorage.setItem('yts_channels',JSON.stringify(channels));toast('Saved to library ✓','success');});
+document.getElementById('go-voice-btn').addEventListener('click',function(){document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});document.querySelector('.si[data-panel="voice"]').classList.add('on');document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});document.getElementById('panel-voice').classList.add('on');});
+document.getElementById('gen-voice-btn').addEventListener('click',async function(){var text=document.getElementById('voice-text').value.trim();var vid=document.getElementById('voice-id').value;if(!text){toast('Add text first.','error');return;}if(text.length>5000){toast('Max 5000 chars per call.','error');return;}toast('Generating voiceover — this takes 20-30 seconds...');var url=await elevenCall(text,vid);if(url){var player=document.getElementById('audio-player');player.src=url;player.load();document.getElementById('audio-dl').href=url;document.getElementById('voice-out').style.display='block';toast('Voiceover ready ✓','success');}});
+document.getElementById('fmt-actor-btn').addEventListener('click',async function(){var text=document.getElementById('actor-text').value.trim();var char=document.getElementById('actor-char').value;if(!text){toast('Add narration first.','error');return;}document.getElementById('actor-out').style.display='block';document.getElementById('actor-box').textContent='Formatting...';var r=await claudeCall('Format this narration for a human voice actor.\nVoice: '+char+'\n\nFor each paragraph add: tone [CALM/TENSE/REVEALING], pacing [SLOW/MEASURED/FASTER], emotion cue, emphasis [EMPHASIZE: word]\n\nNARRATION:\n'+text,'You are a professional voice director.');if(r)document.getElementById('actor-box').textContent=r;});
+function renderExportInfo(){if(ST.title)document.getElementById('export-info').innerHTML='<strong>'+ST.title+'</strong><br><span style="font-size:12px;color:#9ca3af">Niche: '+(ST.niche?NICHES[ST.niche].name:'—')+' · Keyword: '+(ST.keyword||'—')+'</span>';}
+function buildPkg(){return'YOUTUBE VIDEO PRODUCTION PACKAGE — MYCUTIEPIE\n'+'='.repeat(48)+'\nTitle: '+(ST.title||'Untitled')+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'—')+'\nKeyword: '+(ST.keyword||'—')+'\nDate: '+new Date().toLocaleDateString()+'\n\n'+'='.repeat(48)+'\nSEO METADATA\n'+'='.repeat(48)+'\n'+(ST.seo||'(not generated)')+'\n\n'+'='.repeat(48)+'\nFULL SCRIPT\n'+'='.repeat(48)+'\n'+(ST.script||'(not generated)')+'\n\n'+'='.repeat(48)+'\nKLING / VEO PROMPTS\n'+'='.repeat(48)+'\n'+(ST.kling||'(not generated)')+'\n\n'+'='.repeat(48)+'\nPRE-PUBLISH CHECKLIST\n'+'='.repeat(48)+'\n□ Script reviewed\n□ Voiceover complete\n□ B-roll generated\n□ Thumbnail designed\n□ SEO metadata added\n□ Chapters added\n□ Pinned comment ready';}
+document.getElementById('export-btn').addEventListener('click',function(){var b=new Blob([buildPkg()],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(ST.title||'video').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_package.txt';a.click();toast('Downloaded ✓','success');});
+document.getElementById('copy-pkg-btn').addEventListener('click',function(){navigator.clipboard.writeText(buildPkg()).then(function(){toast('Copied ✓','success');});});
+function loadLib(){if(!ST.channel)return;var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');var ch=channels.find(function(c){return c.name===ST.channel.name;});var videos=ch&&ch.videos?ch.videos:[];var d=document.getElementById('vid-library');if(!videos.length){d.innerHTML='<div style="font-size:13px;color:#9ca3af;padding:12px 0">No videos yet for this channel.</div>';return;}d.innerHTML=videos.map(function(v){return'<div class="vid-item"><div><div style="font-size:13px;font-weight:600">'+(v.title||'(untitled)')+'</div><div style="font-size:11px;color:#9ca3af;margin-top:1px">'+(v.niche||'')+' · '+(v.date||'')+'</div></div><span class="'+(v.status==='complete'?'s-done':'s-draft')+'">'+(v.status)+'</span></div>';}).join('');}
+function toast(msg,type){type=type||'default';var w=document.getElementById('toasts');var t=document.createElement('div');t.className='toast';var bg={default:'#1f2937',success:'#065f46',error:'#7f1d1d',warn:'#78350f'};t.style.background=bg[type]||bg.default;t.textContent=msg;w.appendChild(t);setTimeout(function(){t.remove();},3000);}
 init();
 </script>
 </body>
