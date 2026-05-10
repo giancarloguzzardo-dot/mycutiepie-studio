@@ -14,7 +14,17 @@ exports.handler = async function(event) {
 
   try {
     const { prompt, system, apiKey } = JSON.parse(event.body || '{}');
-    if (!apiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'API key required' }) };
+    
+    if (!apiKey) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'API key required' }) };
+    }
+
+    // Clean the API key - remove any invisible characters, newlines, spaces
+    const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
+    
+    if (!cleanKey) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid API key format' }) };
+    }
 
     const payload = JSON.stringify({
       model: 'claude-sonnet-4-20250514',
@@ -30,16 +40,18 @@ exports.handler = async function(event) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
+          'x-api-key': cleanKey,
           'anthropic-version': '2023-06-01',
           'Content-Length': Buffer.byteLength(payload),
         },
+        timeout: 120000,
       }, (res) => {
         let data = '';
         res.on('data', chunk => data += chunk);
         res.on('end', () => resolve(data));
       });
       req.on('error', reject);
+      req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
       req.write(payload);
       req.end();
     });
@@ -48,7 +60,8 @@ exports.handler = async function(event) {
     if (data.content && data.content[0] && data.content[0].text) {
       return { statusCode: 200, headers, body: JSON.stringify({ text: data.content[0].text }) };
     }
-    return { statusCode: 500, headers, body: JSON.stringify({ error: data.error?.message || 'No content' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: data.error?.message || 'No content from Claude' }) };
+
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
