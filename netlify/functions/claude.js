@@ -13,17 +13,13 @@ exports.handler = async function(event) {
   }
 
   try {
-    const { prompt, system, apiKey } = JSON.parse(event.body || '{}');
+    const { prompt, system } = JSON.parse(event.body || '{}');
+    
+    // Key comes from Netlify environment variable - never from browser
+    const apiKey = process.env.CLAUDE_API_KEY;
     
     if (!apiKey) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'API key required' }) };
-    }
-
-    // Clean the API key - remove any invisible characters, newlines, spaces
-    const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
-    
-    if (!cleanKey) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid API key format' }) };
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Claude API key not configured on server' }) };
     }
 
     const payload = JSON.stringify({
@@ -40,7 +36,7 @@ exports.handler = async function(event) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': cleanKey,
+          'x-api-key': apiKey,
           'anthropic-version': '2023-06-01',
           'Content-Length': Buffer.byteLength(payload),
         },
