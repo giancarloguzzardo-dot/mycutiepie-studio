@@ -527,13 +527,8 @@ async function elevenCall(text,voiceId){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({text:text,voice_id:voiceId})
     });
-    var d=await res.json();
-    if(d.audio_base64){
-      var bytes=Uint8Array.from(atob(d.audio_base64),function(c){return c.charCodeAt(0);});
-      var blob=new Blob([bytes],{type:'audio/mpeg'});
-      return URL.createObjectURL(blob);
-    }
-    toast('ElevenLabs error','error');return null;
+    var blob=await res.blob();
+    return URL.createObjectURL(blob);
   }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
 }
 
