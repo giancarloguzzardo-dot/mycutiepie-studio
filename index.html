@@ -386,7 +386,7 @@ function initStudio(){
   renderChSelector();
 }
 
-async function claudeCall(prompt,system){
+async async function claudeCall(prompt,system){
   const key=cfg().claude;
   if(!key){toast('Claude API key not set — go to Setup','error');return null;}
   showLoader();
@@ -394,38 +394,38 @@ async function claudeCall(prompt,system){
     const res=await fetch('/.netlify/functions/claude',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt,system:system||'',apiKey:key})
+      body:JSON.stringify({prompt:prompt,system:system||'',apiKey:key})
     });
     const d=await res.json();
     hideLoader();
     if(d.text)return d.text;
-    toast('Claude: '+(d.error||'no response'),'error');return null;
-  }catch(e){hideLoader();toast('Claude: '+e.message,'error');return null;}
-}
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:system||'You are an expert YouTube content strategist.',messages:[{role:'user',content:prompt}]})});
-  const d=await res.json();
-  if(d.content&&d.content[0])return d.content[0].text;
-  toast('Claude error: '+(d.error?.message||'unknown'),'error');return null;
+    toast('Claude: '+(d.error||'no response'),'error');
+    return null;
+  }catch(e){
+    hideLoader();
+    toast('Claude: '+e.message,'error');
+    return null;
+  }
 }
 
-async function elevenCall(text,voiceId){
+async async function elevenCall(text,voiceId){
   const key=cfg().eleven;
   if(!key){toast('ElevenLabs API key not set.','error');return null;}
   try{
     const res=await fetch('/.netlify/functions/elevenlabs',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text,voice_id:voiceId,apiKey:key})
+      body:JSON.stringify({text:text,voice_id:voiceId,apiKey:key})
     });
     const d=await res.json();
-    if(d.audio_base64)return URL.createObjectURL(new Blob([Uint8Array.from(atob(d.audio_base64),c=>c.charCodeAt(0))],{type:'audio/mpeg'}));
+    if(d.audio_base64){
+      const bytes=Uint8Array.from(atob(d.audio_base64),c=>c.charCodeAt(0));
+      return URL.createObjectURL(new Blob([bytes],{type:'audio/mpeg'}));
+    }
     toast('ElevenLabs error','error');return null;
-  }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
-}
-  const res=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{method:'POST',headers:{'xi-api-key':key,'Content-Type':'application/json','Accept':'audio/mpeg'},body:JSON.stringify({text,model_id:'eleven_monolingual_v1',voice_settings:{stability:0.5,similarity_boost:0.75}})});
-  if(!res.ok){toast('ElevenLabs error: '+res.status,'error');return null}
-  const blob=await res.blob();
-  return URL.createObjectURL(blob);
+  }catch(e){
+    toast('ElevenLabs: '+e.message,'error');return null;
+  }
 }
 
 function showPanel(id,btn){
