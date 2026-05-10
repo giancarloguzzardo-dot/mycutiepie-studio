@@ -1,45 +1,943 @@
-const https = require('https');
-exports.handler = async function(event) {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json',
-  };
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-  try {
-    const { text, voice_id } = JSON.parse(event.body || '{}');
-    const apiKey = process.env.ELEVEN_API_KEY;
-    const vid = voice_id || 'pNInz6obpgDQGcFmaJgB';
-    const payload = JSON.stringify({
-      text,
-      model_id: 'eleven_turbo_v2_5',
-      voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-    });
-    const result = await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: 'api.elevenlabs.io',
-        path: `/v1/text-to-speech/${vid}`,
-        method: 'POST',
-        headers: {
-          'xi-api-key': apiKey,
-          'Content-Type': 'application/json',
-          'Accept': 'audio/mpeg',
-          'Content-Length': Buffer.byteLength(payload),
-        },
-      }, (res) => {
-        const chunks = [];
-        res.on('data', chunk => chunks.push(chunk));
-        res.on('end', () => resolve(Buffer.concat(chunks)));
-      });
-      req.on('error', reject);
-      req.write(payload);
-      req.end();
-    });
-    return { statusCode: 200, headers, body: JSON.stringify({ audio_base64: result.toString('base64') }) };
-  } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
-  }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Studio — MYCUTIEPIE</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;min-height:100vh}
+/* LOGIN */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:40px;width:360px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.login-box h1{font-size:22px;font-weight:700;margin:12px 0 4px}
+.login-box p{font-size:13px;color:#6b7280;margin-bottom:24px}
+.login-box input{width:100%;padding:11px 14px;font-size:14px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:10px;outline:none;color:#111}
+.login-box input:focus{border-color:#6366F1}
+.login-err{color:#ef4444;font-size:13px;margin-bottom:8px;display:none}
+/* SETUP */
+#setup{min-height:100vh;display:none;align-items:center;justify-content:center}
+.setup-box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:36px;width:480px;max-width:95vw}
+.setup-box h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.setup-box p{font-size:13px;color:#6b7280;margin-bottom:24px}
+/* STUDIO */
+#studio{display:none;min-height:100vh}
+.layout{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid #e5e7eb;padding:0}
+.sb-logo{padding:20px 16px 16px;border-bottom:1px solid #e5e7eb}
+.sb-logo h2{font-size:15px;font-weight:700}
+.sb-logo span{font-size:11px;color:#9ca3af}
+.sb-ch{padding:14px 16px;border-bottom:1px solid #e5e7eb}
+.sb-ch-name{font-size:14px;font-weight:600}
+.sb-ch-sub{font-size:11px;color:#9ca3af}
+.sb-sec{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;padding:12px 16px 6px}
+.si{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:#6b7280;cursor:pointer;border-left:3px solid transparent}
+.si:hover{background:#f9fafb;color:#111}
+.si.on{color:#6366F1;border-left-color:#6366F1;background:#eef2ff}
+.sb-bottom{margin-top:auto;padding:12px 16px;border-top:1px solid #e5e7eb}
+.main{overflow-y:auto;height:100vh;background:#f9fafb}
+.panel{display:none;padding:36px}
+.panel.on{display:block}
+.panel-title{font-size:26px;font-weight:700;margin-bottom:4px}
+.panel-sub{font-size:13px;color:#6b7280;margin-bottom:28px}
+/* NICHE */
+.niche-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px}
+.nc{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;transition:.12s}
+.nc:hover{border-color:#6366F1}
+.nc.on{border:2px solid #6366F1;background:#eef2ff}
+.nc-icon{font-size:24px;margin-bottom:8px}
+.nc-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.nc-cpm{font-size:11px;font-weight:600;color:#059669}
+.nc-comp{font-size:10px;color:#9ca3af}
+/* KW */
+.kw-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.kw-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.kw-item:hover{border-color:#6366F1}
+.kw-item.on{border-color:#6366F1;background:#eef2ff}
+.kw-term{font-size:13px;font-weight:600}
+.badges{display:flex;gap:4px}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px}
+.bv{background:#d1fae5;color:#065f46}
+.bc{background:#fef3c7;color:#92400e}
+.bco{background:#f3f4f6;color:#6b7280}
+/* TAGS */
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag{font-size:12px;font-weight:500;padding:5px 12px;border-radius:999px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280}
+.tag:hover{border-color:#6366F1}
+.tag.on{background:#6366F1;color:#fff;border-color:#6366F1}
+/* FIELDS */
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:10px 13px;font-size:13px;border:1px solid #e5e7eb;border-radius:9px;background:#fff;color:#111;font-family:inherit}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:#6366F1}
+.fld textarea{min-height:110px;resize:vertical;line-height:1.7}
+/* BUTTONS */
+.btn{padding:9px 18px;font-size:13px;font-weight:600;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1px solid #e5e7eb;background:#fff;color:#111}
+.btn:hover{background:#f9fafb}
+.btn.primary{background:#6366F1;color:#fff;border:none}
+.btn.primary:hover{background:#4f46e5}
+.btn.success{background:#d1fae5;color:#065f46;border:none}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+/* OUTPUT */
+.out-box{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:#374151;white-space:pre-wrap;min-height:150px;max-height:480px;overflow-y:auto;word-break:break-word}
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid #e5e7eb;margin-bottom:16px}
+.tab{padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:#6b7280;font-family:inherit;white-space:nowrap}
+.tab:hover{color:#111}
+.tab.on{color:#6366F1;border-bottom-color:#6366F1}
+.tab-pnl{display:none}
+.tab-pnl.on{display:block}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* CARD */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.card-desc{font-size:11px;color:#9ca3af;line-height:1.5}
+/* LOADER */
+#loader{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center}
+#loader.on{display:flex}
+.loader-box{background:#fff;border-radius:16px;padding:36px 48px;text-align:center;max-width:340px}
+.loader-spin{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#6366F1;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.loader-msg{font-size:13px;color:#6b7280;min-height:18px}
+.loader-hint{font-size:11px;color:#9ca3af;margin-top:10px}
+/* TOASTS */
+.toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:9999}
+.toast{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;animation:tIn .18s ease}
+@keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* VID ITEMS */
+.vid-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.s-draft{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+.s-done{background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+/* CHANNEL PICKER */
+#picker{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;background:#f9fafb}
+.picker-title{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;background:linear-gradient(135deg,#6366F1,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.picker-sub{font-size:14px;color:#6b7280;margin-bottom:36px}
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;width:100%;max-width:800px;margin-bottom:24px}
+.ch-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:22px;cursor:pointer;transition:.15s}
+.ch-card:hover{border-color:#6366F1;transform:translateY(-2px)}
+.ch-emoji{font-size:32px;margin-bottom:10px;display:block}
+.ch-name{font-size:17px;font-weight:700;margin-bottom:2px}
+.ch-handle{font-size:12px;color:#9ca3af;margin-bottom:8px;font-family:monospace}
+.ch-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:18px;padding:28px;width:480px;max-width:100%;max-height:88vh;overflow-y:auto}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:3px}
+.modal p{font-size:12px;color:#6b7280;margin-bottom:20px}
+.colors{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+.col-opt{width:28px;height:28px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:.1s}
+.col-opt.on{border-color:#111;transform:scale(1.1)}
+.emojis{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px}
+.emo-opt{width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;border:2px solid transparent;transition:.1s}
+.emo-opt.on{border-color:#6366F1}
+.sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:18px 0 8px}
+audio{width:100%;border-radius:8px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <div style="font-size:48px">🎬</div>
+    <h1>YouTube Studio</h1>
+    <p>MYCUTIEPIE Production System</p>
+    <div class="login-err" id="login-err">Incorrect password</div>
+    <input type="password" id="pw-in" placeholder="Enter password..." />
+    <button class="btn primary" style="width:100%;justify-content:center" id="login-btn">Enter Studio</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup" style="display:none;min-height:100vh;align-items:center;justify-content:center">
+  <div class="setup-box">
+    <h2>⚙️ First time setup</h2>
+    <p>Your API keys are saved in your browser only — never shared.</p>
+    <div class="fld"><label>Claude API Key</label><input type="password" id="s-claude" placeholder="sk-ant-..." /></div>
+    <div class="fld"><label>ElevenLabs API Key</label><input type="password" id="s-eleven" placeholder="Your ElevenLabs key..." /></div>
+    <div class="fld"><label>YouTube Data API Key (optional)</label><input type="password" id="s-yt" placeholder="AIza..." /></div>
+    <div class="fld"><label>Studio Password</label><input type="text" id="s-pw" placeholder="Choose a password..." /></div>
+    <button class="btn primary" id="setup-btn">Save & Enter Studio</button>
+  </div>
+</div>
+
+<!-- CHANNEL PICKER -->
+<div id="picker">
+  <div style="font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:12px">MYCUTIEPIE ✦ Production System</div>
+  <div class="picker-title">YouTube Studio</div>
+  <div class="picker-sub">Select a channel to start producing</div>
+  <div class="ch-grid" id="ch-grid"></div>
+  <button class="btn primary" id="add-ch-btn">+ New channel</button>
+</div>
+
+<!-- STUDIO -->
+<div id="studio">
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <h2>🎬 YouTube Studio</h2>
+      <span>MYCUTIEPIE v1.0</span>
+    </div>
+    <div class="sb-ch">
+      <div class="sb-ch-name" id="sb-name">Channel</div>
+      <div class="sb-ch-sub" id="sb-sub">—</div>
+    </div>
+    <div class="sb-sec">Create</div>
+    <div class="si on" data-panel="niche">🎯 Niche & Keywords</div>
+    <div class="si" data-panel="outline">📋 Idea & Outline</div>
+    <div class="si" data-panel="script">✍️ Full Script</div>
+    <div class="si" data-panel="voice">🎙️ Voice & Audio</div>
+    <div class="si" data-panel="export">📦 Export Package</div>
+    <div class="sb-sec">Manage</div>
+    <div class="si" data-panel="library">🗂️ Video Library</div>
+    <div class="sb-bottom">
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="font-size:11px;flex:1" id="back-btn">← Channels</button>
+        <button class="btn" style="font-size:11px" id="logout-btn">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+
+    <!-- NICHE -->
+    <div class="panel on" id="panel-niche">
+      <div class="panel-title">Niche & Keywords</div>
+      <div class="panel-sub">Select niche, sub-niche and keyword for your next video</div>
+      <div class="sec">Select your niche</div>
+      <div class="niche-grid" id="niche-grid"></div>
+      <div id="sub-sec" style="display:none">
+        <div class="sec">Sub-niches</div>
+        <div class="tags" id="sub-tags"></div>
+        <div id="sub-detail"></div>
+      </div>
+      <div id="kw-sec" style="display:none">
+        <div class="sec">Keywords — click to select</div>
+        <div class="kw-list" id="kw-list"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="text" id="custom-kw" placeholder="Or type your own keyword..." style="flex:1;padding:10px 13px;font-size:13px;border:1px solid #e5e7eb;border-radius:9px" />
+          <button class="btn" id="use-kw-btn">Use →</button>
+        </div>
+      </div>
+      <div id="niche-actions" style="display:none;margin-top:20px;display:flex;gap:10px">
+        <button class="btn primary" id="go-outline-btn">Continue to Outline →</button>
+        <button class="btn" id="analyze-kw-btn">Analyze with AI</button>
+      </div>
+      <div id="kw-analysis" style="display:none;margin-top:14px">
+        <div class="sec">AI keyword analysis</div>
+        <div class="out-box" id="kw-out"></div>
+      </div>
+    </div>
+
+    <!-- OUTLINE -->
+    <div class="panel" id="panel-outline">
+      <div class="panel-title">Idea & Outline</div>
+      <div class="panel-sub">Generate your video structure and approve before the full script</div>
+      <div class="g2">
+        <div>
+          <div class="fld"><label>Video topic or title</label><input type="text" id="topic-in" placeholder="e.g. The LTCM Collapse — What Went Wrong" /></div>
+          <div class="fld"><label>Format</label>
+            <select id="fmt-sel">
+              <option value="Deep Dive">Deep Dive (10–14 min)</option>
+              <option value="Listicle">Listicle (7–10 min)</option>
+              <option value="Tutorial">Tutorial (8–12 min)</option>
+              <option value="Story / Case Study">Story / Case Study (10–14 min)</option>
+              <option value="Failure Autopsy">Failure Autopsy (12–16 min)</option>
+            </select>
+          </div>
+          <div class="fld"><label>Psychological angle (optional)</label><input type="text" id="psych-in" placeholder="e.g. loss aversion, sunk cost..." /></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn primary" id="gen-outline-btn">Generate with AI</button>
+            <button class="btn" id="clear-outline-btn">Clear</button>
+          </div>
+        </div>
+        <div>
+          <div class="sec" style="margin-top:0">Quick ideas</div>
+          <div id="quick-ideas"></div>
+        </div>
+      </div>
+      <div id="outline-res" style="display:none;margin-top:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="sec" style="margin:0">Generated outline</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" style="font-size:11px;padding:5px 10px" id="copy-outline-btn">Copy</button>
+            <button class="btn success" id="approve-outline-btn">✓ Approve & write script</button>
+          </div>
+        </div>
+        <div class="out-box" id="outline-box"></div>
+        <div class="fld" style="margin-top:10px"><label>Notes or modifications</label><textarea id="outline-notes" placeholder="Any specific requirements..." style="min-height:60px"></textarea></div>
+      </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <div class="panel" id="panel-script">
+      <div class="panel-title">Full Script Engine</div>
+      <div class="panel-sub">Complete 9-section production script — narration, SEO, thumbnail, B-roll, Kling prompts</div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="fld"><label>Final video title</label><input type="text" id="final-title" placeholder="The exact YouTube title..." /></div>
+        <div class="fld"><label>Tone</label>
+          <select id="tone-sel">
+            <option value="authoritative but accessible — intelligent friend, not professor">Authoritative & Accessible</option>
+            <option value="cinematic documentary narrator">Cinematic / Documentary</option>
+            <option value="sharp and direct — no filler, maximum impact">Sharp & Direct</option>
+            <option value="warm and educational">Warm & Educational</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <button class="btn primary" id="gen-script-btn">Generate full 9-section script</button>
+        <button class="btn" id="gen-seo-btn">SEO only</button>
+      </div>
+      <div id="script-res" style="display:none">
+        <div class="tabs" id="script-tabs">
+          <button class="tab on" data-tab="full">Full Script</button>
+          <button class="tab" data-tab="seo">SEO Metadata</button>
+          <button class="tab" data-tab="thumb">Thumbnail Brief</button>
+          <button class="tab" data-tab="broll">B-Roll</button>
+          <button class="tab" data-tab="kling">Kling Prompts</button>
+        </div>
+        <div class="tab-pnl on" id="stab-full"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-full">Copy all</button></div><div class="out-box" id="s-full"></div></div>
+        <div class="tab-pnl" id="stab-seo"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-seo">Copy</button></div><div class="out-box" id="s-seo"></div></div>
+        <div class="tab-pnl" id="stab-thumb"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-thumb">Copy</button></div><div class="out-box" id="s-thumb"></div></div>
+        <div class="tab-pnl" id="stab-broll"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-broll">Copy</button></div><div class="out-box" id="s-broll"></div></div>
+        <div class="tab-pnl" id="stab-kling">
+          <div style="background:#eff6ff;border-radius:9px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:#1d4ed8">Ready-to-use prompts for Kling, Seedance or Google Veo.</div>
+          <div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-kling">Copy all</button></div>
+          <div class="out-box" id="s-kling"></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button class="btn primary" id="save-video-btn">Save to library</button>
+          <button class="btn" id="go-voice-btn">Continue to voice →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOICE -->
+    <div class="panel" id="panel-voice">
+      <div class="panel-title">Voice & Audio</div>
+      <div class="panel-sub">Generate AI voiceover or format for a human voice actor</div>
+      <div class="tabs" id="voice-tabs">
+        <button class="tab on" data-tab="ai">AI Voiceover (ElevenLabs)</button>
+        <button class="tab" data-tab="human">Human Voice Actor</button>
+      </div>
+      <div class="tab-pnl on" id="vtab-ai">
+        <div class="g2">
+          <div>
+            <div class="fld"><label>Narration text (max 5000 chars)</label><textarea id="voice-text" placeholder="Paste the narration here..." style="min-height:160px"></textarea></div>
+            <div class="fld"><label>Voice</label>
+              <select id="voice-id">
+                <option value="pNInz6obpgDQGcFmaJgB">Adam — authoritative, deep</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">Sarah — warm, professional</option>
+                <option value="VR6AewLTigWG4xSOukaG">Arnold — documentary</option>
+                <option value="onwK4e9ZLuTAKqWW03F9">Daniel — British</option>
+              </select>
+            </div>
+            <button class="btn primary" id="gen-voice-btn">Generate voiceover</button>
+          </div>
+          <div id="voice-out" style="display:none">
+            <div class="sec">Generated audio</div>
+            <audio id="audio-player" controls style="width:100%;margin-bottom:10px" preload="auto"></audio><div style="display:flex;gap:8px;flex-wrap:wrap"><a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a><button class="btn" onclick="var a=document.getElementById('audio-player');a.play()">▶ Play</button></div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="tab-pnl" id="vtab-human">
+        <div style="background:#eff6ff;border-radius:9px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:#1d4ed8">Formats your script with tone, pacing and emotion instructions for each section.</div>
+        <div class="fld"><label>Narration text</label><textarea id="actor-text" placeholder="Paste narration here..." style="min-height:130px"></textarea></div>
+        <div class="fld"><label>Voice character</label>
+          <select id="actor-char">
+            <option value="authoritative documentary narrator — calm, measured, expert">Documentary narrator</option>
+            <option value="confident professional — hedge fund manager talking to a friend">Confident professional</option>
+            <option value="cinematic thriller narrator — tension, urgency">Cinematic / thriller</option>
+            <option value="warm educator — approachable, clear">Warm educator</option>
+          </select>
+        </div>
+        <button class="btn primary" id="fmt-actor-btn">Format for voice actor</button>
+        <div id="actor-out" style="display:none;margin-top:12px"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="actor-box">Copy</button></div><div class="out-box" id="actor-box"></div></div>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="panel" id="panel-export">
+      <div class="panel-title">Export Package</div>
+      <div class="panel-sub">Complete package for your production team</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Current video</div>
+        <div id="export-info" style="font-size:13px;color:#9ca3af;margin-top:5px">No video in progress. Complete Niche → Outline → Script first.</div>
+      </div>
+      <div class="sec">Package includes</div>
+      <div class="g3" style="margin-bottom:20px">
+        <div class="card"><div class="card-title">📄 Full script</div><div class="card-desc">All 9 sections.</div></div>
+        <div class="card"><div class="card-title">🎬 Kling prompts</div><div class="card-desc">One per B-roll scene.</div></div>
+        <div class="card"><div class="card-title">🖼️ Thumbnail brief</div><div class="card-desc">Two concepts + Midjourney prompt.</div></div>
+        <div class="card"><div class="card-title">🔍 SEO metadata</div><div class="card-desc">Title, description, tags, chapters.</div></div>
+        <div class="card"><div class="card-title">🎙️ Voiceover</div><div class="card-desc">.mp3 or formatted actor script.</div></div>
+        <div class="card"><div class="card-title">✅ Checklist</div><div class="card-desc">Pre-publish checklist.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" id="export-btn">Export .txt</button>
+        <button class="btn" id="copy-pkg-btn">Copy to clipboard</button>
+      </div>
+    </div>
+
+    <!-- LIBRARY -->
+    <div class="panel" id="panel-library">
+      <div class="panel-title">Video Library</div>
+      <div class="panel-sub">All videos for this channel</div>
+      <div id="vid-library"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- CHANNEL MODAL -->
+<div class="overlay" id="ch-overlay">
+  <div class="modal">
+    <h2>New Channel</h2>
+    <p>Set up your channel identity</p>
+    <input type="hidden" id="edit-ch-id" value="" />
+    <div class="fld"><label>Channel name *</label><input type="text" id="ch-name" placeholder="Risk Intelligence" /></div>
+    <div class="fld"><label>YouTube handle</label><input type="text" id="ch-handle" placeholder="@RiskIntelligence" /></div>
+    <div class="fld"><label>Primary niche</label>
+      <select id="ch-niche">
+        <option value="Finance & Investing">Finance & Investing</option>
+        <option value="Legal">Legal</option>
+        <option value="Real Estate">Real Estate</option>
+        <option value="SaaS / B2B">SaaS / B2B</option>
+        <option value="Insurance">Insurance</option>
+        <option value="Psychology / TV Series">Psychology / TV Series</option>
+      </select>
+    </div>
+    <div class="fld"><label>Sub-niche</label><input type="text" id="ch-sub" placeholder="Risk & Reward / Mind Behind the Screen..." /></div>
+    <div class="fld"><label>Channel emoji</label><div class="emojis" id="emo-picker"></div></div>
+    <div class="fld"><label>Channel color</label><div class="colors" id="col-picker"></div></div>
+    <div class="fld"><label>Tone</label><textarea id="ch-tone" placeholder="Authoritative but accessible. Intelligent friend, not professor." style="min-height:60px"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn primary" id="save-ch-btn">Save channel</button>
+      <button class="btn" id="cancel-ch-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-box">
+    <div class="loader-spin"></div>
+    <div class="loader-title">Claude is working</div>
+    <div class="loader-msg" id="loader-msg">Analyzing your brief...</div>
+    <div class="loader-hint">This takes 20–60 seconds</div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ===== CONFIG =====
+var COLORS = ['#6366F1','#EC4899','#F59E0B','#10B981','#3B82F6','#EF4444','#8B5CF6','#06B6D4','#F97316'];
+var EMOJIS = ['🎬','📺','💰','🧠','⚖️','🛡️','💻','🎯','🔥','🚀','💡','⚡'];
+var selColor = COLORS[0], selEmoji = EMOJIS[0];
+
+var NICHES = {
+  finance:{name:'Finance & Investing',icon:'💰',cpm:'$15–22',comp:'Medium',color:'#F59E0B',
+    subs:['Wealth building','Risk & reward','Greed & consequences','Investment psychology','Contrarian thinking'],
+    subDesc:{'Risk & reward':'Investment psychology. Attracts high-income investors. Highest CPM in Finance.','Greed & consequences':'Financial crimes and collapses. Highest virality.','Investment psychology':'Why smart people make bad financial decisions.','Contrarian thinking':'Being right before everyone else.','Wealth building':'How ordinary people build wealth.'},
+    keywords:[{term:'investment risk management',vol:'High',cpm:'$18',comp:'Medium'},{term:'why smart investors lose money',vol:'Medium',cpm:'$20',comp:'Low'},{term:'behavioral finance explained',vol:'High',cpm:'$16',comp:'Medium'},{term:'pattern recognition investing',vol:'Medium',cpm:'$20',comp:'Low'},{term:'contrarian investing psychology',vol:'Low',cpm:'$20',comp:'Very Low'}],
+    ideas:['The Psychology of Risk: Why Smart Investors Make Terrible Decisions','5 Risk Mistakes That Cost Investors Everything','The LTCM Collapse — What Went Wrong','Michael Burry\'s Real Edge','How Smart People Miss the Obvious']},
+  legal:{name:'Legal',icon:'⚖️',cpm:'$14–18',comp:'Low',color:'#3B82F6',
+    subs:['Consumer rights','Business law','Fraud detection','Interrogation & truth'],
+    subDesc:{'Interrogation & truth':'How lawyers extract truth. Almost no competition.','Business law':'Contracts, NDAs. Premium business audience.','Fraud detection':'Very shareable.','Consumer rights':"What most people don't know about their rights."},
+    keywords:[{term:'legal loopholes corporations use',vol:'Medium',cpm:'$17',comp:'Low'},{term:'contract clauses that protect you',vol:'Medium',cpm:'$18',comp:'Low'},{term:'interrogation psychology techniques',vol:'Low',cpm:'$16',comp:'Very Low'},{term:'NDA what you need to know',vol:'High',cpm:'$15',comp:'Medium'}],
+    ideas:['The One Document That Can Save Your Business','Harvey Specter\'s Legal Psychology','The Art of Asking the Right Question','5 Contract Clauses That Will Protect You']},
+  saas:{name:'SaaS / B2B',icon:'💻',cpm:'$15–20',comp:'Medium',color:'#8B5CF6',
+    subs:['Reading people','Executive presence','B2B negotiation','Sales psychology'],
+    subDesc:{'Reading people':'Micro-expressions. Highest watch time.','Executive presence':'How top performers command rooms.','B2B negotiation':'Deal-making psychology.','Sales psychology':'Science of influence.'},
+    keywords:[{term:'how to read anyone in 60 seconds',vol:'High',cpm:'$18',comp:'Low'},{term:'executive presence techniques',vol:'Medium',cpm:'$19',comp:'Low'},{term:'B2B negotiation psychology',vol:'Medium',cpm:'$18',comp:'Low'},{term:'body language for sales professionals',vol:'High',cpm:'$16',comp:'Medium'}],
+    ideas:['How to Read Anyone in 60 Seconds','How to Walk Into Any Room Like You Own It','The Psychology of Persuasion','B2B Negotiation: 5 Moves That Close Any Deal']},
+  insurance:{name:'Insurance & Fraud',icon:'🛡️',cpm:'$13–18',comp:'Low',color:'#10B981',
+    subs:['Financial fraud','Scam detection','Policy blind spots','Identity protection'],
+    subDesc:{'Financial fraud':'Highest virality.','Scam detection':'High search intent.','Policy blind spots':'Controversy + practical value.','Identity protection':'Fastest growing. Low competition.'},
+    keywords:[{term:'how con artists target smart people',vol:'Medium',cpm:'$16',comp:'Low'},{term:'5 red flags before a financial scam',vol:'Medium',cpm:'$15',comp:'Low'},{term:'fraud protection for business owners',vol:'Medium',cpm:'$17',comp:'Low'},{term:'identity theft protection tips',vol:'High',cpm:'$14',comp:'Medium'}],
+    ideas:['How Con Artists Target Smart People','5 Red Flags That Always Precede a Financial Scam','The 4 Psychological Stages of a Con','How Identity Theft Really Happens']},
+  psychology:{name:'Psychology / TV Series',icon:'🧠',cpm:'$12–20',comp:'Very Low',color:'#EC4899',
+    subs:['Character psychology','Scene breakdowns','Negotiation frameworks','Decision making'],
+    subDesc:{'Character psychology':'Deep character analysis. Almost no competition.','Scene breakdowns':'One scene, one principle, one application.','Negotiation frameworks':'Suits/Billions mapped to real deals.','Decision making':'Breaking Bad/Big Short mapped to investing.'},
+    keywords:[{term:'psychology of Harvey Specter suits',vol:'High',cpm:'$16',comp:'Very Low'},{term:'Patrick Jane reading people mentalist',vol:'Medium',cpm:'$17',comp:'Very Low'},{term:'Bobby Axelrod investment psychology',vol:'Low',cpm:'$18',comp:'Very Low'},{term:'Walter White psychology sunk cost',vol:'Medium',cpm:'$15',comp:'Very Low'}],
+    ideas:['Harvey Specter\'s Real Psychological Edge','How Patrick Jane Actually Reads People','Why Logan Roy Raised Children Who Could Never Replace Him','Walter White\'s Real Problem']}
 };
+
+// ===== STATE =====
+var ST = {niche:null,subniche:null,keyword:null,outline:null,script:null,seo:null,thumb:null,broll:null,kling:null,title:null,channel:null,videoId:null};
+
+// ===== STORAGE =====
+function cfg(){return{claude:localStorage.getItem('yts_claude')||'',eleven:localStorage.getItem('yts_eleven')||'',yt:localStorage.getItem('yts_yt')||'',pw:localStorage.getItem('yts_pw')||''};}
+
+// ===== LOADER =====
+var _lmsgs=['Reading your brief...','Analyzing the niche...','Writing the hook...','Building the structure...','Adding real cases and data...','Almost ready...'];
+var _lint=null,_lidx=0;
+function showLoader(){
+  var el=document.getElementById('loader');
+  if(el)el.classList.add('on');
+  _lidx=0;
+  var m=document.getElementById('loader-msg');
+  if(m)m.textContent=_lmsgs[0];
+  _lint=setInterval(function(){
+    _lidx=(_lidx+1)%_lmsgs.length;
+    var mm=document.getElementById('loader-msg');
+    if(mm)mm.textContent=_lmsgs[_lidx];
+  },3000);
+}
+function hideLoader(){
+  var el=document.getElementById('loader');
+  if(el)el.classList.remove('on');
+  if(_lint){clearInterval(_lint);_lint=null;}
+}
+
+// ===== CLAUDE VIA NETLIFY FUNCTION =====
+async function claudeCall(prompt,system){
+  var key=cfg().claude;
+  if(!key){toast('Claude API key not set — go to Setup','error');return null;}
+  showLoader();
+  try{
+    var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:prompt,system:system||'',apiKey:key})
+    });
+    var d=await res.json();
+    hideLoader();
+    if(d.text)return d.text;
+    toast('Claude: '+(d.error||'no response'),'error');
+    return null;
+  }catch(e){
+    hideLoader();
+    toast('Claude: '+e.message,'error');
+    return null;
+  }
+}
+
+// ===== ELEVENLABS VIA NETLIFY FUNCTION =====
+async function elevenCall(text,voiceId){
+  try{
+    var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/elevenlabs',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:text,voice_id:voiceId})
+    });
+    var blob=await res.blob();
+    return URL.createObjectURL(blob);
+  }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
+}
+
+// ===== AUTH =====
+function init(){
+  var c=cfg();
+  if(!c.pw){
+    document.getElementById('login').style.display='none';
+    document.getElementById('setup').style.display='flex';
+  }
+}
+
+document.getElementById('login-btn').addEventListener('click',function(){
+  var v=document.getElementById('pw-in').value;
+  var c=cfg();
+  if(v===c.pw){
+    document.getElementById('login').style.display='none';
+    loadPicker();
+  } else {
+    document.getElementById('login-err').style.display='block';
+  }
+});
+
+document.getElementById('pw-in').addEventListener('keydown',function(e){
+  if(e.key==='Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('setup-btn').addEventListener('click',function(){
+  var pw=document.getElementById('s-pw').value.trim();
+  if(!pw){alert('Please set a password.');return;}
+  localStorage.setItem('yts_claude',document.getElementById('s-claude').value.trim());
+  localStorage.setItem('yts_eleven',document.getElementById('s-eleven').value.trim());
+  localStorage.setItem('yts_yt',document.getElementById('s-yt').value.trim());
+  localStorage.setItem('yts_pw',pw);
+  document.getElementById('setup').style.display='none';
+  loadPicker();
+});
+
+document.getElementById('logout-btn').addEventListener('click',function(){
+  document.getElementById('studio').style.display='none';
+  document.getElementById('login').style.display='flex';
+});
+
+document.getElementById('back-btn').addEventListener('click',function(){
+  document.getElementById('studio').style.display='none';
+  loadPicker();
+});
+
+// ===== CHANNEL PICKER =====
+function loadPicker(){
+  document.getElementById('picker').style.display='flex';
+  renderPicker();
+}
+
+function renderPicker(){
+  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
+  var grid=document.getElementById('ch-grid');
+  if(!channels.length){
+    grid.innerHTML='<div style="color:#9ca3af;font-size:13px;padding:20px 0">No channels yet. Create your first channel.</div>';
+    return;
+  }
+  grid.innerHTML=channels.map(function(c,i){
+    return '<div class="ch-card" data-idx="'+i+'">'
+      +'<span class="ch-emoji">'+(c.emoji||'🎬')+'</span>'
+      +'<div class="ch-name">'+c.name+'</div>'
+      +'<div class="ch-handle">'+(c.handle||'')+'</div>'
+      +'<div class="ch-badge" style="background:'+(c.color||'#6366F1')+'1a;color:'+(c.color||'#6366F1')+'">'+(c.niche||'')+'</div>'
+      +'</div>';
+  }).join('');
+  grid.querySelectorAll('.ch-card').forEach(function(el){
+    el.addEventListener('click',function(){
+      var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
+      selectChannel(channels[parseInt(el.dataset.idx)]);
+    });
+  });
+}
+
+function selectChannel(ch){
+  ST.channel=ch;
+  document.getElementById('picker').style.display='none';
+  document.getElementById('studio').style.display='block';
+  document.getElementById('sb-name').textContent=ch.name;
+  document.getElementById('sb-sub').textContent=(ch.niche||'')+(ch.subniche?' · '+ch.subniche:'');
+  renderNiches();
+  renderQuickIdeas();
+  loadLib();
+}
+
+document.getElementById('add-ch-btn').addEventListener('click',openChModal);
+
+// ===== CHANNEL MODAL =====
+function openChModal(){
+  selColor=COLORS[0];selEmoji=EMOJIS[0];
+  var cp=document.getElementById('col-picker');
+  cp.innerHTML=COLORS.map(function(c){return '<div class="col-opt'+(c===selColor?' on':'')+'" style="background:'+c+'" data-color="'+c+'"></div>';}).join('');
+  cp.querySelectorAll('.col-opt').forEach(function(el){
+    el.addEventListener('click',function(){selColor=el.dataset.color;cp.querySelectorAll('.col-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});
+  });
+  var ep=document.getElementById('emo-picker');
+  ep.innerHTML=EMOJIS.map(function(e){return '<div class="emo-opt'+(e===selEmoji?' on':'')+'" data-emoji="'+e+'">'+e+'</div>';}).join('');
+  ep.querySelectorAll('.emo-opt').forEach(function(el){
+    el.addEventListener('click',function(){selEmoji=el.dataset.emoji;ep.querySelectorAll('.emo-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});
+  });
+  document.getElementById('ch-overlay').classList.add('on');
+}
+document.getElementById('cancel-ch-btn').addEventListener('click',function(){document.getElementById('ch-overlay').classList.remove('on');});
+document.getElementById('save-ch-btn').addEventListener('click',function(){
+  var name=document.getElementById('ch-name').value.trim();
+  if(!name){toast('Channel name required.','error');return;}
+  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
+  var ch={name:name,handle:document.getElementById('ch-handle').value,niche:document.getElementById('ch-niche').value,subniche:document.getElementById('ch-sub').value,tone:document.getElementById('ch-tone').value,color:selColor,emoji:selEmoji,videos:[]};
+  channels.push(ch);
+  localStorage.setItem('yts_channels',JSON.stringify(channels));
+  document.getElementById('ch-overlay').classList.remove('on');
+  toast('Channel saved ✓','success');
+  renderPicker();
+});
+
+// ===== NAVIGATION =====
+document.querySelectorAll('.si').forEach(function(el){
+  el.addEventListener('click',function(){
+    document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
+    el.classList.add('on');
+    var p=el.dataset.panel;
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
+    document.getElementById('panel-'+p).classList.add('on');
+    if(p==='outline')renderQuickIdeas();
+    if(p==='export')renderExportInfo();
+    if(p==='library')loadLib();
+  });
+});
+
+// ===== TABS =====
+document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+    tab.classList.add('on');
+    document.querySelectorAll('#panel-script .tab-pnl').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('stab-'+tab.dataset.tab).classList.add('on');
+  });
+});
+document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+    tab.classList.add('on');
+    document.querySelectorAll('#panel-voice .tab-pnl').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('vtab-'+tab.dataset.tab).classList.add('on');
+  });
+});
+
+// ===== COPY BUTTONS =====
+document.querySelectorAll('[data-copy]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var text=document.getElementById(btn.dataset.copy).textContent;
+    navigator.clipboard.writeText(text).then(function(){toast('Copied ✓');});
+  });
+});
+
+// ===== NICHE =====
+function renderNiches(){
+  var grid=document.getElementById('niche-grid');
+  grid.innerHTML=Object.entries(NICHES).map(function(e){
+    var k=e[0],v=e[1],on=ST.niche===k;
+    return '<div class="nc'+(on?' on':'')+'" data-niche="'+k+'" style="'+(on?'border-color:'+v.color+';background:'+v.color+'11':'')+'">'+
+      '<div class="nc-icon">'+v.icon+'</div>'+
+      '<div class="nc-name">'+v.name+'</div>'+
+      '<div class="nc-cpm">'+v.cpm+' CPM</div>'+
+      '<div class="nc-comp">Competition: '+v.comp+'</div>'+
+      '</div>';
+  }).join('');
+  grid.querySelectorAll('.nc').forEach(function(el){
+    el.addEventListener('click',function(){selectNiche(el.dataset.niche);});
+  });
+}
+
+function selectNiche(k){
+  ST.niche=k;ST.subniche=null;ST.keyword=null;
+  renderNiches();
+  var n=NICHES[k];
+  document.getElementById('sub-sec').style.display='block';
+  var st=document.getElementById('sub-tags');
+  st.innerHTML=n.subs.map(function(s){return '<span class="tag" data-sub="'+s+'">'+s+'</span>';}).join('');
+  st.querySelectorAll('.tag').forEach(function(el){
+    el.addEventListener('click',function(){
+      ST.subniche=el.dataset.sub;
+      st.querySelectorAll('.tag').forEach(function(t){t.classList.remove('on');});
+      el.classList.add('on');
+      var desc=n.subDesc[el.dataset.sub]||'';
+      document.getElementById('sub-detail').innerHTML=desc?'<div style="background:#f0fdf4;border-radius:9px;padding:9px 13px;font-size:12px;color:#065f46;margin-bottom:10px">'+el.dataset.sub+' — '+desc+'</div>':'';
+    });
+  });
+  document.getElementById('sub-detail').innerHTML='';
+  document.getElementById('kw-sec').style.display='block';
+  renderKws(k);
+  document.getElementById('niche-actions').style.display='flex';
+}
+
+function renderKws(k){
+  var kl=document.getElementById('kw-list');
+  kl.innerHTML=NICHES[k].keywords.map(function(kw){
+    return '<div class="kw-item'+(ST.keyword===kw.term?' on':'')+'" data-term="'+kw.term.replace(/"/g,'&quot;')+'">'+
+      '<div class="kw-term">'+kw.term+'</div>'+
+      '<div class="badges"><span class="badge bv">'+kw.vol+'</span><span class="badge bc">'+kw.cpm+'</span><span class="badge bco">'+kw.comp+'</span></div>'+
+      '</div>';
+  }).join('');
+  kl.querySelectorAll('.kw-item').forEach(function(el){
+    el.addEventListener('click',function(){
+      ST.keyword=el.dataset.term;
+      renderKws(k);
+      toast('Keyword: '+el.dataset.term);
+    });
+  });
+}
+
+document.getElementById('use-kw-btn').addEventListener('click',function(){
+  var v=document.getElementById('custom-kw').value.trim();
+  if(v){ST.keyword=v;toast('Keyword: '+v);}
+});
+
+document.getElementById('go-outline-btn').addEventListener('click',function(){
+  if(!ST.niche){toast('Select a niche first.','error');return;}
+  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
+  document.querySelector('.si[data-panel="outline"]').classList.add('on');
+  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
+  document.getElementById('panel-outline').classList.add('on');
+  renderQuickIdeas();
+});
+
+document.getElementById('analyze-kw-btn').addEventListener('click',async function(){
+  if(!ST.keyword){toast('Select a keyword first.','error');return;}
+  document.getElementById('kw-analysis').style.display='block';
+  document.getElementById('kw-out').textContent='Analyzing...';
+  var r=await claudeCall('Analyze this YouTube keyword for a '+(ST.niche?NICHES[ST.niche].name:'Finance')+' channel: "'+ST.keyword+'"\n\n1. Search intent\n2. CPM assessment\n3. Competition gaps\n4. 5 video title variations optimized for CTR\n5. 3 related long-tail keywords with lower competition\n6. Recommended format','You are a YouTube SEO expert.');
+  if(r)document.getElementById('kw-out').textContent=r;
+});
+
+// ===== OUTLINE =====
+function renderQuickIdeas(){
+  var d=document.getElementById('quick-ideas');
+  if(!ST.niche){d.innerHTML='<div style="font-size:13px;color:#9ca3af">Select a niche first.</div>';return;}
+  d.innerHTML=NICHES[ST.niche].ideas.map(function(idea){
+    return '<div style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:6px;cursor:pointer;font-size:13px;color:#6b7280" data-idea="'+idea.replace(/"/g,'&quot;')+'">'+idea+'</div>';
+  }).join('');
+  d.querySelectorAll('[data-idea]').forEach(function(el){
+    el.addEventListener('click',function(){document.getElementById('topic-in').value=el.dataset.idea;});
+  });
+}
+
+document.getElementById('gen-outline-btn').addEventListener('click',async function(){
+  var topic=document.getElementById('topic-in').value.trim();
+  if(!topic){toast('Enter a topic first.','error');return;}
+  ST.title=topic;
+  document.getElementById('outline-res').style.display='block';
+  document.getElementById('outline-box').textContent='Claude is generating your outline...';
+  var r=await claudeCall(
+    'Generate a detailed YouTube video outline:\n\nTitle: "'+topic+'"\nFormat: '+document.getElementById('fmt-sel').value+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\nPsychological angle: '+(document.getElementById('psych-in').value||'not specified')+'\n\n1. HOOK CONCEPT — specific counter-intuitive premise\n2. CORE THESIS — single main insight, one sentence\n3. STRUCTURE — each section: title, key point, real case with names, actionable takeaway\n4. EMOTIONAL ARC — start/middle/end\n5. THE CLOSE — checklist the viewer walks away with\n6. WHY THIS WILL PERFORM — viral and CPM reasons\n\nBe specific. Name real people, companies, events.',
+    'You are an expert YouTube content strategist for high-CPM educational content.'
+  );
+  if(r){ST.outline=r;document.getElementById('outline-box').textContent=r;}
+});
+
+document.getElementById('clear-outline-btn').addEventListener('click',function(){
+  document.getElementById('topic-in').value='';
+  document.getElementById('outline-box').textContent='';
+  document.getElementById('outline-res').style.display='none';
+  ST.outline=null;
+});
+
+document.getElementById('copy-outline-btn').addEventListener('click',function(){
+  navigator.clipboard.writeText(document.getElementById('outline-box').textContent).then(function(){toast('Copied ✓');});
+});
+
+document.getElementById('approve-outline-btn').addEventListener('click',function(){
+  if(!ST.outline){toast('Generate an outline first.','error');return;}
+  var notes=document.getElementById('outline-notes').value;
+  if(notes)ST.outline+='\n\nADDITIONAL REQUIREMENTS:\n'+notes;
+  document.getElementById('final-title').value=document.getElementById('topic-in').value;
+  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
+  document.querySelector('.si[data-panel="script"]').classList.add('on');
+  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
+  document.getElementById('panel-script').classList.add('on');
+  setTimeout(function(){document.getElementById('gen-script-btn').click();},400);
+});
+
+// ===== SCRIPT =====
+document.getElementById('gen-script-btn').addEventListener('click',async function(){
+  var title=document.getElementById('final-title').value.trim()||ST.title||'Untitled';
+  ST.title=title;
+  document.getElementById('script-res').style.display='block';
+  document.getElementById('s-full').textContent='Claude is writing your full script...';
+  ['s-seo','s-thumb','s-broll','s-kling'].forEach(function(id){document.getElementById(id).textContent='';});
+  document.getElementById('gen-script-btn').disabled=true;
+  var r=await claudeCall(
+    'Write a complete 9-section YouTube production script:\n\nTITLE: "'+title+'"\nNICHE: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKEYWORD: '+(ST.keyword||'not specified')+'\nTONE: '+document.getElementById('tone-sel').value+(ST.outline?'\n\nAPPROVED OUTLINE:\n'+ST.outline:'')+'\n\n## SECTION 1: FILE HEADER\n## SECTION 2: SEO METADATA\nTitle, A/B title, 150-char description, full description 250 words, 14-18 tags, best upload time, end screen, chapters.\n## SECTION 3: THUMBNAIL BRIEF\nTwo concepts each with: visual, text overlay, palette, Midjourney prompt.\n## SECTION 4: HOOK (0:00–0:35)\nComplete narration. Counter-intuitive opening. Never starts with greeting.\n## SECTION 5: INTRO BRIDGE (0:35–1:10)\n## SECTION 6: MAIN CONTENT\nNumbered sections. Each: timestamp, full narration with real names/numbers, B-roll direction, on-screen text.\n## SECTION 7: CLOSE & CTA\n## SECTION 8: B-ROLL SHOT LIST\nTable: Timestamp | Shot | Notes. Min 12 shots.\n## SECTION 9: KLING/VEO PROMPTS\nSCENE [N]: [timestamp]\nPROMPT: [cinematic prompt]\n---\nWrite every section completely.',
+    'You are an expert YouTube script writer for high-CPM educational content. Always write all 9 sections completely.'
+  );
+  document.getElementById('gen-script-btn').disabled=false;
+  if(!r)return;
+  ST.script=r;
+  document.getElementById('s-full').textContent=r;
+  var seo=r.match(/SECTION 2[\s\S]*?SEO METADATA([\s\S]*?)(?=##\s*SECTION 3|$)/i);
+  var th=r.match(/SECTION 3[\s\S]*?THUMBNAIL BRIEF([\s\S]*?)(?=##\s*SECTION 4|$)/i);
+  var br=r.match(/SECTION 8[\s\S]*?B.ROLL([\s\S]*?)(?=##\s*SECTION 9|$)/i);
+  var kl=r.match(/SECTION 9[\s\S]*?KLING[\s\S]*?PROMPTS([\s\S]*?)$/i);
+  if(seo){ST.seo=seo[1].trim();document.getElementById('s-seo').textContent=ST.seo;}
+  if(th){ST.thumb=th[1].trim();document.getElementById('s-thumb').textContent=ST.thumb;}
+  if(br){ST.broll=br[1].trim();document.getElementById('s-broll').textContent=ST.broll;}
+  if(kl){ST.kling=kl[1].trim();document.getElementById('s-kling').textContent=ST.kling;}
+  toast('Full script ready ✓','success');
+});
+
+document.getElementById('gen-seo-btn').addEventListener('click',async function(){
+  var title=document.getElementById('final-title').value.trim();
+  if(!title){toast('Enter a title first.','error');return;}
+  document.getElementById('script-res').style.display='block';
+  document.getElementById('s-seo').textContent='Generating SEO package...';
+  var r=await claudeCall('SEO package for:\nTitle: "'+title+'"\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\n\nInclude: optimized title, A/B title, 150-char description, full description 250 words, 16 tags, best upload time, 8 chapters','YouTube SEO expert.');
+  if(r){ST.seo=r;document.getElementById('s-seo').textContent=r;}
+});
+
+document.getElementById('save-video-btn').addEventListener('click',function(){
+  if(!ST.title){toast('Generate a script first.','error');return;}
+  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
+  var chIdx=channels.findIndex(function(c){return c.name===ST.channel.name;});
+  if(chIdx<0)return;
+  if(!channels[chIdx].videos)channels[chIdx].videos=[];
+  channels[chIdx].videos.push({id:Date.now(),title:ST.title,niche:ST.niche?NICHES[ST.niche].name:'',keyword:ST.keyword||'',script:ST.script||'',seo:ST.seo||'',status:'complete',date:new Date().toLocaleDateString()});
+  localStorage.setItem('yts_channels',JSON.stringify(channels));
+  toast('Saved to library ✓','success');
+});
+
+document.getElementById('go-voice-btn').addEventListener('click',function(){
+  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
+  document.querySelector('.si[data-panel="voice"]').classList.add('on');
+  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
+  document.getElementById('panel-voice').classList.add('on');
+});
+
+// ===== VOICE =====
+document.getElementById('gen-voice-btn').addEventListener('click',async function(){
+  var text=document.getElementById('voice-text').value.trim();
+  var vid=document.getElementById('voice-id').value;
+  if(!text){toast('Add text first.','error');return;}
+  if(text.length>5000){toast('Max 5000 chars per call.','error');return;}
+  toast('Generating voiceover...');
+  var url=await elevenCall(text,vid);
+  if(url){
+    document.getElementById('audio-player').src=url;
+    document.getElementById('audio-dl').href=url;
+    document.getElementById('voice-out').style.display='block';
+    toast('Voiceover ready ✓','success');
+  }
+});
+
+document.getElementById('fmt-actor-btn').addEventListener('click',async function(){
+  var text=document.getElementById('actor-text').value.trim();
+  var char=document.getElementById('actor-char').value;
+  if(!text){toast('Add narration first.','error');return;}
+  document.getElementById('actor-out').style.display='block';
+  document.getElementById('actor-box').textContent='Formatting...';
+  var r=await claudeCall('Format this narration for a human voice actor.\nVoice: '+char+'\n\nFor each paragraph add: tone [CALM/TENSE/REVEALING], pacing [SLOW/MEASURED/FASTER], emotion cue, emphasis [EMPHASIZE: word]\n\nNARRATION:\n'+text,'You are a professional voice director.');
+  if(r)document.getElementById('actor-box').textContent=r;
+});
+
+// ===== EXPORT =====
+function renderExportInfo(){
+  if(ST.title)document.getElementById('export-info').innerHTML='<strong>'+ST.title+'</strong><br><span style="font-size:12px;color:#9ca3af">Niche: '+(ST.niche?NICHES[ST.niche].name:'—')+' · Keyword: '+(ST.keyword||'—')+'</span>';
+}
+
+function buildPkg(){
+  return 'YOUTUBE VIDEO PRODUCTION PACKAGE — MYCUTIEPIE\n'+'='.repeat(48)+'\nTitle: '+(ST.title||'Untitled')+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'—')+'\nKeyword: '+(ST.keyword||'—')+'\nDate: '+new Date().toLocaleDateString()+'\n\n'+'='.repeat(48)+'\nSEO METADATA\n'+'='.repeat(48)+'\n'+(ST.seo||'(not generated)')+'\n\n'+'='.repeat(48)+'\nFULL SCRIPT\n'+'='.repeat(48)+'\n'+(ST.script||'(not generated)')+'\n\n'+'='.repeat(48)+'\nKLING / VEO PROMPTS\n'+'='.repeat(48)+'\n'+(ST.kling||'(not generated)')+'\n\n'+'='.repeat(48)+'\nPRE-PUBLISH CHECKLIST\n'+'='.repeat(48)+'\n□ Script reviewed\n□ Voiceover complete\n□ B-roll generated\n□ Thumbnail designed\n□ SEO metadata added\n□ Chapters added\n□ Pinned comment ready';
+}
+
+document.getElementById('export-btn').addEventListener('click',function(){
+  var b=new Blob([buildPkg()],{type:'text/plain'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(ST.title||'video').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_package.txt';a.click();
+  toast('Downloaded ✓','success');
+});
+
+document.getElementById('copy-pkg-btn').addEventListener('click',function(){
+  navigator.clipboard.writeText(buildPkg()).then(function(){toast('Copied ✓','success');});
+});
+
+// ===== LIBRARY =====
+function loadLib(){
+  if(!ST.channel)return;
+  var channels=JSON.parse(localStorage.getItem('yts_channels')||'[]');
+  var ch=channels.find(function(c){return c.name===ST.channel.name;});
+  var videos=ch&&ch.videos?ch.videos:[];
+  var d=document.getElementById('vid-library');
+  if(!videos.length){d.innerHTML='<div style="font-size:13px;color:#9ca3af;padding:12px 0">No videos yet for this channel.</div>';return;}
+  d.innerHTML=videos.map(function(v){
+    return '<div class="vid-item"><div><div style="font-size:13px;font-weight:600">'+(v.title||'(untitled)')+'</div><div style="font-size:11px;color:#9ca3af;margin-top:1px">'+(v.niche||'')+' · '+(v.date||'')+'</div></div><span class="'+(v.status==='complete'?'s-done':'s-draft')+'">'+(v.status)+'</span></div>';
+  }).join('');
+}
+
+// ===== TOAST =====
+function toast(msg,type){
+  type=type||'default';
+  var w=document.getElementById('toasts');
+  var t=document.createElement('div');t.className='toast';
+  var bg={default:'#1f2937',success:'#065f46',error:'#7f1d1d',warn:'#78350f'};
+  t.style.background=bg[type]||bg.default;
+  t.textContent=msg;w.appendChild(t);
+  setTimeout(function(){t.remove();},3000);
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
