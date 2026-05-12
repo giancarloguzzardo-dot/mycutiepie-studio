@@ -622,7 +622,9 @@ function switchAuthTab(t){
 }
 
 async function initAuth(){
-  sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+  sb=supabase.createClient(SUPA_URL,SUPA_KEY,{
+    auth:{persistSession:true,autoRefreshToken:true}
+  });
   var {data:{session}}=await sb.auth.getSession();
   if(session){ST.user=session.user;showPicker();}
   else{document.getElementById('auth-screen').style.display='flex';}
