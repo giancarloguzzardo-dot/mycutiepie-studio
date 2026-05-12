@@ -1020,13 +1020,40 @@ document.getElementById('analyze-comp-btn').addEventListener('click',async funct
   var url=document.getElementById('comp-url').value.trim();
   if(!url){toast('Enter a YouTube channel URL.','error');return;}
   document.getElementById('comp-out').style.display='block';
-  document.getElementById('comp-result').textContent='Analyzing...';
-  var r=await claudeCall(
-    'Analyze this YouTube channel: '+url+'\n\nProvide:\n1. NICHE & SUB-NICHE — what topic area\n2. CONTENT STRATEGY — what types of videos, what angles\n3. CPM ESTIMATE — based on niche\n4. TOP PERFORMING THEMES — what topics likely get most views\n5. GAPS — what this channel is NOT covering that you could exploit\n6. REPLICATION STRATEGY — how to build a competing channel in the same space\n7. FIRST 5 VIDEO IDEAS — specific titles to compete with this channel\n\nBe specific and actionable.',
-    'YouTube channel analyst and content strategist.'
-  );
-  if(r)document.getElementById('comp-result').textContent=r;
-});
+  document.getElementById('comp-result').textContent='Fetching real YouTube data...';
+  try{
+    var ytRes=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/youtube',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({channelUrl:url})
+    });
+    var ytData=await ytRes.json();
+    if(ytData.error){toast('YouTube API: '+ytData.error,'error');document.getElementById('comp-result').textContent='Error: '+ytData.error;return;}
+    var ch=ytData.channel;
+    var st=ytData.stats;
+    var topVids=st.topVideos.map(function(v,i){return (i+1)+'. "'+v.title+'" — '+v.views.toLocaleString()+' views, '+v.duration;}).join('\n');
+    var recentVids=st.recentVideos.map(function(v){return '"'+v.title+'" ('+v.duration+', '+v.views.toLocaleString()+' views)';}).join('\n');
+    document.getElementById('comp-result').textContent='Real data fetched. Claude is analyzing...';
+    var prompt='Analyze this YouTube channel based on REAL DATA:\n\n'
+      +'CHANNEL: '+ch.name+'\n'
+      +'SUBSCRIBERS: '+ch.subscribers.toLocaleString()+'\n'
+      +'TOTAL VIEWS: '+ch.totalViews.toLocaleString()+'\n'
+      +'TOTAL VIDEOS: '+ch.videoCount+'\n'
+      +'AVERAGE VIDEO DURATION: '+st.avgDurationMinutes+' minutes\n'
+      +'AVERAGE VIEWS PER VIDEO: '+st.avgViews.toLocaleString()+'\n\n'
+      +'TOP 5 MOST VIEWED VIDEOS:\n'+topVids+'\n\n'
+      +'RECENT VIDEOS:\n'+recentVids+'\n\n'
+      +'Based on this REAL data provide:\n'
+      +'1. NICHE & FORMAT — exact topic area, avg duration is '+st.avgDurationMinutes+' min\n'
+      +'2. CPM ESTIMATE — based on niche and format\n'
+      +'3. WHAT WORKS — based on top performing videos\n'
+      +'4. GAPS — what angles are missing\n'
+      +'5. FIRST 5 VIDEO IDEAS — titles to compete, inspired by their best performers\n'
+      +'6. REPLICATION STRATEGY — how to build a better version\n\n'
+      +'Use the actual video titles and view counts in your analysis.';
+    var r=await claudeCall(prompt,'YouTube channel analyst with access to real channel data.');
+    if(r)document.getElementById('comp-result').textContent=r;
+  }catch(e){toast('Error: '+e.message,'error');}
+});;
 
 // ===== EXPORT =====
 function renderExportInfo(){
