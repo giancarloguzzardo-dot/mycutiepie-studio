@@ -3,1071 +3,1052 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YouTube Studio — MYCUTIEPIE</title>
+<title>MyCutiePie — YouTube Production Studio</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root {
+  --color-bg: #fafaf9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f4;
+  --color-border: #e7e5e4;
+  --color-border-strong: #d6d3d1;
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+  --color-text-subtle: #a8a29e;
+  --color-accent: #6366F1;
+  --color-accent-hover: #4f46e5;
+  --color-accent-soft: #eef2ff;
+  --color-pink: #EC4899;
+  --color-success: #059669;
+  --color-success-soft: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-soft: #fef3c7;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fef2f2;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 32px rgba(0,0,0,.08);
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;min-height:100vh}
-/* AUTH */
-#auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f5f5f5,#eef2ff)}
-.auth-box{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:44px;width:400px;max-width:95vw;box-shadow:0 8px 40px rgba(99,102,241,.08)}
-.auth-logo{font-size:40px;text-align:center;margin-bottom:8px}
-.auth-title{font-size:24px;font-weight:800;text-align:center;margin-bottom:4px;letter-spacing:-0.5px}
-.auth-sub{font-size:13px;color:#6b7280;text-align:center;margin-bottom:28px}
-.auth-tabs{display:flex;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:20px;overflow:hidden}
-.auth-tab{flex:1;padding:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#6b7280;font-family:inherit;transition:.15s}
-.auth-tab.on{background:#6366F1;color:#fff}
-.auth-err{background:#fef2f2;color:#dc2626;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none}
-.auth-success{background:#f0fdf4;color:#065f46;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none}
-/* PICKER */
-#picker{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;background:#f9fafb}
-.picker-header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:800px;margin-bottom:32px}
-.picker-title{font-size:32px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,#6366F1,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.picker-user{font-size:13px;color:#6b7280;display:flex;align-items:center;gap:8px}
-.ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;width:100%;max-width:800px;margin-bottom:24px}
-.ch-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:22px;cursor:pointer;transition:.15s}
-.ch-card:hover{border-color:#6366F1;transform:translateY(-2px);box-shadow:0 4px 20px rgba(99,102,241,.1)}
-.ch-emoji{font-size:32px;margin-bottom:10px;display:block}
-.ch-name{font-size:17px;font-weight:700;margin-bottom:2px}
-.ch-handle{font-size:12px;color:#9ca3af;margin-bottom:8px;font-family:monospace}
-.ch-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px}
-/* STUDIO */
-#studio{display:none;min-height:100vh}
-.layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-.sidebar{background:#fff;border-right:1px solid #e5e7eb;display:flex;flex-direction:column}
-.sb-logo{padding:20px 16px 16px;border-bottom:1px solid #e5e7eb}
-.sb-logo h2{font-size:15px;font-weight:700}
-.sb-logo span{font-size:11px;color:#9ca3af}
-.sb-ch{padding:14px 16px;border-bottom:1px solid #e5e7eb;cursor:pointer}
-.sb-ch:hover{background:#f9fafb}
-.sb-ch-name{font-size:14px;font-weight:600}
-.sb-ch-sub{font-size:11px;color:#9ca3af}
-.sb-sec{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;padding:12px 16px 6px}
-.si{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:#6b7280;cursor:pointer;border-left:3px solid transparent}
-.si:hover{background:#f9fafb;color:#111}
-.si.on{color:#6366F1;border-left-color:#6366F1;background:#eef2ff}
-.sb-save{font-size:10px;color:#9ca3af;padding:4px 16px;display:flex;align-items:center;gap:4px}
-.sb-save.saving{color:#f59e0b}
-.sb-save.saved{color:#059669}
-.sb-bottom{margin-top:auto;padding:12px 16px;border-top:1px solid #e5e7eb}
-.main{overflow-y:auto;height:100vh;background:#f9fafb}
-.panel{display:none;padding:36px}
-.panel.on{display:block}
-.panel-title{font-size:26px;font-weight:700;margin-bottom:4px}
-.panel-sub{font-size:13px;color:#6b7280;margin-bottom:28px}
-/* FIELDS */
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+  background:var(--color-bg);
+  color:var(--color-text);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ======================== AUTH ======================== */
+#auth-screen{
+  min-height:100vh;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#fafaf9 0%,#eef2ff 100%);
+  padding:24px;
+}
+#auth-screen.on{display:flex}
+
+.auth-card{
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-xl);
+  padding:40px;
+  width:420px;
+  max-width:100%;
+  box-shadow:var(--shadow-lg);
+}
+.auth-brand{text-align:center;margin-bottom:28px}
+.auth-logo{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--color-text-muted);
+  margin-bottom:6px;
+}
+.auth-title{
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:-.5px;
+  background:linear-gradient(135deg,var(--color-accent),var(--color-pink));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.auth-sub{
+  font-size:13px;
+  color:var(--color-text-muted);
+  margin-top:4px;
+}
+
+.auth-tabs{
+  display:flex;
+  background:var(--color-surface-2);
+  border-radius:var(--radius-md);
+  padding:4px;
+  margin-bottom:20px;
+}
+.auth-tab{
+  flex:1;
+  padding:8px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  color:var(--color-text-muted);
+  font-family:inherit;
+  border-radius:var(--radius-sm);
+  transition:.15s;
+}
+.auth-tab.on{
+  background:var(--color-surface);
+  color:var(--color-text);
+  box-shadow:var(--shadow-sm);
+}
+
+.auth-msg{
+  font-size:12px;
+  padding:10px 12px;
+  border-radius:var(--radius-sm);
+  margin-bottom:14px;
+  display:none;
+}
+.auth-msg.error{background:var(--color-danger-soft);color:var(--color-danger);display:block}
+.auth-msg.success{background:var(--color-success-soft);color:var(--color-success);display:block}
+
+/* ======================== FIELDS ======================== */
 .fld{margin-bottom:14px}
-.fld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:5px}
-.fld input,.fld select,.fld textarea{width:100%;padding:10px 13px;font-size:13px;border:1px solid #e5e7eb;border-radius:9px;background:#fff;color:#111;font-family:inherit}
-.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:#6366F1}
-.fld textarea{min-height:110px;resize:vertical;line-height:1.7}
-/* BUTTONS */
-.btn{padding:9px 18px;font-size:13px;font-weight:600;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1px solid #e5e7eb;background:#fff;color:#111;transition:.12s}
-.btn:hover{background:#f9fafb}
-.btn.primary{background:#6366F1;color:#fff;border:none}
-.btn.primary:hover{background:#4f46e5}
-.btn.success{background:#d1fae5;color:#065f46;border:none}
-.btn.danger{background:#fef2f2;color:#dc2626;border:none}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-/* OUTPUT */
-.out-box{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:#374151;white-space:pre-wrap;min-height:150px;max-height:600px;overflow-y:auto;word-break:break-word}
-/* SCRIPT SECTIONS */
-.script-section{background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px;overflow:hidden}
-.script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#f9fafb}
-.script-section-header:hover{background:#f3f4f6}
-.script-section-body{padding:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#374151;display:none}
-.script-section-body.on{display:block}
-.script-section.vocal .script-section-header{background:#eff6ff;color:#1d4ed8}
-.script-section.vocal .script-section-body{background:#f0f9ff;border-top:1px solid #bfdbfe}
-/* TABS */
-.tabs{display:flex;border-bottom:1px solid #e5e7eb;margin-bottom:16px}
-.tab{padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:#6b7280;font-family:inherit;white-space:nowrap}
-.tab:hover{color:#111}
-.tab.on{color:#6366F1;border-bottom-color:#6366F1}
-.tab-pnl{display:none}
-.tab-pnl.on{display:block}
-/* NICHE */
-.niche-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px}
-.nc{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;transition:.12s}
-.nc:hover{border-color:#6366F1}
-.nc.on{border:2px solid #6366F1;background:#eef2ff}
-.nc-icon{font-size:24px;margin-bottom:8px}
-.nc-name{font-size:12px;font-weight:600;margin-bottom:2px}
-.nc-cpm{font-size:11px;font-weight:600;color:#059669}
-.nc-comp{font-size:10px;color:#9ca3af}
-.kw-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.kw-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
-.kw-item:hover{border-color:#6366F1}
-.kw-item.on{border-color:#6366F1;background:#eef2ff}
-.kw-term{font-size:13px;font-weight:600}
-.badges{display:flex;gap:4px}
-.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px}
-.bv{background:#d1fae5;color:#065f46}
-.bc{background:#fef3c7;color:#92400e}
-.bco{background:#f3f4f6;color:#6b7280}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.tag{font-size:12px;font-weight:500;padding:5px 12px;border-radius:999px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280}
-.tag:hover{border-color:#6366F1}
-.tag.on{background:#6366F1;color:#fff;border-color:#6366F1}
-/* GRIDS */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
-.card-title{font-size:13px;font-weight:600;margin-bottom:3px}
-.card-desc{font-size:11px;color:#9ca3af;line-height:1.5}
-/* VOCAL PARTS */
-.vocal-queue{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.vq-item{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px}
-.vq-label{font-size:10px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:4px}
-.vq-text{font-size:12px;color:#1e40af;line-height:1.6;max-height:80px;overflow:hidden;white-space:pre-wrap}
-/* PROJECTS LIST */
-.proj-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;transition:.12s}
-.proj-item:hover{border-color:#6366F1;background:#fafafa}
-.proj-title{font-size:14px;font-weight:600}
-.proj-meta{font-size:11px;color:#9ca3af;margin-top:2px}
-.s-draft{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
-.s-done{background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
-/* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.fld label{
+  display:block;
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--color-text-muted);
+  margin-bottom:6px;
+}
+.fld input,.fld select,.fld textarea{
+  width:100%;
+  padding:10px 13px;
+  font-size:14px;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);
+  background:var(--color-surface);
+  color:var(--color-text);
+  font-family:inherit;
+  transition:.15s;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{
+  outline:none;
+  border-color:var(--color-accent);
+  box-shadow:0 0 0 3px rgba(99,102,241,.1);
+}
+.fld textarea{min-height:90px;resize:vertical;line-height:1.6}
+
+/* ======================== BUTTONS ======================== */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:9px 16px;
+  font-size:13px;
+  font-weight:600;
+  font-family:inherit;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--color-border);
+  background:var(--color-surface);
+  color:var(--color-text);
+  cursor:pointer;
+  transition:.12s;
+}
+.btn:hover{background:var(--color-surface-2);border-color:var(--color-border-strong)}
+.btn.primary{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+.btn.primary:hover{background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--color-surface-2)}
+.btn.danger{background:var(--color-danger-soft);color:var(--color-danger);border-color:transparent}
+.btn.danger:hover{background:#fee2e2}
+.btn.full{width:100%}
+.btn.sm{padding:6px 12px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ======================== DASHBOARD ======================== */
+#dashboard{
+  display:none;
+  min-height:100vh;
+  background:var(--color-bg);
+}
+#dashboard.on{display:block}
+
+.topbar{
+  background:var(--color-surface);
+  border-bottom:1px solid var(--color-border);
+  padding:14px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:700;
+  font-size:16px;
+  letter-spacing:-.2px;
+}
+.brand-mark{
+  width:32px;
+  height:32px;
+  background:linear-gradient(135deg,var(--color-accent),var(--color-pink));
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:14px;
+}
+.user-menu{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:13px;
+  color:var(--color-text-muted);
+}
+
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:40px 32px;
+}
+
+.welcome{margin-bottom:36px}
+.welcome-label{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--color-text-muted);
+  margin-bottom:8px;
+}
+.welcome-title{
+  font-size:32px;
+  font-weight:700;
+  letter-spacing:-1px;
+  margin-bottom:6px;
+}
+.welcome-sub{
+  font-size:14px;
+  color:var(--color-text-muted);
+}
+
+.section-label{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--color-text-muted);
+  margin-bottom:14px;
+}
+
+/* Channels grid */
+.ch-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:14px;
+  margin-bottom:36px;
+}
+.ch-card{
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  cursor:pointer;
+  transition:.15s;
+}
+.ch-card:hover{
+  border-color:var(--color-accent);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-md);
+}
+.ch-card-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.ch-emoji{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+.ch-name{
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ch-handle{
+  font-size:12px;
+  color:var(--color-text-subtle);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+}
+.ch-niche-label{
+  font-size:11px;
+  color:var(--color-text-muted);
+  margin-bottom:6px;
+}
+.ch-niche-tag{
+  display:inline-block;
+  font-size:11px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:99px;
+  background:var(--color-accent-soft);
+  color:var(--color-accent);
+}
+.ch-niche-tag.empty{
+  background:var(--color-surface-2);
+  color:var(--color-text-subtle);
+  font-weight:500;
+  font-style:italic;
+}
+.ch-meta{
+  font-size:11px;
+  color:var(--color-text-subtle);
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--color-border);
+}
+
+.ch-add{
+  background:transparent;
+  border:2px dashed var(--color-border-strong);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:160px;
+  color:var(--color-text-muted);
+  transition:.15s;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+}
+.ch-add:hover{
+  border-color:var(--color-accent);
+  color:var(--color-accent);
+  background:var(--color-accent-soft);
+}
+.ch-add-icon{
+  font-size:28px;
+  margin-bottom:8px;
+}
+
+/* Library overview */
+.library-card{
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  padding:18px 22px;
+}
+.library-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:18px;
+}
+.library-item{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.library-item-icon{font-size:18px;margin-bottom:4px}
+.library-item-count{
+  font-size:22px;
+  font-weight:700;
+  color:var(--color-text);
+  letter-spacing:-.5px;
+}
+.library-item-label{
+  font-size:12px;
+  color:var(--color-text-muted);
+}
+.library-cta{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--color-border);
+  text-align:right;
+}
+
+/* Empty state */
+.empty-state{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--color-text-muted);
+}
+.empty-state-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-state-title{
+  font-size:15px;
+  font-weight:600;
+  color:var(--color-text);
+  margin-bottom:6px;
+}
+.empty-state-desc{font-size:13px;line-height:1.6;max-width:380px;margin:0 auto}
+
+/* ======================== MODAL ======================== */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(28,25,23,.5);
+  backdrop-filter:blur(4px);
+  z-index:1000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  animation:fadeIn .2s ease;
+}
 .overlay.on{display:flex}
-.modal{background:#fff;border-radius:18px;padding:28px;width:500px;max-width:100%;max-height:88vh;overflow-y:auto}
-.modal h2{font-size:18px;font-weight:700;margin-bottom:3px}
-.modal p{font-size:12px;color:#6b7280;margin-bottom:20px}
-.colors{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px}
-.col-opt{width:28px;height:28px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:.1s}
-.col-opt.on{border-color:#111;transform:scale(1.1)}
-.emojis{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px}
-.emo-opt{width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;border:2px solid transparent;transition:.1s}
-.emo-opt.on{border-color:#6366F1}
-.sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:18px 0 8px}
-/* LOADER */
-#loader{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.modal{
+  background:var(--color-surface);
+  border-radius:var(--radius-xl);
+  padding:32px;
+  width:520px;
+  max-width:100%;
+  max-height:88vh;
+  overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+}
+.modal h2{
+  font-size:20px;
+  font-weight:700;
+  margin-bottom:4px;
+  letter-spacing:-.3px;
+}
+.modal p.modal-sub{
+  font-size:13px;
+  color:var(--color-text-muted);
+  margin-bottom:20px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:20px;
+}
+
+/* ======================== TOAST ======================== */
+.toast-wrap{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  z-index:9999;
+}
+.toast{
+  padding:12px 18px;
+  border-radius:var(--radius-md);
+  font-size:13px;
+  font-weight:500;
+  color:#fff;
+  background:var(--color-text);
+  box-shadow:var(--shadow-lg);
+  animation:slideIn .2s ease;
+  max-width:340px;
+}
+.toast.success{background:var(--color-success)}
+.toast.error{background:var(--color-danger)}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+/* ======================== LOADER ======================== */
+#loader{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(2px);
+  z-index:9998;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
 #loader.on{display:flex}
-.loader-box{background:#fff;border-radius:16px;padding:36px 48px;text-align:center;max-width:340px}
-.loader-spin{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#6366F1;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+.spinner{
+  width:36px;
+  height:36px;
+  border:3px solid var(--color-border);
+  border-top-color:var(--color-accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loader-title{font-size:15px;font-weight:600;margin-bottom:6px}
-.loader-msg{font-size:13px;color:#6b7280;min-height:18px}
-.loader-hint{font-size:11px;color:#9ca3af;margin-top:10px}
-.toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:9999}
-.toast{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;animation:tIn .18s ease}
-@keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-audio{width:100%;border-radius:8px;margin-top:8px}
+
+/* ======================== UTILITY ======================== */
+.hidden{display:none!important}
+.text-muted{color:var(--color-text-muted)}
+.mb-md{margin-bottom:16px}
+
+/* ======================== RESPONSIVE ======================== */
+@media (max-width:640px){
+  .topbar{padding:12px 16px}
+  .container{padding:24px 16px}
+  .welcome-title{font-size:24px}
+  .modal{padding:24px}
+}
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
+<!-- ======================== AUTH SCREEN ======================== -->
 <div id="auth-screen">
-  <div class="auth-box">
-    <div class="auth-logo">🎬</div>
-    <div class="auth-title">MYCUTIEPIE</div>
-    <div class="auth-sub">YouTube Production System</div>
-    <div class="auth-tabs">
-      <button class="auth-tab on" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
-      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-logo">MyCutiePie</div>
+      <div class="auth-title">YouTube Studio</div>
+      <div class="auth-sub">AI-powered production for serious creators</div>
     </div>
-    <div class="auth-err" id="auth-err"></div>
-    <div class="auth-success" id="auth-success"></div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="tab-login">Sign in</button>
+      <button class="auth-tab" id="tab-signup">Create account</button>
+    </div>
+
+    <div class="auth-msg" id="auth-msg"></div>
+
     <!-- LOGIN -->
     <div id="form-login">
-      <div class="fld"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" /></div>
-      <div class="fld"><label>Password</label><input type="password" id="login-pw" placeholder="Your password" /></div>
-      <button class="btn primary" style="width:100%;justify-content:center;margin-top:4px" id="login-btn">Sign In →</button>
+      <div class="fld"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" /></div>
+      <div class="fld"><label>Password</label><input type="password" id="login-pw" placeholder="Your password" autocomplete="current-password" /></div>
+      <button class="btn primary full" id="login-btn">Sign in →</button>
     </div>
+
     <!-- SIGNUP -->
-    <div id="form-signup" style="display:none">
-      <div class="fld"><label>Full name</label><input type="text" id="signup-name" placeholder="Your name" /></div>
-      <div class="fld"><label>Email</label><input type="email" id="signup-email" placeholder="your@email.com" /></div>
-      <div class="fld"><label>Password</label><input type="password" id="signup-pw" placeholder="Min 6 characters" /></div>
+    <div id="form-signup" class="hidden">
+      <div class="fld"><label>Full name</label><input type="text" id="signup-name" placeholder="Your name" autocomplete="name" /></div>
+      <div class="fld"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" /></div>
+      <div class="fld"><label>Password</label><input type="password" id="signup-pw" placeholder="Min 6 characters" autocomplete="new-password" /></div>
       <div class="fld"><label>I am a...</label>
-        <select id="signup-tipo">
-          <option value="youtuber">YouTuber — I create my own channel</option>
+        <select id="signup-kind">
+          <option value="youtuber">YouTuber — I create my own channels</option>
           <option value="professional">Professional — I offer services to creators</option>
+          <option value="agency">Agency — I manage multiple creators</option>
         </select>
       </div>
-      <button class="btn primary" style="width:100%;justify-content:center;margin-top:4px" id="signup-btn">Create Account →</button>
+      <button class="btn primary full" id="signup-btn">Create account →</button>
     </div>
   </div>
 </div>
 
-<!-- CHANNEL PICKER -->
-<div id="picker">
-  <div class="picker-header">
-    <div>
-      <div style="font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:6px">MYCUTIEPIE ✦ Production System</div>
-      <div class="picker-title">Your Channels</div>
+<!-- ======================== DASHBOARD ======================== -->
+<div id="dashboard">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <span>MyCutiePie</span>
     </div>
-    <div class="picker-user">
-      <span id="picker-email"></span>
-      <button class="btn danger" style="padding:6px 12px;font-size:12px" id="signout-btn">Sign out</button>
+    <div class="user-menu">
+      <span id="user-email"></span>
+      <button class="btn ghost sm" id="signout-btn">Sign out</button>
     </div>
   </div>
-  <div class="ch-grid" id="ch-grid"></div>
-  <div style="display:flex;gap:10px">
-    <button class="btn primary" id="add-ch-btn">+ New channel</button>
-    <button class="btn" id="new-project-btn" style="display:none">+ New project</button>
-  </div>
-</div>
 
-<!-- STUDIO -->
-<div id="studio">
-<div class="layout">
-  <div class="sidebar">
-    <div class="sb-logo"><h2>🎬 YouTube Studio</h2><span>MYCUTIEPIE v2.0</span></div>
-    <div class="sb-ch" id="sb-ch-info" onclick="backToPicker()">
-      <div class="sb-ch-name" id="sb-name">Channel</div>
-      <div class="sb-ch-sub" id="sb-sub">← Switch channel</div>
-    </div>
-    <div class="sb-sec">Current Project</div>
-    <div id="sb-project-name" style="padding:4px 16px;font-size:12px;color:#6b7280;font-style:italic">No project selected</div>
-    <div class="sb-sec">Create</div>
-    <div class="si on" data-panel="niche">🎯 Niche & Keywords</div>
-    <div class="si" data-panel="outline">📋 Idea & Outline</div>
-    <div class="si" data-panel="script">✍️ Full Script</div>
-    <div class="si" data-panel="voice">🎙️ Voice & Audio</div>
-    <div class="si" data-panel="export">📦 Export Package</div>
-    <div class="sb-sec">Manage</div>
-    <div class="si" data-panel="projects">🗂️ All Projects</div>
-    <div class="si" data-panel="competitor">🔍 Competitor Analysis</div>
-    <div id="sb-autosave" class="sb-save">● Autosave on</div>
-    <div class="sb-bottom">
-      <button class="btn danger" style="width:100%;justify-content:center;font-size:12px" id="logout-btn">Sign out</button>
-    </div>
-  </div>
-  <div class="main">
+  <div class="container">
 
-    <!-- NICHE -->
-    <div class="panel on" id="panel-niche">
-      <div class="panel-title">Niche & Keywords</div>
-      <div class="panel-sub">Select niche, sub-niche and keyword — saved automatically to your project</div>
-      <div class="sec">Select your niche</div>
-      <div class="niche-grid" id="niche-grid"></div>
-      <div id="sub-sec" style="display:none">
-        <div class="sec">Sub-niches</div>
-        <div class="tags" id="sub-tags"></div>
-        <div id="sub-detail"></div>
-      </div>
-      <div id="kw-sec" style="display:none">
-        <div class="sec">Keywords — click to select</div>
-        <div class="kw-list" id="kw-list"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input type="text" id="custom-kw" placeholder="Or type your own keyword..." style="flex:1;padding:10px 13px;font-size:13px;border:1px solid #e5e7eb;border-radius:9px" />
-          <button class="btn" id="use-kw-btn">Use →</button>
-        </div>
-      </div>
-      <div id="niche-actions" style="display:none;margin-top:20px;display:flex;gap:10px">
-        <button class="btn primary" id="go-outline-btn">Continue to Outline →</button>
-        <button class="btn" id="analyze-kw-btn">Analyze with AI</button>
-      </div>
-      <div id="kw-analysis" style="display:none;margin-top:14px">
-        <div class="sec">AI keyword analysis</div>
-        <div class="out-box" id="kw-out"></div>
-      </div>
+    <div class="welcome">
+      <div class="welcome-label" id="welcome-label">Dashboard</div>
+      <div class="welcome-title" id="welcome-title">Hello</div>
+      <div class="welcome-sub" id="welcome-sub">Your creative studio.</div>
     </div>
 
-    <!-- OUTLINE -->
-    <div class="panel" id="panel-outline">
-      <div class="panel-title">Idea & Outline</div>
-      <div class="panel-sub">Generate your video structure — auto-saved to project</div>
-      <div class="g2">
-        <div>
-          <div class="fld"><label>Video topic or title</label><input type="text" id="topic-in" placeholder="e.g. The LTCM Collapse — What Went Wrong" /></div>
-          <div class="fld"><label>Format</label>
-            <select id="fmt-sel">
-              <option value="Deep Dive">Deep Dive (10–14 min)</option>
-              <option value="Listicle">Listicle (7–10 min)</option>
-              <option value="Tutorial">Tutorial (8–12 min)</option>
-              <option value="Story / Case Study">Story / Case Study (10–14 min)</option>
-              <option value="Failure Autopsy">Failure Autopsy (12–16 min)</option>
-            </select>
-          </div>
-          <div class="fld"><label>Psychological angle (optional)</label><input type="text" id="psych-in" placeholder="e.g. loss aversion, sunk cost..." /></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn primary" id="gen-outline-btn">Generate with AI</button>
-            <button class="btn" id="clear-outline-btn">Clear</button>
-          </div>
-        </div>
-        <div>
-          <div class="sec" style="margin-top:0">Quick ideas</div>
-          <div id="quick-ideas"></div>
-        </div>
-      </div>
-      <div id="outline-res" style="display:none;margin-top:22px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div class="sec" style="margin:0">Generated outline</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" style="font-size:11px;padding:5px 10px" id="copy-outline-btn">Copy</button>
-            <button class="btn success" id="approve-outline-btn">✓ Approve & write script</button>
-          </div>
-        </div>
-        <div class="out-box" id="outline-box"></div>
-        <div class="fld" style="margin-top:10px"><label>Notes or modifications</label><textarea id="outline-notes" placeholder="Any specific requirements..." style="min-height:60px"></textarea></div>
-      </div>
+    <div class="section-label">Your channels</div>
+    <div class="ch-grid" id="channels-grid">
+      <!-- channels go here -->
     </div>
 
-    <!-- SCRIPT -->
-    <div class="panel" id="panel-script">
-      <div class="panel-title">Full Script Engine</div>
-      <div class="panel-sub">Complete 9-section production script — auto-saved</div>
-      <div class="g2" style="margin-bottom:14px">
-        <div class="fld"><label>Final video title</label><input type="text" id="final-title" placeholder="The exact YouTube title..." /></div>
-        <div class="fld"><label>Tone</label>
-          <select id="tone-sel">
-            <option value="authoritative but accessible — intelligent friend, not professor">Authoritative & Accessible</option>
-            <option value="cinematic documentary narrator">Cinematic / Documentary</option>
-            <option value="sharp and direct — no filler, maximum impact">Sharp & Direct</option>
-            <option value="warm and educational">Warm & Educational</option>
-          </select>
+    <div class="section-label">Your library</div>
+    <div class="library-card">
+      <div class="library-grid">
+        <div class="library-item">
+          <div class="library-item-icon">💡</div>
+          <div class="library-item-count" id="lib-niches">0</div>
+          <div class="library-item-label">Niches</div>
+        </div>
+        <div class="library-item">
+          <div class="library-item-icon">🎙️</div>
+          <div class="library-item-count" id="lib-voices">0</div>
+          <div class="library-item-label">Voice presets</div>
+        </div>
+        <div class="library-item">
+          <div class="library-item-icon">💬</div>
+          <div class="library-item-count" id="lib-tones">0</div>
+          <div class="library-item-label">Tone templates</div>
+        </div>
+        <div class="library-item">
+          <div class="library-item-icon">👥</div>
+          <div class="library-item-count" id="lib-freelancers">0</div>
+          <div class="library-item-label">Freelancers</div>
         </div>
       </div>
-      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-        <button class="btn primary" id="gen-script-btn">Generate full 9-section script</button>
-        <button class="btn" id="gen-seo-btn">SEO only</button>
-      </div>
-      <div id="script-res" style="display:none">
-        <div class="tabs" id="script-tabs">
-          <button class="tab on" data-tab="full">Full Script</button>
-          <button class="tab" data-tab="vocal">🎙️ Vocal Parts</button>
-          <button class="tab" data-tab="seo">SEO</button>
-          <button class="tab" data-tab="thumb">Thumbnail</button>
-          <button class="tab" data-tab="broll">B-Roll</button>
-          <button class="tab" data-tab="kling">Kling Prompts</button>
-        </div>
-        <div class="tab-pnl on" id="stab-full">
-          <div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-full">Copy all</button></div>
-          <div id="s-full-sections"></div>
-          <div class="out-box" id="s-full" style="display:none"></div>
-        </div>
-        <div class="tab-pnl" id="stab-vocal">
-          <div style="background:#eff6ff;border-radius:9px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:#1d4ed8">
-            These are the narration parts extracted from your script. Click <strong>Send all to Voice</strong> to generate audio automatically.
-          </div>
-          <div style="margin-bottom:12px"><button class="btn primary" id="send-to-voice-btn">🎙️ Send all to Voice & Audio</button></div>
-          <div class="vocal-queue" id="vocal-queue"></div>
-        </div>
-        <div class="tab-pnl" id="stab-seo"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-seo">Copy</button></div><div class="out-box" id="s-seo"></div></div>
-        <div class="tab-pnl" id="stab-thumb"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-thumb">Copy</button></div><div class="out-box" id="s-thumb"></div></div>
-        <div class="tab-pnl" id="stab-broll"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-broll">Copy</button></div><div class="out-box" id="s-broll"></div></div>
-        <div class="tab-pnl" id="stab-kling">
-          <div style="background:#eff6ff;border-radius:9px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:#1d4ed8">Ready-to-use prompts for Kling, Seedance or Google Veo.</div>
-          <div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="s-kling">Copy all</button></div>
-          <div class="out-box" id="s-kling"></div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:10px">
-          <button class="btn primary" id="save-project-btn">💾 Save project</button>
-          <button class="btn" id="go-voice-btn">Continue to voice →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- VOICE -->
-    <div class="panel" id="panel-voice">
-      <div class="panel-title">Voice & Audio</div>
-      <div class="panel-sub">Generate AI voiceover section by section</div>
-      <div class="tabs" id="voice-tabs">
-        <button class="tab on" data-tab="ai">AI Voiceover (ElevenLabs)</button>
-        <button class="tab" data-tab="human">Human Voice Actor</button>
-      </div>
-      <div class="tab-pnl on" id="vtab-ai">
-        <div class="fld"><label>Voice</label>
-          <select id="voice-id">
-            <option value="pNInz6obpgDQGcFmaJgB">Adam — authoritative, deep</option>
-            <option value="EXAVITQu4vr4xnSDxMaL">Sarah — warm, professional</option>
-            <option value="VR6AewLTigWG4xSOukaG">Arnold — documentary</option>
-            <option value="onwK4e9ZLuTAKqWW03F9">Daniel — British</option>
-          </select>
-        </div>
-        <div class="fld"><label>Narration text (max 5000 chars)</label><textarea id="voice-text" placeholder="Paste narration or use 'Send all to Voice' from the Script tab..." style="min-height:160px"></textarea></div>
-        <button class="btn primary" id="gen-voice-btn">Generate voiceover</button>
-        <div id="voice-out" style="display:none;margin-top:16px">
-          <div class="sec">Generated audio</div>
-          <audio id="audio-player" controls style="width:100%;margin-bottom:10px" preload="auto"></audio>
-          <a id="audio-dl" class="btn success" download="voiceover.mp3">⬇ Download .mp3</a>
-        </div>
-      </div>
-      <div class="tab-pnl" id="vtab-human">
-        <div style="background:#eff6ff;border-radius:9px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:#1d4ed8">Formats script with tone, pacing and emotion cues for each section.</div>
-        <div class="fld"><label>Narration text</label><textarea id="actor-text" placeholder="Paste narration here..." style="min-height:130px"></textarea></div>
-        <div class="fld"><label>Voice character</label>
-          <select id="actor-char">
-            <option value="authoritative documentary narrator — calm, measured, expert">Documentary narrator</option>
-            <option value="confident professional — hedge fund manager talking to a friend">Confident professional</option>
-            <option value="cinematic thriller narrator — tension, urgency">Cinematic / thriller</option>
-            <option value="warm educator — approachable, clear">Warm educator</option>
-          </select>
-        </div>
-        <button class="btn primary" id="fmt-actor-btn">Format for voice actor</button>
-        <div id="actor-out" style="display:none;margin-top:12px"><div style="text-align:right;margin-bottom:7px"><button class="btn" style="font-size:11px;padding:5px 10px" data-copy="actor-box">Copy</button></div><div class="out-box" id="actor-box"></div></div>
-      </div>
-    </div>
-
-    <!-- EXPORT -->
-    <div class="panel" id="panel-export">
-      <div class="panel-title">Export Package</div>
-      <div class="panel-sub">Complete package for your production team</div>
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Current project</div>
-        <div id="export-info" style="font-size:13px;color:#9ca3af;margin-top:5px">Select a project first.</div>
-      </div>
-      <div class="g3" style="margin-bottom:20px">
-        <div class="card"><div class="card-title">📄 Full script</div><div class="card-desc">All 9 sections with narration highlighted.</div></div>
-        <div class="card"><div class="card-title">🎬 Kling prompts</div><div class="card-desc">One per B-roll scene.</div></div>
-        <div class="card"><div class="card-title">🖼️ Thumbnail brief</div><div class="card-desc">Two concepts + Midjourney prompt.</div></div>
-        <div class="card"><div class="card-title">🔍 SEO metadata</div><div class="card-desc">Title, description, tags, chapters.</div></div>
-        <div class="card"><div class="card-title">🎙️ Voiceover</div><div class="card-desc">.mp3 download per section.</div></div>
-        <div class="card"><div class="card-title">✅ Checklist</div><div class="card-desc">Pre-publish production checklist.</div></div>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn primary" id="export-btn">Export .txt</button>
-        <button class="btn" id="copy-pkg-btn">Copy to clipboard</button>
-      </div>
-    </div>
-
-    <!-- PROJECTS -->
-    <div class="panel" id="panel-projects">
-      <div class="panel-title">All Projects</div>
-      <div class="panel-sub">All videos for this channel — saved to cloud</div>
-      <div style="margin-bottom:16px"><button class="btn primary" id="new-proj-btn">+ New project</button></div>
-      <div id="projects-list"></div>
-    </div>
-
-    <!-- COMPETITOR -->
-    <div class="panel" id="panel-competitor">
-      <div class="panel-title">Competitor Analysis</div>
-      <div class="panel-sub">Paste a YouTube channel URL — AI analyzes content strategy, CPM, gaps</div>
-      <div class="fld"><label>YouTube channel URL</label>
-        <input type="text" id="comp-url" placeholder="https://www.youtube.com/@channelname" />
-      </div>
-      <button class="btn primary" id="analyze-comp-btn">Analyze channel</button>
-      <div id="comp-out" style="display:none;margin-top:16px">
-        <div class="sec">Analysis</div>
-        <div class="out-box" id="comp-result"></div>
+      <div class="library-cta">
+        <span class="text-muted" style="font-size:12px">Library management coming in next milestone →</span>
       </div>
     </div>
 
   </div>
 </div>
-</div>
 
-<!-- CHANNEL MODAL -->
-<div class="overlay" id="ch-overlay">
+<!-- ======================== NEW CHANNEL MODAL ======================== -->
+<div class="overlay" id="channel-modal">
   <div class="modal">
-    <h2>New Channel</h2>
-    <p>Set up your channel identity — saved to your account</p>
-    <div class="fld"><label>Channel name *</label><input type="text" id="ch-name" placeholder="Risk Intelligence" /></div>
-    <div class="fld"><label>YouTube handle</label><input type="text" id="ch-handle" placeholder="@RiskIntelligence" /></div>
-    <div class="fld"><label>Primary niche</label>
-      <select id="ch-niche">
-        <option value="Finance & Investing">Finance & Investing</option>
-        <option value="Legal">Legal</option>
-        <option value="Real Estate">Real Estate</option>
-        <option value="SaaS / B2B">SaaS / B2B</option>
-        <option value="Insurance">Insurance</option>
-        <option value="Psychology / TV Series">Psychology / TV Series</option>
-      </select>
+    <h2>New channel</h2>
+    <p class="modal-sub">Create a new YouTube channel identity. You'll position it on a niche later.</p>
+
+    <div class="fld"><label>Channel name *</label><input type="text" id="ch-name-in" placeholder="e.g. Catchy History" /></div>
+    <div class="fld"><label>YouTube handle</label><input type="text" id="ch-handle-in" placeholder="@CatchyHistory" /></div>
+    <div class="fld"><label>YouTube URL (optional)</label><input type="text" id="ch-url-in" placeholder="https://youtube.com/@CatchyHistory" /></div>
+    <div class="fld"><label>Emoji</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="emoji-picker">
+        <button type="button" class="btn" data-emoji="🎬">🎬</button>
+        <button type="button" class="btn" data-emoji="📺">📺</button>
+        <button type="button" class="btn" data-emoji="🎨">🎨</button>
+        <button type="button" class="btn" data-emoji="🧠">🧠</button>
+        <button type="button" class="btn" data-emoji="💰">💰</button>
+        <button type="button" class="btn" data-emoji="⚖️">⚖️</button>
+        <button type="button" class="btn" data-emoji="🔥">🔥</button>
+        <button type="button" class="btn" data-emoji="🚀">🚀</button>
+        <button type="button" class="btn" data-emoji="📚">📚</button>
+        <button type="button" class="btn" data-emoji="🎯">🎯</button>
+      </div>
     </div>
-    <div class="fld"><label>Sub-niche</label><input type="text" id="ch-sub" placeholder="Risk & Reward..." /></div>
-    <div class="fld"><label>Channel emoji</label><div class="emojis" id="emo-picker"></div></div>
-    <div class="fld"><label>Channel color</label><div class="colors" id="col-picker"></div></div>
-    <div class="fld"><label>Tone / voice style</label><textarea id="ch-tone" placeholder="Authoritative but accessible. Intelligent friend, not professor." style="min-height:60px"></textarea></div>
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn primary" id="save-ch-btn">Save channel</button>
-      <button class="btn" id="cancel-ch-btn">Cancel</button>
+    <div class="fld"><label>Brand color</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="color-picker">
+        <button type="button" class="color-opt" data-color="#6366F1" style="width:32px;height:32px;border-radius:8px;background:#6366F1;border:2px solid transparent;cursor:pointer"></button>
+        <button type="button" class="color-opt" data-color="#EC4899" style="width:32px;height:32px;border-radius:8px;background:#EC4899;border:2px solid transparent;cursor:pointer"></button>
+        <button type="button" class="color-opt" data-color="#F59E0B" style="width:32px;height:32px;border-radius:8px;background:#F59E0B;border:2px solid transparent;cursor:pointer"></button>
+        <button type="button" class="color-opt" data-color="#10B981" style="width:32px;height:32px;border-radius:8px;background:#10B981;border:2px solid transparent;cursor:pointer"></button>
+        <button type="button" class="color-opt" data-color="#3B82F6" style="width:32px;height:32px;border-radius:8px;background:#3B82F6;border:2px solid transparent;cursor:pointer"></button>
+        <button type="button" class="color-opt" data-color="#EF4444" style="width:32px;height:32px;border-radius:8px;background:#EF4444;border:2px solid transparent;cursor:pointer"></button>
+        <button type="button" class="color-opt" data-color="#8B5CF6" style="width:32px;height:32px;border-radius:8px;background:#8B5CF6;border:2px solid transparent;cursor:pointer"></button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" id="ch-cancel">Cancel</button>
+      <button class="btn primary" id="ch-save">Create channel</button>
     </div>
   </div>
 </div>
 
-<!-- NEW PROJECT MODAL -->
-<div class="overlay" id="proj-overlay">
-  <div class="modal">
-    <h2>New Project</h2>
-    <p>Start a new video project</p>
-    <div class="fld"><label>Project / video title</label><input type="text" id="proj-title-in" placeholder="e.g. The LTCM Collapse — What Went Wrong" /></div>
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn primary" id="create-proj-btn">Create project</button>
-      <button class="btn" id="cancel-proj-btn">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- LOADER -->
-<div id="loader">
-  <div class="loader-box">
-    <div class="loader-spin"></div>
-    <div class="loader-title">Claude is working</div>
-    <div class="loader-msg" id="loader-msg">Analyzing your brief...</div>
-    <div class="loader-hint">This takes 20–60 seconds</div>
-  </div>
-</div>
+<!-- ======================== LOADER + TOAST ======================== -->
+<div id="loader"><div class="spinner"></div></div>
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
-// ===== SUPABASE =====
+// ============================================================
+// CONFIG
+// ============================================================
 const SUPA_URL = 'https://wibbjxynnrwbnzohqwlt.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpYmJqeHlubnJ3Ym56b2hxd2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTkzODYsImV4cCI6MjA5Mzk3NTM4Nn0.uZGF4eP_CcjUKZdHBUAZF3cucEWDuec2rNYW6bn4eiE';
-var sb;
 
-// ===== CONFIG =====
-var COLORS=['#6366F1','#EC4899','#F59E0B','#10B981','#3B82F6','#EF4444','#8B5CF6','#06B6D4','#F97316'];
-var EMOJIS=['🎬','📺','💰','🧠','⚖️','🛡️','💻','🎯','🔥','🚀','💡','⚡'];
-var selColor=COLORS[0],selEmoji=EMOJIS[0];
-
-var NICHES={
-  finance:{name:'Finance & Investing',icon:'💰',cpm:'$15–22',comp:'Medium',color:'#F59E0B',
-    subs:['Wealth building','Risk & reward','Greed & consequences','Investment psychology','Contrarian thinking'],
-    subDesc:{'Risk & reward':'Investment psychology. Attracts high-income investors. Highest CPM in Finance.','Greed & consequences':'Financial crimes and collapses. Highest virality.','Investment psychology':'Why smart people make bad financial decisions.','Contrarian thinking':'Being right before everyone else.','Wealth building':'How ordinary people build wealth.'},
-    keywords:[{term:'investment risk management',vol:'High',cpm:'$18',comp:'Medium'},{term:'why smart investors lose money',vol:'Medium',cpm:'$20',comp:'Low'},{term:'behavioral finance explained',vol:'High',cpm:'$16',comp:'Medium'},{term:'pattern recognition investing',vol:'Medium',cpm:'$20',comp:'Low'},{term:'contrarian investing psychology',vol:'Low',cpm:'$20',comp:'Very Low'}],
-    ideas:['The Psychology of Risk: Why Smart Investors Make Terrible Decisions','5 Risk Mistakes That Cost Investors Everything','The LTCM Collapse — What Went Wrong','Michael Burry\'s Real Edge','How Smart People Miss the Obvious']},
-  legal:{name:'Legal',icon:'⚖️',cpm:'$14–18',comp:'Low',color:'#3B82F6',
-    subs:['Consumer rights','Business law','Fraud detection','Interrogation & truth'],
-    subDesc:{'Interrogation & truth':'How lawyers extract truth.','Business law':'Contracts, NDAs. Premium audience.','Fraud detection':'Very shareable.','Consumer rights':"What most people don't know."},
-    keywords:[{term:'legal loopholes corporations use',vol:'Medium',cpm:'$17',comp:'Low'},{term:'contract clauses that protect you',vol:'Medium',cpm:'$18',comp:'Low'},{term:'interrogation psychology techniques',vol:'Low',cpm:'$16',comp:'Very Low'},{term:'NDA what you need to know',vol:'High',cpm:'$15',comp:'Medium'}],
-    ideas:['The One Document That Can Save Your Business','Harvey Specter\'s Legal Psychology','The Art of Asking the Right Question','5 Contract Clauses That Will Protect You']},
-  saas:{name:'SaaS / B2B',icon:'💻',cpm:'$15–20',comp:'Medium',color:'#8B5CF6',
-    subs:['Reading people','Executive presence','B2B negotiation','Sales psychology'],
-    subDesc:{'Reading people':'Micro-expressions. Highest watch time.','Executive presence':'How top performers command rooms.','B2B negotiation':'Deal-making psychology.','Sales psychology':'Science of influence.'},
-    keywords:[{term:'how to read anyone in 60 seconds',vol:'High',cpm:'$18',comp:'Low'},{term:'executive presence techniques',vol:'Medium',cpm:'$19',comp:'Low'},{term:'B2B negotiation psychology',vol:'Medium',cpm:'$18',comp:'Low'},{term:'body language for sales professionals',vol:'High',cpm:'$16',comp:'Medium'}],
-    ideas:['How to Read Anyone in 60 Seconds','How to Walk Into Any Room Like You Own It','The Psychology of Persuasion','B2B Negotiation: 5 Moves That Close Any Deal']},
-  insurance:{name:'Insurance & Fraud',icon:'🛡️',cpm:'$13–18',comp:'Low',color:'#10B981',
-    subs:['Financial fraud','Scam detection','Policy blind spots','Identity protection'],
-    subDesc:{'Financial fraud':'Highest virality.','Scam detection':'High search intent.','Policy blind spots':'Controversy + practical value.','Identity protection':'Fastest growing.'},
-    keywords:[{term:'how con artists target smart people',vol:'Medium',cpm:'$16',comp:'Low'},{term:'5 red flags before a financial scam',vol:'Medium',cpm:'$15',comp:'Low'},{term:'fraud protection for business owners',vol:'Medium',cpm:'$17',comp:'Low'},{term:'identity theft protection tips',vol:'High',cpm:'$14',comp:'Medium'}],
-    ideas:['How Con Artists Target Smart People','5 Red Flags That Always Precede a Financial Scam','The 4 Psychological Stages of a Con','How Identity Theft Really Happens']},
-  psychology:{name:'Psychology / TV Series',icon:'🧠',cpm:'$12–20',comp:'Very Low',color:'#EC4899',
-    subs:['Character psychology','Scene breakdowns','Negotiation frameworks','Decision making'],
-    subDesc:{'Character psychology':'Deep character analysis.','Scene breakdowns':'One scene, one principle.','Negotiation frameworks':'Suits/Billions mapped to real deals.','Decision making':'Breaking Bad mapped to investing.'},
-    keywords:[{term:'psychology of Harvey Specter suits',vol:'High',cpm:'$16',comp:'Very Low'},{term:'Patrick Jane reading people mentalist',vol:'Medium',cpm:'$17',comp:'Very Low'},{term:'Bobby Axelrod investment psychology',vol:'Low',cpm:'$18',comp:'Very Low'},{term:'Walter White psychology sunk cost',vol:'Medium',cpm:'$15',comp:'Very Low'}],
-    ideas:['Harvey Specter\'s Real Psychological Edge','How Patrick Jane Actually Reads People','Why Logan Roy Raised Children Who Could Never Replace Him','Walter White\'s Real Problem']}
+// ============================================================
+// STATE
+// ============================================================
+const APP = {
+  sb: null,
+  user: null,
+  profile: null,
+  channels: [],
+  library: {
+    niches: 0,
+    voices: 0,
+    tones: 0,
+    freelancers: 0,
+  },
+  selectedEmoji: '🎬',
+  selectedColor: '#6366F1',
 };
 
-// ===== STATE =====
-var ST={user:null,channel:null,project:null,niche:null,subniche:null,keyword:null,outline:null,script:null,seo:null,thumb:null,broll:null,kling:null,title:null,vocalParts:[]};
-var _saveTimer=null;
+// ============================================================
+// HELPERS
+// ============================================================
+function $(id){ return document.getElementById(id); }
+function show(id){ $(id).classList.add('on'); }
+function hide(id){ $(id).classList.remove('on'); }
+function showLoader(){ show('loader'); }
+function hideLoader(){ hide('loader'); }
 
-// ===== LOADER =====
-var _lmsgs=['Reading your brief...','Analyzing the niche...','Writing the hook...','Building the structure...','Adding real cases and data...','Almost ready...'];
-var _lint=null,_lidx=0;
-function showLoader(){var el=document.getElementById('loader');if(el)el.classList.add('on');_lidx=0;var m=document.getElementById('loader-msg');if(m)m.textContent=_lmsgs[0];_lint=setInterval(function(){_lidx=(_lidx+1)%_lmsgs.length;var mm=document.getElementById('loader-msg');if(mm)mm.textContent=_lmsgs[_lidx];},3000);}
-function hideLoader(){var el=document.getElementById('loader');if(el)el.classList.remove('on');if(_lint){clearInterval(_lint);_lint=null;}}
-
-// ===== CLAUDE =====
-async function claudeCall(prompt,system){
-  showLoader();
-  try{
-    var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/claude',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt:prompt,system:system||''})
-    });
-    var d=await res.json();hideLoader();
-    if(d.text)return d.text;
-    toast('Claude: '+(d.error||'no response'),'error');return null;
-  }catch(e){hideLoader();toast('Claude: '+e.message,'error');return null;}
+function toast(msg, type){
+  type = type || 'default';
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type !== 'default' ? type : '');
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
 }
 
-// ===== ELEVENLABS =====
-async function elevenCall(text,voiceId){
-  try{
-    var res=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/elevenlabs',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text:text,voice_id:voiceId})
-    });
-    var blob=await res.blob();
-    if(blob.size<500){var txt=await blob.text();toast('ElevenLabs: '+txt.slice(0,80),'error');return null;}
-    return URL.createObjectURL(blob);
-  }catch(e){toast('ElevenLabs: '+e.message,'error');return null;}
+function escapeHtml(t){
+  return (t == null ? '' : String(t))
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
 }
 
-// ===== AUTOSAVE =====
-function scheduleAutosave(){
-  var el=document.getElementById('sb-autosave');
-  if(el){el.textContent='● Saving...';el.className='sb-save saving';}
-  if(_saveTimer)clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(async function(){
-    if(ST.project&&ST.user){
-      await saveProject();
-      var el2=document.getElementById('sb-autosave');
-      if(el2){el2.textContent='● Saved ✓';el2.className='sb-save saved';}
-      setTimeout(function(){var el3=document.getElementById('sb-autosave');if(el3){el3.textContent='● Autosave on';el3.className='sb-save';}},2000);
-    }
-  },2000);
+function showAuthMsg(text, type){
+  const el = $('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg ' + type;
 }
 
-async function saveProject(){
-  if(!ST.project||!ST.user)return;
-  var data={
-    titolo:ST.title||ST.project.titolo,
-    nicchia:ST.niche?NICHES[ST.niche].name:'',
-    keyword:ST.keyword||'',
-    outline:ST.outline||'',
-    script:ST.script||'',
-    seo:ST.seo||'',
-    thumbnail:ST.thumb||'',
-    broll:ST.broll||'',
-    kling:ST.kling||'',
-    stato:ST.script?'complete':'draft',
-    updated_at:new Date().toISOString()
-  };
-  await sb.from('projects').update(data).eq('id',ST.project.id);
+function hideAuthMsg(){
+  $('auth-msg').className = 'auth-msg';
 }
 
-// ===== AUTH =====
-function switchAuthTab(t){
-  document.getElementById('form-login').style.display=t==='login'?'block':'none';
-  document.getElementById('form-signup').style.display=t==='signup'?'block':'none';
-  document.getElementById('tab-login').className='auth-tab'+(t==='login'?' on':'');
-  document.getElementById('tab-signup').className='auth-tab'+(t==='signup'?' on':'');
-  document.getElementById('auth-err').style.display='none';
-  document.getElementById('auth-success').style.display='none';
-}
-
-async function initAuth(){
-  sb=supabase.createClient(SUPA_URL,SUPA_KEY,{
-    auth:{persistSession:true,autoRefreshToken:true}
+// ============================================================
+// AUTH FLOW
+// ============================================================
+async function initApp(){
+  APP.sb = supabase.createClient(SUPA_URL, SUPA_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true }
   });
-  var {data:{session}}=await sb.auth.getSession();
-  if(session){ST.user=session.user;showPicker();}
-  else{document.getElementById('auth-screen').style.display='flex';}
+
+  const { data: { session } } = await APP.sb.auth.getSession();
+  if (session) {
+    APP.user = session.user;
+    await onLogin();
+  } else {
+    show('auth-screen');
+  }
 }
 
-document.getElementById('login-btn').addEventListener('click',async function(){
-  var email=document.getElementById('login-email').value.trim();
-  var pw=document.getElementById('login-pw').value;
-  var err=document.getElementById('auth-err');
-  if(!email||!pw){err.textContent='Enter email and password.';err.style.display='block';return;}
-  var {data,error}=await sb.auth.signInWithPassword({email,password:pw});
-  if(error){err.textContent=error.message;err.style.display='block';return;}
-  ST.user=data.user;
-  showPicker();
+async function onLogin(){
+  showLoader();
+  try {
+    // Carica profilo utente (auto-creato dal trigger SQL al signup)
+    const { data: profile, error } = await APP.sb
+      .from('user_profiles')
+      .select('*')
+      .eq('id', APP.user.id)
+      .single();
+
+    if (error) {
+      // Edge case: trigger non ha creato il profilo (es. utente pre-refactor)
+      // Lo creiamo manualmente
+      console.warn('Profile missing, creating manually:', error.message);
+      const { data: newProfile, error: insErr } = await APP.sb
+        .from('user_profiles')
+        .insert({
+          id: APP.user.id,
+          email: APP.user.email,
+          full_name: APP.user.user_metadata?.full_name || APP.user.user_metadata?.nome || '',
+          kind: APP.user.user_metadata?.kind || APP.user.user_metadata?.tipo || 'youtuber',
+          default_language: 'en'
+        })
+        .select()
+        .single();
+      if (insErr) throw insErr;
+      APP.profile = newProfile;
+    } else {
+      APP.profile = profile;
+    }
+
+    hide('auth-screen');
+    show('dashboard');
+    renderDashboard();
+    await loadChannels();
+    await loadLibraryCounts();
+  } catch (e) {
+    toast('Error loading profile: ' + e.message, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+// Switch auth tabs
+$('tab-login').addEventListener('click', () => {
+  $('tab-login').classList.add('on');
+  $('tab-signup').classList.remove('on');
+  $('form-login').classList.remove('hidden');
+  $('form-signup').classList.add('hidden');
+  hideAuthMsg();
+});
+$('tab-signup').addEventListener('click', () => {
+  $('tab-signup').classList.add('on');
+  $('tab-login').classList.remove('on');
+  $('form-signup').classList.remove('hidden');
+  $('form-login').classList.add('hidden');
+  hideAuthMsg();
 });
 
-document.getElementById('signup-btn').addEventListener('click',async function(){
-  var name=document.getElementById('signup-name').value.trim();
-  var email=document.getElementById('signup-email').value.trim();
-  var pw=document.getElementById('signup-pw').value;
-  var tipo=document.getElementById('signup-tipo').value;
-  var err=document.getElementById('auth-err');
-  var ok=document.getElementById('auth-success');
-  if(!name||!email||!pw){err.textContent='Fill in all fields.';err.style.display='block';return;}
-  var {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{nome:name,tipo:tipo}}});
-  if(error){err.textContent=error.message;err.style.display='block';return;}
-  // Create profile
-  if(data.user){
-    await sb.from('profiles').upsert({id:data.user.id,email,nome:name,tipo});
-    ST.user=data.user;
-    ok.textContent='Account created! Welcome '+name+' 🎬';
-    ok.style.display='block';
-    setTimeout(function(){showPicker();},1500);
+// Login
+$('login-btn').addEventListener('click', async () => {
+  const email = $('login-email').value.trim();
+  const pw = $('login-pw').value;
+  if (!email || !pw) { showAuthMsg('Enter email and password.', 'error'); return; }
+
+  showLoader();
+  const { data, error } = await APP.sb.auth.signInWithPassword({ email, password: pw });
+  hideLoader();
+
+  if (error) { showAuthMsg(error.message, 'error'); return; }
+  APP.user = data.user;
+  await onLogin();
+});
+
+// Signup
+$('signup-btn').addEventListener('click', async () => {
+  const name = $('signup-name').value.trim();
+  const email = $('signup-email').value.trim();
+  const pw = $('signup-pw').value;
+  const kind = $('signup-kind').value;
+  if (!name || !email || !pw) { showAuthMsg('Fill in all fields.', 'error'); return; }
+
+  showLoader();
+  const { data, error } = await APP.sb.auth.signUp({
+    email,
+    password: pw,
+    options: { data: { full_name: name, kind: kind } }
+  });
+  hideLoader();
+
+  if (error) { showAuthMsg(error.message, 'error'); return; }
+
+  showAuthMsg('Account created! Welcome ' + name + '. Logging in...', 'success');
+  // Il trigger SQL auto-crea user_profiles. Procediamo al login.
+  if (data.session) {
+    APP.user = data.user;
+    setTimeout(onLogin, 800);
+  } else {
+    // Email confirmation flow (improbabile dato che è DISABLED, ma per sicurezza)
+    setTimeout(() => {
+      $('login-email').value = email;
+      $('tab-login').click();
+      showAuthMsg('Check your email to confirm, then sign in.', 'success');
+    }, 1500);
   }
 });
 
-document.getElementById('logout-btn').addEventListener('click',async function(){await sb.auth.signOut();ST.user=null;ST.channel=null;ST.project=null;document.getElementById('studio').style.display='none';document.getElementById('auth-screen').style.display='flex';});
-document.getElementById('signout-btn').addEventListener('click',async function(){await sb.auth.signOut();ST.user=null;document.getElementById('picker').style.display='none';document.getElementById('auth-screen').style.display='flex';});
+// Signout
+$('signout-btn').addEventListener('click', async () => {
+  await APP.sb.auth.signOut();
+  APP.user = null;
+  APP.profile = null;
+  APP.channels = [];
+  hide('dashboard');
+  show('auth-screen');
+  $('login-email').value = '';
+  $('login-pw').value = '';
+  hideAuthMsg();
+  toast('Signed out', 'success');
+});
 
-// ===== PICKER =====
-async function showPicker(){
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('studio').style.display='none';
-  document.getElementById('picker').style.display='flex';
-  document.getElementById('picker-email').textContent=ST.user.email;
-  await loadChannels();
+// ============================================================
+// DASHBOARD RENDER
+// ============================================================
+function renderDashboard(){
+  $('user-email').textContent = APP.profile.email;
+  const firstName = (APP.profile.full_name || '').split(' ')[0] || 'there';
+  $('welcome-title').textContent = `Hello, ${firstName}`;
+
+  const channelCount = APP.channels.length;
+  const niches = APP.library.niches;
+  $('welcome-sub').textContent = channelCount === 0
+    ? "Let's set up your first channel."
+    : `${channelCount} channel${channelCount > 1 ? 's' : ''} active · ${niches} niche${niches !== 1 ? 's' : ''} in library`;
 }
 
 async function loadChannels(){
-  var {data:channels}=await sb.from('channels').select('*').eq('user_id',ST.user.id).order('created_at');
-  var grid=document.getElementById('ch-grid');
-  if(!channels||!channels.length){
-    grid.innerHTML='<div style="color:#9ca3af;font-size:13px;padding:20px 0;grid-column:1/-1">No channels yet. Create your first channel.</div>';
+  const { data, error } = await APP.sb
+    .from('channels')
+    .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(name)')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Channels load error:', error);
+    toast('Error loading channels: ' + error.message, 'error');
     return;
   }
-  grid.innerHTML=channels.map(function(c){
-    return'<div class="ch-card" data-id="'+c.id+'">'
-      +'<span class="ch-emoji">'+(c.emoji||'🎬')+'</span>'
-      +'<div class="ch-name">'+c.nome+'</div>'
-      +'<div class="ch-handle">'+(c.handle||'')+'</div>'
-      +'<div class="ch-badge" style="background:'+(c.colore||'#6366F1')+'1a;color:'+(c.colore||'#6366F1')+'">'+(c.nicchia||'')+'</div>'
-      +'</div>';
-  }).join('');
-  grid.querySelectorAll('.ch-card').forEach(function(el){
-    el.addEventListener('click',async function(){
-      var {data:ch}=await sb.from('channels').select('*').eq('id',el.dataset.id).single();
-      selectChannel(ch);
-    });
+
+  APP.channels = data || [];
+  renderChannels();
+  renderDashboard();
+}
+
+function renderChannels(){
+  const grid = $('channels-grid');
+  let html = '';
+
+  // Channel cards
+  APP.channels.forEach(ch => {
+    const nicheName = ch.active_niche_profile?.name;
+    html += `
+      <div class="ch-card" data-id="${ch.id}">
+        <div class="ch-card-header">
+          <div class="ch-emoji" style="background:${ch.brand_color}1a;color:${ch.brand_color}">${ch.emoji || '🎬'}</div>
+          <div style="min-width:0;flex:1">
+            <div class="ch-name">${escapeHtml(ch.name)}</div>
+            <div class="ch-handle">${escapeHtml(ch.handle || '—')}</div>
+          </div>
+        </div>
+        <div class="ch-niche-label">Positioned on</div>
+        ${nicheName
+          ? `<span class="ch-niche-tag" style="background:${ch.brand_color}1a;color:${ch.brand_color}">${escapeHtml(nicheName)}</span>`
+          : `<span class="ch-niche-tag empty">No niche yet</span>`}
+        <div class="ch-meta">Created ${new Date(ch.created_at).toLocaleDateString()}</div>
+      </div>
+    `;
   });
+
+  // Add channel button
+  html += `
+    <button class="ch-add" id="add-channel-btn">
+      <div class="ch-add-icon">+</div>
+      <div>New channel</div>
+    </button>
+  `;
+
+  grid.innerHTML = html;
+
+  // Attach handlers
+  $('add-channel-btn').addEventListener('click', openChannelModal);
+  // (clicks on channel cards will navigate to channel workspace in Milestone 3)
 }
 
-function backToPicker(){showPicker();}
+async function loadLibraryCounts(){
+  try {
+    const [niches, voices, tones, freelancers] = await Promise.all([
+      APP.sb.from('niche_profiles').select('id', { count: 'exact', head: true }),
+      APP.sb.from('voice_presets').select('id', { count: 'exact', head: true }),
+      APP.sb.from('tone_templates').select('id', { count: 'exact', head: true }),
+      APP.sb.from('freelancers').select('id', { count: 'exact', head: true }),
+    ]);
 
-async function selectChannel(ch){
-  ST.channel=ch;ST.project=null;ST.title=null;ST.outline=null;ST.script=null;
-  document.getElementById('picker').style.display='none';
-  document.getElementById('studio').style.display='block';
-  document.getElementById('sb-name').textContent=ch.nome;
-  document.getElementById('sb-sub').textContent=(ch.nicchia||'')+(ch.sotto_nicchia?' · '+ch.sotto_nicchia:'');
-  document.getElementById('sb-project-name').textContent='No project selected';
-  renderNiches();
-  renderQuickIdeas();
-  await loadProjects();
-}
+    APP.library.niches = niches.count || 0;
+    APP.library.voices = voices.count || 0;
+    APP.library.tones = tones.count || 0;
+    APP.library.freelancers = freelancers.count || 0;
 
-// ===== CHANNEL MODAL =====
-document.getElementById('add-ch-btn').addEventListener('click',function(){
-  selColor=COLORS[0];selEmoji=EMOJIS[0];
-  var cp=document.getElementById('col-picker');
-  cp.innerHTML=COLORS.map(function(c){return'<div class="col-opt'+(c===selColor?' on':'')+'" style="background:'+c+'" data-color="'+c+'"></div>';}).join('');
-  cp.querySelectorAll('.col-opt').forEach(function(el){el.addEventListener('click',function(){selColor=el.dataset.color;cp.querySelectorAll('.col-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});});
-  var ep=document.getElementById('emo-picker');
-  ep.innerHTML=EMOJIS.map(function(e){return'<div class="emo-opt'+(e===selEmoji?' on':'')+'" data-emoji="'+e+'">'+e+'</div>';}).join('');
-  ep.querySelectorAll('.emo-opt').forEach(function(el){el.addEventListener('click',function(){selEmoji=el.dataset.emoji;ep.querySelectorAll('.emo-opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');});});
-  document.getElementById('ch-overlay').classList.add('on');
-});
-document.getElementById('cancel-ch-btn').addEventListener('click',function(){document.getElementById('ch-overlay').classList.remove('on');});
-document.getElementById('save-ch-btn').addEventListener('click',async function(){
-  var name=document.getElementById('ch-name').value.trim();
-  if(!name){toast('Channel name required.','error');return;}
-  var {data,error}=await sb.from('channels').insert({
-    user_id:ST.user.id,nome:name,handle:document.getElementById('ch-handle').value,
-    nicchia:document.getElementById('ch-niche').value,sotto_nicchia:document.getElementById('ch-sub').value,
-    tono:document.getElementById('ch-tone').value,colore:selColor,emoji:selEmoji
-  }).select().single();
-  if(error){toast('Error: '+error.message,'error');return;}
-  document.getElementById('ch-overlay').classList.remove('on');
-  toast('Channel saved ✓','success');
-  await loadChannels();
-});
+    $('lib-niches').textContent = APP.library.niches;
+    $('lib-voices').textContent = APP.library.voices;
+    $('lib-tones').textContent = APP.library.tones;
+    $('lib-freelancers').textContent = APP.library.freelancers;
 
-// ===== PROJECTS =====
-async function loadProjects(){
-  if(!ST.channel)return;
-  var {data:projects}=await sb.from('projects').select('*').eq('channel_id',ST.channel.id).order('updated_at',{ascending:false});
-  var d=document.getElementById('projects-list');
-  if(!projects||!projects.length){d.innerHTML='<div style="font-size:13px;color:#9ca3af;padding:12px 0">No projects yet for this channel.</div>';return;}
-  d.innerHTML=projects.map(function(p){
-    return'<div class="proj-item" data-id="'+p.id+'">'
-      +'<div><div class="proj-title">'+(p.titolo||'Untitled')+'</div>'
-      +'<div class="proj-meta">'+(p.nicchia||'—')+' · '+(p.keyword||'—')+' · '+new Date(p.updated_at).toLocaleDateString()+'</div></div>'
-      +'<span class="'+(p.stato==='complete'?'s-done':'s-draft')+'">'+(p.stato)+'</span>'
-      +'</div>';
-  }).join('');
-  d.querySelectorAll('.proj-item').forEach(function(el){
-    el.addEventListener('click',async function(){
-      var {data:p}=await sb.from('projects').select('*').eq('id',el.dataset.id).single();
-      loadProjectIntoStudio(p);
-    });
-  });
-}
-
-function loadProjectIntoStudio(p){
-  ST.project=p;ST.title=p.titolo;ST.outline=p.outline;ST.script=p.script;
-  ST.seo=p.seo;ST.thumb=p.thumbnail;ST.broll=p.broll;ST.kling=p.kling;
-  document.getElementById('sb-project-name').textContent=p.titolo||'Untitled';
-  if(p.outline){document.getElementById('outline-box').textContent=p.outline;document.getElementById('outline-res').style.display='block';}
-  if(p.titolo)document.getElementById('topic-in').value=p.titolo;
-  if(p.script){
-    document.getElementById('s-full').textContent=p.script;
-    document.getElementById('s-seo').textContent=p.seo||'';
-    document.getElementById('s-thumb').textContent=p.thumbnail||'';
-    document.getElementById('s-broll').textContent=p.broll||'';
-    document.getElementById('s-kling').textContent=p.kling||'';
-    document.getElementById('script-res').style.display='block';
-    renderScriptSections(p.script);
-    extractVocalParts(p.script);
+    renderDashboard();
+  } catch (e) {
+    console.error('Library counts error:', e);
   }
-  toast('Project loaded: '+p.titolo,'success');
-  // Switch to outline panel
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="outline"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-outline').classList.add('on');
 }
 
-document.getElementById('new-proj-btn').addEventListener('click',function(){document.getElementById('proj-overlay').classList.add('on');});
-document.getElementById('cancel-proj-btn').addEventListener('click',function(){document.getElementById('proj-overlay').classList.remove('on');});
-document.getElementById('create-proj-btn').addEventListener('click',async function(){
-  var title=document.getElementById('proj-title-in').value.trim();
-  if(!title){toast('Enter a title.','error');return;}
-  var {data:p,error}=await sb.from('projects').insert({
-    channel_id:ST.channel.id,user_id:ST.user.id,titolo:title,stato:'draft'
-  }).select().single();
-  if(error){toast('Error: '+error.message,'error');return;}
-  document.getElementById('proj-overlay').classList.remove('on');
-  ST.project=p;ST.title=title;
-  document.getElementById('sb-project-name').textContent=title;
-  document.getElementById('topic-in').value=title;
-  document.getElementById('final-title').value=title;
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="outline"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-outline').classList.add('on');
-  await loadProjects();
-  toast('Project created ✓','success');
-});
-
-document.getElementById('save-project-btn').addEventListener('click',async function(){
-  await saveProject();toast('Project saved ✓','success');
-});
-
-// ===== NAVIGATION =====
-document.querySelectorAll('.si').forEach(function(el){
-  el.addEventListener('click',function(){
-    document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-    el.classList.add('on');
-    var p=el.dataset.panel;
-    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-    document.getElementById('panel-'+p).classList.add('on');
-    if(p==='outline')renderQuickIdeas();
-    if(p==='export')renderExportInfo();
-    if(p==='projects')loadProjects();
-  });
-});
-
-// ===== TABS =====
-document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){document.getElementById('script-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});tab.classList.add('on');document.querySelectorAll('#panel-script .tab-pnl').forEach(function(p){p.classList.remove('on');});document.getElementById('stab-'+tab.dataset.tab).classList.add('on');});});
-document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){document.getElementById('voice-tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});tab.classList.add('on');document.querySelectorAll('#panel-voice .tab-pnl').forEach(function(p){p.classList.remove('on');});document.getElementById('vtab-'+tab.dataset.tab).classList.add('on');});});
-
-// ===== COPY BUTTONS =====
-document.querySelectorAll('[data-copy]').forEach(function(btn){btn.addEventListener('click',function(){var el=document.getElementById(btn.dataset.copy);if(el){navigator.clipboard.writeText(el.textContent).then(function(){toast('Copied ✓');});}});});
-
-// ===== NICHE =====
-function renderNiches(){var grid=document.getElementById('niche-grid');grid.innerHTML=Object.entries(NICHES).map(function(e){var k=e[0],v=e[1],on=ST.niche===k;return'<div class="nc'+(on?' on':'')+'" data-niche="'+k+'" style="'+(on?'border-color:'+v.color+';background:'+v.color+'11':'')+'"><div class="nc-icon">'+v.icon+'</div><div class="nc-name">'+v.name+'</div><div class="nc-cpm">'+v.cpm+' CPM</div><div class="nc-comp">Competition: '+v.comp+'</div></div>';}).join('');grid.querySelectorAll('.nc').forEach(function(el){el.addEventListener('click',function(){selectNiche(el.dataset.niche);});});}
-function selectNiche(k){ST.niche=k;renderNiches();var n=NICHES[k];document.getElementById('sub-sec').style.display='block';var st=document.getElementById('sub-tags');st.innerHTML=n.subs.map(function(s){return'<span class="tag" data-sub="'+s+'">'+s+'</span>';}).join('');st.querySelectorAll('.tag').forEach(function(el){el.addEventListener('click',function(){ST.subniche=el.dataset.sub;st.querySelectorAll('.tag').forEach(function(t){t.classList.remove('on');});el.classList.add('on');var desc=n.subDesc[el.dataset.sub]||'';document.getElementById('sub-detail').innerHTML=desc?'<div style="background:#f0fdf4;border-radius:9px;padding:9px 13px;font-size:12px;color:#065f46;margin-bottom:10px">'+el.dataset.sub+' — '+desc+'</div>':'';scheduleAutosave();});});document.getElementById('sub-detail').innerHTML='';document.getElementById('kw-sec').style.display='block';renderKws(k);document.getElementById('niche-actions').style.display='flex';scheduleAutosave();}
-function renderKws(k){var kl=document.getElementById('kw-list');kl.innerHTML=NICHES[k].keywords.map(function(kw){return'<div class="kw-item'+(ST.keyword===kw.term?' on':'')+'" data-term="'+kw.term.replace(/"/g,'&quot;')+'"><div class="kw-term">'+kw.term+'</div><div class="badges"><span class="badge bv">'+kw.vol+'</span><span class="badge bc">'+kw.cpm+'</span><span class="badge bco">'+kw.comp+'</span></div></div>';}).join('');kl.querySelectorAll('.kw-item').forEach(function(el){el.addEventListener('click',function(){ST.keyword=el.dataset.term;renderKws(k);toast('Keyword: '+el.dataset.term);scheduleAutosave();});});}
-document.getElementById('use-kw-btn').addEventListener('click',function(){var v=document.getElementById('custom-kw').value.trim();if(v){ST.keyword=v;toast('Keyword: '+v);scheduleAutosave();}});
-document.getElementById('go-outline-btn').addEventListener('click',function(){if(!ST.niche){toast('Select a niche first.','error');return;}if(!ST.project){toast('Create a project first — go to All Projects.','error');return;}document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});document.querySelector('.si[data-panel="outline"]').classList.add('on');document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});document.getElementById('panel-outline').classList.add('on');renderQuickIdeas();});
-document.getElementById('analyze-kw-btn').addEventListener('click',async function(){if(!ST.keyword){toast('Select a keyword first.','error');return;}document.getElementById('kw-analysis').style.display='block';document.getElementById('kw-out').textContent='Analyzing...';var r=await claudeCall('Analyze this YouTube keyword for a '+(ST.niche?NICHES[ST.niche].name:'Finance')+' channel: "'+ST.keyword+'"\n\n1. Search intent\n2. CPM assessment\n3. Competition gaps\n4. 5 video title variations optimized for CTR\n5. 3 related long-tail keywords\n6. Recommended format','YouTube SEO expert.');if(r)document.getElementById('kw-out').textContent=r;});
-
-// ===== OUTLINE =====
-function renderQuickIdeas(){var d=document.getElementById('quick-ideas');if(!ST.niche){d.innerHTML='<div style="font-size:13px;color:#9ca3af">Select a niche first.</div>';return;}d.innerHTML=NICHES[ST.niche].ideas.map(function(idea){return'<div style="padding:8px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:6px;cursor:pointer;font-size:13px;color:#6b7280" data-idea="'+idea.replace(/"/g,'&quot;')+'">'+idea+'</div>';}).join('');d.querySelectorAll('[data-idea]').forEach(function(el){el.addEventListener('click',function(){document.getElementById('topic-in').value=el.dataset.idea;});});}
-document.getElementById('gen-outline-btn').addEventListener('click',async function(){
-  if(!ST.project){toast('Create a project first — go to All Projects.','error');return;}
-  var topic=document.getElementById('topic-in').value.trim();
-  if(!topic){toast('Enter a topic first.','error');return;}
-  ST.title=topic;
-  document.getElementById('outline-res').style.display='block';
-  document.getElementById('outline-box').textContent='Claude is generating your outline...';
-  var r=await claudeCall('Generate a detailed YouTube video outline:\n\nTitle: "'+topic+'"\nFormat: '+document.getElementById('fmt-sel').value+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\nPsychological angle: '+(document.getElementById('psych-in').value||'not specified')+'\n\n1. HOOK CONCEPT — specific counter-intuitive premise\n2. CORE THESIS — one sentence\n3. STRUCTURE — each section: title, key point, real case with names\n4. EMOTIONAL ARC\n5. THE CLOSE — checklist\n6. WHY THIS WILL PERFORM\n\nBe specific. Name real people, companies, events.','Expert YouTube content strategist.');
-  if(r){ST.outline=r;document.getElementById('outline-box').textContent=r;scheduleAutosave();}
-});
-document.getElementById('clear-outline-btn').addEventListener('click',function(){document.getElementById('topic-in').value='';document.getElementById('outline-box').textContent='';document.getElementById('outline-res').style.display='none';ST.outline=null;});
-document.getElementById('copy-outline-btn').addEventListener('click',function(){navigator.clipboard.writeText(document.getElementById('outline-box').textContent).then(function(){toast('Copied ✓');});});
-document.getElementById('approve-outline-btn').addEventListener('click',function(){
-  if(!ST.outline){toast('Generate an outline first.','error');return;}
-  var notes=document.getElementById('outline-notes').value;
-  if(notes)ST.outline+='\n\nADDITIONAL REQUIREMENTS:\n'+notes;
-  document.getElementById('final-title').value=document.getElementById('topic-in').value;
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="script"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-script').classList.add('on');
-  setTimeout(function(){document.getElementById('gen-script-btn').click();},400);
-});
-
-// ===== SCRIPT SECTIONS =====
-function renderScriptSections(text){
-  var container=document.getElementById('s-full-sections');
-  var sections=[
-    {label:'SECTION 1: FILE HEADER',key:'s1',vocal:false},
-    {label:'SECTION 2: SEO METADATA',key:'s2',vocal:false},
-    {label:'SECTION 3: THUMBNAIL BRIEF',key:'s3',vocal:false},
-    {label:'SECTION 4: HOOK',key:'s4',vocal:true},
-    {label:'SECTION 5: INTRO BRIDGE',key:'s5',vocal:true},
-    {label:'SECTION 6: MAIN CONTENT',key:'s6',vocal:true},
-    {label:'SECTION 7: CLOSE & CTA',key:'s7',vocal:true},
-    {label:'SECTION 8: B-ROLL SHOT LIST',key:'s8',vocal:false},
-    {label:'SECTION 9: KLING',key:'s9',vocal:false},
-  ];
-  var html='';
-  sections.forEach(function(sec){
-    var regex=new RegExp('##\\s*'+sec.label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([\\s\\S]*?)(?=##\\s*SECTION|$)','i');
-    var match=text.match(regex);
-    var content=match?match[1].trim():'-';
-    html+='<div class="script-section'+(sec.vocal?' vocal':'')+'">'
-      +'<div class="script-section-header" onclick="toggleSection(this)">'
-      +(sec.vocal?'🎙️ ':'📄 ')+sec.label
-      +'<span style="font-size:10px;color:inherit;opacity:.6">'+(sec.vocal?'NARRATION':'')+'</span>'
-      +'</div>'
-      +'<div class="script-section-body on">'+escapeHtml(content)+'</div>'
-      +'</div>';
-  });
-  container.innerHTML=html;
-  document.getElementById('s-full').style.display='none';
+// ============================================================
+// NEW CHANNEL MODAL
+// ============================================================
+function openChannelModal(){
+  $('ch-name-in').value = '';
+  $('ch-handle-in').value = '';
+  $('ch-url-in').value = '';
+  APP.selectedEmoji = '🎬';
+  APP.selectedColor = '#6366F1';
+  updateEmojiPickerSelection();
+  updateColorPickerSelection();
+  show('channel-modal');
+  setTimeout(() => $('ch-name-in').focus(), 100);
 }
-function toggleSection(el){var body=el.nextElementSibling;body.classList.toggle('on');}
-function escapeHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-function extractVocalParts(text){
-  ST.vocalParts=[];
-  var sections=['SECTION 4: HOOK','SECTION 5: INTRO BRIDGE','SECTION 6: MAIN CONTENT','SECTION 7: CLOSE & CTA'];
-  sections.forEach(function(sec){
-    var regex=new RegExp('##\\s*'+sec.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([\\s\\S]*?)(?=##\\s*SECTION|$)','i');
-    var match=text.match(regex);
-    if(match){
-      // Extract narration lines (lines that look like spoken content)
-      var content=match[1].trim();
-      // Remove B-roll directions in parentheses/italics
-      var narration=content.replace(/\*\(.*?\)\*/g,'').replace(/\(Camera:.*?\)/g,'').replace(/\(B-roll:.*?\)/gi,'').replace(/\*(.*?)\*/g,'').trim();
-      if(narration.length>50){
-        ST.vocalParts.push({label:sec,text:narration.slice(0,4000)});
-      }
+function updateEmojiPickerSelection(){
+  document.querySelectorAll('#emoji-picker [data-emoji]').forEach(b => {
+    if (b.dataset.emoji === APP.selectedEmoji) {
+      b.style.background = 'var(--color-accent-soft)';
+      b.style.borderColor = 'var(--color-accent)';
+    } else {
+      b.style.background = '';
+      b.style.borderColor = '';
     }
   });
-  renderVocalQueue();
 }
 
-function renderVocalQueue(){
-  var d=document.getElementById('vocal-queue');
-  if(!ST.vocalParts.length){d.innerHTML='<div style="font-size:13px;color:#9ca3af">Generate a script first.</div>';return;}
-  d.innerHTML=ST.vocalParts.map(function(p,i){
-    return'<div class="vq-item">'
-      +'<div class="vq-label">'+p.label+'</div>'
-      +'<div class="vq-text">'+escapeHtml(p.text.slice(0,200))+'...</div>'
-      +'<div style="margin-top:8px;display:flex;gap:6px">'
-      +'<button class="btn" style="font-size:11px;padding:4px 10px" onclick="sendVocalPartToVoice('+i+')">🎙️ Generate audio</button>'
-      +'<button class="btn" style="font-size:11px;padding:4px 10px" onclick="copyVocalPart('+i+')">Copy text</button>'
-      +'</div></div>';
-  }).join('');
+function updateColorPickerSelection(){
+  document.querySelectorAll('#color-picker .color-opt').forEach(b => {
+    b.style.borderColor = b.dataset.color === APP.selectedColor ? 'var(--color-text)' : 'transparent';
+  });
 }
-function copyVocalPart(i){navigator.clipboard.writeText(ST.vocalParts[i].text).then(function(){toast('Copied ✓');});}
-function sendVocalPartToVoice(i){
-  document.getElementById('voice-text').value=ST.vocalParts[i].text;
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="voice"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-voice').classList.add('on');
-  toast('Text sent to Voice panel ✓','success');
-}
-document.getElementById('send-to-voice-btn').addEventListener('click',function(){
-  if(!ST.vocalParts.length){toast('Generate a script first.','error');return;}
-  var combined=ST.vocalParts.map(function(p){return'['+p.label+']\n'+p.text;}).join('\n\n---\n\n');
-  document.getElementById('voice-text').value=combined.slice(0,5000);
-  document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});
-  document.querySelector('.si[data-panel="voice"]').classList.add('on');
-  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});
-  document.getElementById('panel-voice').classList.add('on');
-  toast('All vocal parts sent to Voice panel ✓','success');
+
+document.querySelectorAll('#emoji-picker [data-emoji]').forEach(b => {
+  b.addEventListener('click', () => {
+    APP.selectedEmoji = b.dataset.emoji;
+    updateEmojiPickerSelection();
+  });
 });
 
-// ===== SCRIPT =====
-document.getElementById('gen-script-btn').addEventListener('click',async function(){
-  if(!ST.project){toast('Create a project first.','error');return;}
-  var title=document.getElementById('final-title').value.trim()||ST.title||'Untitled';
-  ST.title=title;
-  document.getElementById('script-res').style.display='block';
-  document.getElementById('s-full-sections').innerHTML='<div style="color:#9ca3af;font-size:13px;padding:20px">Claude is writing your full script...</div>';
-  ['s-seo','s-thumb','s-broll','s-kling'].forEach(function(id){document.getElementById(id).textContent='';});
-  document.getElementById('gen-script-btn').disabled=true;
-  var r=await claudeCall(
-    'Write a complete 9-section YouTube production script:\n\nTITLE: "'+title+'"\nNICHE: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKEYWORD: '+(ST.keyword||'not specified')+'\nTONE: '+document.getElementById('tone-sel').value+(ST.outline?'\n\nAPPROVED OUTLINE:\n'+ST.outline:'')+
-    '\n\n## SECTION 1: FILE HEADER\nChannel, format, niche, CPM estimate.\n## SECTION 2: SEO METADATA\nTitle, A/B title, 150-char description, full description 250 words, 14-18 tags, upload time, chapters.\n## SECTION 3: THUMBNAIL BRIEF\nTwo concepts: visual, text overlay, palette, Midjourney prompt.\n## SECTION 4: HOOK (0:00–0:35)\nFull narration. Counter-intuitive opening. NO greeting. Include *(Camera: ...)* directions.\n## SECTION 5: INTRO BRIDGE (0:35–1:10)\nFull narration with camera directions.\n## SECTION 6: MAIN CONTENT\nNumbered sections. Each: timestamp, FULL narration with real names/numbers, *(B-roll: specific shot)* directions, [ON-SCREEN TEXT: ...].\n## SECTION 7: CLOSE & CTA\nFull narration. Checklist summary. Subscribe CTA. End screen instructions.\n## SECTION 8: B-ROLL SHOT LIST\nTable: Timestamp | Shot description | Production notes. Min 12 shots.\n## SECTION 9: KLING/VEO PROMPTS\nSCENE [N]: [timestamp]\nPROMPT: [detailed cinematic prompt for AI video generation]\n---\nWrite EVERY section completely. Full narration, not summaries.',
-    'Expert YouTube script writer for high-CPM educational content. Always complete all 9 sections fully.'
-  );
-  document.getElementById('gen-script-btn').disabled=false;
-  if(!r)return;
-  ST.script=r;
-  document.getElementById('s-full').textContent=r;
-  var seo=r.match(/SECTION 2[\s\S]*?SEO METADATA([\s\S]*?)(?=##\s*SECTION 3|$)/i);
-  var th=r.match(/SECTION 3[\s\S]*?THUMBNAIL BRIEF([\s\S]*?)(?=##\s*SECTION 4|$)/i);
-  var br=r.match(/SECTION 8[\s\S]*?B.ROLL([\s\S]*?)(?=##\s*SECTION 9|$)/i);
-  var kl=r.match(/SECTION 9[\s\S]*?KLING[\s\S]*?PROMPTS?([\s\S]*?)$/i);
-  if(seo){ST.seo=seo[1].trim();document.getElementById('s-seo').textContent=ST.seo;}
-  if(th){ST.thumb=th[1].trim();document.getElementById('s-thumb').textContent=ST.thumb;}
-  if(br){ST.broll=br[1].trim();document.getElementById('s-broll').textContent=ST.broll;}
-  if(kl){ST.kling=kl[1].trim();document.getElementById('s-kling').textContent=ST.kling;}
-  renderScriptSections(r);
-  extractVocalParts(r);
-  scheduleAutosave();
-  toast('Full script ready ✓','success');
+document.querySelectorAll('#color-picker .color-opt').forEach(b => {
+  b.addEventListener('click', () => {
+    APP.selectedColor = b.dataset.color;
+    updateColorPickerSelection();
+  });
 });
 
-document.getElementById('gen-seo-btn').addEventListener('click',async function(){
-  var title=document.getElementById('final-title').value.trim();
-  if(!title){toast('Enter a title first.','error');return;}
-  document.getElementById('script-res').style.display='block';
-  document.getElementById('s-seo').textContent='Generating...';
-  var r=await claudeCall('SEO package for YouTube:\nTitle: "'+title+'"\nNiche: '+(ST.niche?NICHES[ST.niche].name:'Finance')+'\nKeyword: '+(ST.keyword||'not specified')+'\n\nInclude: optimized title, A/B title, 150-char description, full 250-word description, 16 tags, upload time, 8 chapters with timestamps.','YouTube SEO expert.');
-  if(r){ST.seo=r;document.getElementById('s-seo').textContent=r;scheduleAutosave();}
-});
-document.getElementById('go-voice-btn').addEventListener('click',function(){document.querySelectorAll('.si').forEach(function(s){s.classList.remove('on');});document.querySelector('.si[data-panel="voice"]').classList.add('on');document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on');});document.getElementById('panel-voice').classList.add('on');});
+$('ch-cancel').addEventListener('click', () => hide('channel-modal'));
 
-// ===== VOICE =====
-document.getElementById('gen-voice-btn').addEventListener('click',async function(){
-  var text=document.getElementById('voice-text').value.trim();
-  var vid=document.getElementById('voice-id').value;
-  if(!text){toast('Add text first.','error');return;}
-  if(text.length>5000){toast('Max 5000 chars per call.','error');return;}
-  toast('Generating voiceover — 20-30 seconds...');
-  var url=await elevenCall(text,vid);
-  if(url){
-    var player=document.getElementById('audio-player');
-    player.src=url;player.load();
-    document.getElementById('audio-dl').href=url;
-    document.getElementById('voice-out').style.display='block';
-    toast('Voiceover ready ✓','success');
-  }
-});
-document.getElementById('fmt-actor-btn').addEventListener('click',async function(){
-  var text=document.getElementById('actor-text').value.trim();
-  var char=document.getElementById('actor-char').value;
-  if(!text){toast('Add narration first.','error');return;}
-  document.getElementById('actor-out').style.display='block';
-  document.getElementById('actor-box').textContent='Formatting...';
-  var r=await claudeCall('Format for human voice actor.\nVoice: '+char+'\n\nFor each paragraph: [TONE: CALM/TENSE/REVEALING] [PACE: SLOW/MEASURED/FASTER] [EMPHASIS: key word]\n\nNARRATION:\n'+text,'Professional voice director.');
-  if(r)document.getElementById('actor-box').textContent=r;
+$('ch-save').addEventListener('click', async () => {
+  const name = $('ch-name-in').value.trim();
+  if (!name) { toast('Channel name is required', 'error'); return; }
+
+  const payload = {
+    user_id: APP.user.id,
+    name: name,
+    handle: $('ch-handle-in').value.trim() || null,
+    youtube_url: $('ch-url-in').value.trim() || null,
+    emoji: APP.selectedEmoji,
+    brand_color: APP.selectedColor,
+    status: 'draft',
+  };
+
+  showLoader();
+  const { data, error } = await APP.sb.from('channels').insert(payload).select().single();
+  hideLoader();
+
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+
+  APP.channels.push(data);
+  renderChannels();
+  renderDashboard();
+  hide('channel-modal');
+  toast('Channel "' + name + '" created ✓', 'success');
 });
 
-// ===== COMPETITOR =====
-document.getElementById('analyze-comp-btn').addEventListener('click',async function(){
-  var url=document.getElementById('comp-url').value.trim();
-  if(!url){toast('Enter a YouTube channel URL.','error');return;}
-  document.getElementById('comp-out').style.display='block';
-  document.getElementById('comp-result').textContent='Fetching real YouTube data...';
-  try{
-    var ytRes=await fetch('https://wibbjxynnrwbnzohqwlt.supabase.co/functions/v1/youtube',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({channelUrl:url})
-    });
-    var ytData=await ytRes.json();
-    if(ytData.error){toast('YouTube API: '+ytData.error,'error');document.getElementById('comp-result').textContent='Error: '+ytData.error;return;}
-    var ch=ytData.channel;
-    var st=ytData.stats;
-    var topVids=st.topVideos.map(function(v,i){return (i+1)+'. "'+v.title+'" — '+v.views.toLocaleString()+' views, '+v.duration;}).join('\n');
-    var recentVids=st.recentVideos.map(function(v){return '"'+v.title+'" ('+v.duration+', '+v.views.toLocaleString()+' views)';}).join('\n');
-    document.getElementById('comp-result').textContent='Real data fetched. Claude is analyzing...';
-    var prompt='Analyze this YouTube channel based on REAL DATA:\n\n'
-      +'CHANNEL: '+ch.name+'\n'
-      +'SUBSCRIBERS: '+ch.subscribers.toLocaleString()+'\n'
-      +'TOTAL VIEWS: '+ch.totalViews.toLocaleString()+'\n'
-      +'TOTAL VIDEOS: '+ch.videoCount+'\n'
-      +'AVERAGE VIDEO DURATION: '+st.avgDurationMinutes+' minutes\n'
-      +'AVERAGE VIEWS PER VIDEO: '+st.avgViews.toLocaleString()+'\n\n'
-      +'TOP 5 MOST VIEWED VIDEOS:\n'+topVids+'\n\n'
-      +'RECENT VIDEOS:\n'+recentVids+'\n\n'
-      +'Based on this REAL data provide:\n'
-      +'1. NICHE & FORMAT — exact topic area, avg duration is '+st.avgDurationMinutes+' min\n'
-      +'2. CPM ESTIMATE — based on niche and format\n'
-      +'3. WHAT WORKS — based on top performing videos\n'
-      +'4. GAPS — what angles are missing\n'
-      +'5. FIRST 5 VIDEO IDEAS — titles to compete, inspired by their best performers\n'
-      +'6. REPLICATION STRATEGY — how to build a better version\n\n'
-      +'Use the actual video titles and view counts in your analysis.';
-    var r=await claudeCall(prompt,'YouTube channel analyst with access to real channel data.');
-    if(r)document.getElementById('comp-result').textContent=r;
-  }catch(e){toast('Error: '+e.message,'error');}
-});;
+// Close modal on backdrop click
+$('channel-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'channel-modal') hide('channel-modal');
+});
 
-// ===== EXPORT =====
-function renderExportInfo(){
-  if(ST.project)document.getElementById('export-info').innerHTML='<strong>'+(ST.title||ST.project.titolo||'Untitled')+'</strong><br><span style="font-size:12px;color:#9ca3af">'+ST.channel.nome+' · '+(ST.niche?NICHES[ST.niche].name:'—')+'</span>';
-}
-function buildPkg(){return'YOUTUBE VIDEO PRODUCTION PACKAGE — MYCUTIEPIE\n'+'='.repeat(48)+'\nTitle: '+(ST.title||'Untitled')+'\nChannel: '+(ST.channel?ST.channel.nome:'—')+'\nNiche: '+(ST.niche?NICHES[ST.niche].name:'—')+'\nKeyword: '+(ST.keyword||'—')+'\nDate: '+new Date().toLocaleDateString()+'\n\n'+'='.repeat(48)+'\nSEO METADATA\n'+'='.repeat(48)+'\n'+(ST.seo||'(not generated)')+'\n\n'+'='.repeat(48)+'\nFULL SCRIPT\n'+'='.repeat(48)+'\n'+(ST.script||'(not generated)')+'\n\n'+'='.repeat(48)+'\nKLING / VEO PROMPTS\n'+'='.repeat(48)+'\n'+(ST.kling||'(not generated)')+'\n\n'+'='.repeat(48)+'\nPRE-PUBLISH CHECKLIST\n'+'='.repeat(48)+'\n□ Script reviewed and approved\n□ Voiceover complete\n□ B-roll generated via Kling/Veo\n□ Thumbnail designed\n□ SEO metadata added to YouTube\n□ Chapters added to description\n□ Pinned comment ready\n□ Upload scheduled';}
-document.getElementById('export-btn').addEventListener('click',function(){var b=new Blob([buildPkg()],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(ST.title||'video').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_package.txt';a.click();toast('Downloaded ✓','success');});
-document.getElementById('copy-pkg-btn').addEventListener('click',function(){navigator.clipboard.writeText(buildPkg()).then(function(){toast('Copied ✓','success');});});
-
-// ===== TOAST =====
-function toast(msg,type){type=type||'default';var w=document.getElementById('toasts');var t=document.createElement('div');t.className='toast';var bg={default:'#1f2937',success:'#065f46',error:'#7f1d1d',warn:'#78350f'};t.style.background=bg[type]||bg.default;t.textContent=msg;w.appendChild(t);setTimeout(function(){t.remove();},3000);}
-
-// ===== START =====
-window.addEventListener('load',function(){initAuth();});
+// ============================================================
+// START
+// ============================================================
+window.addEventListener('load', initApp);
 </script>
+
 </body>
 </html>
