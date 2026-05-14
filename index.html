@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -41,30 +41,16 @@
 html,body{height:100%}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
-  background:var(--color-bg);
-  color:var(--color-text);
-  line-height:1.5;
-  -webkit-font-smoothing:antialiased;
+  background:var(--color-bg);color:var(--color-text);line-height:1.5;-webkit-font-smoothing:antialiased;
 }
 
-/* ======================== AUTH ======================== */
-#auth-screen{
-  min-height:100vh;display:none;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#fafaf9 0%,#eef2ff 100%);padding:24px;
-}
+/* AUTH */
+#auth-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fafaf9 0%,#eef2ff 100%);padding:24px}
 #auth-screen.on{display:flex}
-.auth-card{
-  background:var(--color-surface);border:1px solid var(--color-border);
-  border-radius:var(--radius-xl);padding:40px;width:420px;max-width:100%;
-  box-shadow:var(--shadow-lg);
-}
+.auth-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:40px;width:420px;max-width:100%;box-shadow:var(--shadow-lg)}
 .auth-brand{text-align:center;margin-bottom:28px}
 .auth-logo{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:6px}
-.auth-title{
-  font-size:26px;font-weight:700;letter-spacing:-.5px;
-  background:linear-gradient(135deg,var(--color-accent),var(--color-pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
+.auth-title{font-size:26px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,var(--color-accent),var(--color-pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .auth-sub{font-size:13px;color:var(--color-text-muted);margin-top:4px}
 .auth-tabs{display:flex;background:var(--color-surface-2);border-radius:var(--radius-md);padding:4px;margin-bottom:20px}
 .auth-tab{flex:1;padding:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--color-text-muted);font-family:inherit;border-radius:var(--radius-sm);transition:.15s}
@@ -73,25 +59,16 @@ body{
 .auth-msg.error{background:var(--color-danger-soft);color:var(--color-danger);display:block}
 .auth-msg.success{background:var(--color-success-soft);color:var(--color-success);display:block}
 
-/* ======================== FIELDS ======================== */
+/* FIELDS */
 .fld{margin-bottom:14px}
 .fld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:6px}
-.fld input,.fld select,.fld textarea{
-  width:100%;padding:10px 13px;font-size:14px;border:1px solid var(--color-border);
-  border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-text);
-  font-family:inherit;transition:.15s;
-}
+.fld input,.fld select,.fld textarea{width:100%;padding:10px 13px;font-size:14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-text);font-family:inherit;transition:.15s}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
 .fld textarea{min-height:90px;resize:vertical;line-height:1.6}
 .fld-hint{font-size:11px;color:var(--color-text-subtle);margin-top:6px;display:flex;align-items:center;gap:4px}
 
-/* ======================== BUTTONS ======================== */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:9px 16px;font-size:13px;font-weight:600;font-family:inherit;
-  border-radius:var(--radius-sm);border:1px solid var(--color-border);
-  background:var(--color-surface);color:var(--color-text);cursor:pointer;transition:.12s;
-}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;font-size:13px;font-weight:600;font-family:inherit;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);cursor:pointer;transition:.12s;text-decoration:none}
 .btn:hover{background:var(--color-surface-2);border-color:var(--color-border-strong)}
 .btn.primary{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
 .btn.primary:hover{background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
@@ -106,188 +83,156 @@ body{
 .btn.lg{padding:11px 22px;font-size:14px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* ======================== DASHBOARD ======================== */
-#dashboard{display:none;min-height:100vh;background:var(--color-bg)}
-#dashboard.on{display:block}
-
-.topbar{
-  background:var(--color-surface);border-bottom:1px solid var(--color-border);
-  padding:14px 32px;display:flex;align-items:center;justify-content:space-between;
-}
-.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.2px}
+/* TOPBAR */
+.topbar{background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.2px;cursor:pointer;text-decoration:none;color:var(--color-text)}
 .brand-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--color-accent),var(--color-pink));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-muted);flex:1;min-width:0}
+.breadcrumb a{color:var(--color-text-muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--color-accent)}
+.breadcrumb .sep{color:var(--color-text-subtle)}
+.breadcrumb .current{color:var(--color-text);font-weight:600}
 .user-menu{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--color-text-muted)}
 
+#app-shell{display:none;min-height:100vh;background:var(--color-bg)}
+#app-shell.on{display:block}
 .container{max-width:900px;margin:0 auto;padding:40px 32px}
 
+/* DASHBOARD */
 .welcome{margin-bottom:36px}
 .welcome-label{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:8px}
 .welcome-title{font-size:32px;font-weight:700;letter-spacing:-1px;margin-bottom:6px}
 .welcome-sub{font-size:14px;color:var(--color-text-muted)}
 
-/* Channel card (single, big) */
-.channel-card{
-  background:var(--color-surface);border:1px solid var(--color-border);
-  border-radius:var(--radius-lg);padding:24px;margin-bottom:14px;
-}
+.channel-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:24px;margin-bottom:14px;cursor:pointer;transition:.15s}
+.channel-card:hover{border-color:var(--color-accent);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.channel-card.no-hover{cursor:default}
+.channel-card.no-hover:hover{transform:none;border-color:var(--color-border);box-shadow:none}
 .channel-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.channel-emoji{
-  width:52px;height:52px;border-radius:12px;display:flex;align-items:center;
-  justify-content:center;font-size:26px;flex-shrink:0;
-}
+.channel-emoji{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
 .channel-name{font-weight:700;font-size:17px;letter-spacing:-.2px}
 .channel-meta{font-size:12px;color:var(--color-text-muted);margin-top:3px;line-height:1.5}
-.channel-status{
-  display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;
-  letter-spacing:.08em;padding:4px 10px;border-radius:99px;
-  background:var(--color-warning-soft);color:#854F0B;
-}
+.channel-status{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:99px;background:var(--color-warning-soft);color:#854F0B}
 .channel-status.ready{background:var(--color-success-soft);color:var(--color-success)}
 
-/* CTA banner */
-.cta-banner{
-  background:linear-gradient(135deg,var(--color-pink-soft) 0%,var(--color-purple-soft) 100%);
-  border-radius:var(--radius-md);padding:20px;display:flex;align-items:center;gap:16px;
-}
+.cta-banner{background:linear-gradient(135deg,var(--color-pink-soft) 0%,var(--color-purple-soft) 100%);border-radius:var(--radius-md);padding:20px;display:flex;align-items:center;gap:16px}
 .cta-emoji{font-size:36px;flex-shrink:0}
 .cta-content{flex:1;min-width:0}
 .cta-title{font-weight:700;font-size:15px;color:#4B1528;margin-bottom:3px;letter-spacing:-.1px}
 .cta-desc{font-size:12px;color:#72243E;line-height:1.5}
-.cta-btn{
-  background:var(--color-pink-dark);color:#fff;border:none;padding:11px 20px;
-  border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;
-  white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
-  font-family:inherit;transition:.15s;
-}
+.cta-btn{background:var(--color-pink-dark);color:#fff;border:none;padding:11px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.15s}
 .cta-btn:hover{background:#7E2848;transform:translateY(-1px)}
 
-/* Quick actions */
 .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
-.quick-action{
-  background:var(--color-surface);border:1px solid var(--color-border);
-  border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;text-align:left;
-  font-family:inherit;display:flex;align-items:center;gap:12px;transition:.15s;
-}
+.quick-action{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:12px;transition:.15s;text-decoration:none;color:var(--color-text)}
 .quick-action.dashed{border-style:dashed;border-color:var(--color-border-strong)}
 .quick-action:hover{border-color:var(--color-accent);background:var(--color-accent-soft);transform:translateY(-1px)}
 .quick-action-icon{font-size:22px;color:var(--color-text-muted)}
 .quick-action-title{font-size:13px;font-weight:600;margin-bottom:2px}
 .quick-action-desc{font-size:11px;color:var(--color-text-subtle)}
 
-/* Empty state for first signup */
-.empty-state{
-  background:var(--color-surface);border:2px dashed var(--color-border-strong);
-  border-radius:var(--radius-lg);padding:48px 28px;text-align:center;
-}
+.empty-state{background:var(--color-surface);border:2px dashed var(--color-border-strong);border-radius:var(--radius-lg);padding:48px 28px;text-align:center}
 .empty-state-emoji{font-size:48px;margin-bottom:16px}
 .empty-state-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:8px}
 .empty-state-desc{font-size:14px;color:var(--color-text-muted);max-width:380px;margin:0 auto 24px;line-height:1.6}
 
-/* ======================== WIZARD ======================== */
-#wizard{
-  display:none;min-height:100vh;background:var(--color-surface-2);
-  align-items:flex-start;justify-content:center;padding:40px 24px;
-}
-#wizard.on{display:flex}
+/* CHANNEL WORKSPACE */
+.workspace-header{display:flex;align-items:center;gap:18px;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--color-border)}
+.workspace-emoji{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.workspace-info{flex:1;min-width:0}
+.workspace-name{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+.workspace-meta{font-size:13px;color:var(--color-text-muted);line-height:1.5}
+.workspace-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:99px;background:var(--color-surface-2);color:var(--color-text-muted)}
 
-.wizard-container{width:100%;max-width:620px}
+.section-title{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:14px;margin-top:8px}
 
-.wizard-progress{text-align:center;margin-bottom:28px}
-.wizard-step-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:10px}
-.wizard-bars{display:flex;gap:6px;justify-content:center}
-.wizard-bar{
-  width:44px;height:4px;border-radius:2px;background:var(--color-surface);
-  border:1px solid var(--color-border);transition:.3s;
-}
-.wizard-bar.on{background:var(--color-accent);border-color:var(--color-accent)}
+.video-empty{background:var(--color-surface);border:2px dashed var(--color-border-strong);border-radius:var(--radius-lg);padding:40px 24px;text-align:center}
+.video-empty-emoji{font-size:42px;margin-bottom:14px}
+.video-empty-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.video-empty-desc{font-size:13px;color:var(--color-text-muted);max-width:360px;margin:0 auto 20px;line-height:1.6}
 
-.wizard-header{text-align:center;margin-bottom:28px}
-.wizard-title{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:8px}
-.wizard-desc{font-size:14px;color:var(--color-text-muted);max-width:440px;margin:0 auto;line-height:1.6}
+/* CHANNEL SETTINGS */
+.settings-section{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
+.settings-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--color-border)}
+.settings-section-title{font-size:15px;font-weight:700;letter-spacing:-.1px}
+.settings-section-desc{font-size:12px;color:var(--color-text-muted);margin-top:2px}
 
-.wizard-card{
-  background:var(--color-surface);border:1px solid var(--color-border);
-  border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);
-}
-
-/* Emoji picker */
 .emoji-picker{display:flex;gap:8px;flex-wrap:wrap}
-.emoji-btn{
-  width:44px;height:44px;font-size:22px;border:1.5px solid var(--color-border);
-  background:var(--color-surface);border-radius:var(--radius-sm);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:.12s;
-}
+.emoji-btn{width:44px;height:44px;font-size:22px;border:1.5px solid var(--color-border);background:var(--color-surface);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s}
 .emoji-btn:hover{border-color:var(--color-accent)}
 .emoji-btn.on{border-color:var(--color-accent);background:var(--color-accent-soft)}
 
-/* Topic starter chips */
-.starter-section{
-  background:var(--color-surface-2);border-radius:var(--radius-sm);
-  padding:12px 14px;margin-top:14px;
-}
-.starter-label{
-  font-size:11px;color:var(--color-text-muted);margin-bottom:8px;
-  display:flex;align-items:center;gap:5px;font-weight:500;
-}
-.starter-chips{display:flex;flex-wrap:wrap;gap:6px}
-.starter-chip{
-  font-size:12px;padding:5px 11px;border-radius:99px;
-  border:1px solid var(--color-border);background:var(--color-surface);
-  cursor:pointer;font-family:inherit;color:var(--color-text-muted);transition:.12s;
-}
-.starter-chip:hover{border-color:var(--color-accent);color:var(--color-accent)}
+/* PIVOT HISTORY */
+.history-item{display:flex;align-items:start;gap:12px;padding:14px 0;border-bottom:1px solid var(--color-border)}
+.history-item:last-child{border-bottom:none;padding-bottom:0}
+.history-dot{width:10px;height:10px;border-radius:50%;background:var(--color-text-subtle);margin-top:6px;flex-shrink:0}
+.history-dot.current{background:var(--color-success)}
+.history-content{flex:1;min-width:0}
+.history-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.history-date{font-size:11px;color:var(--color-text-subtle)}
+.history-reason{font-size:12px;color:var(--color-text-muted);margin-top:4px;font-style:italic}
 
-/* Age range pills */
+/* DANGER ZONE */
+.danger-section{background:var(--color-surface);border:1px solid var(--color-danger-soft);border-radius:var(--radius-lg);padding:24px;margin-top:16px}
+.danger-title{font-size:14px;font-weight:700;color:var(--color-danger);margin-bottom:14px}
+
+/* WIZARD (riusato per pivot) */
+#wizard{display:none;min-height:100vh;background:var(--color-surface-2);align-items:flex-start;justify-content:center;padding:40px 24px}
+#wizard.on{display:flex}
+.wizard-container{width:100%;max-width:620px}
+.wizard-progress{text-align:center;margin-bottom:28px}
+.wizard-step-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:10px}
+.wizard-bars{display:flex;gap:6px;justify-content:center}
+.wizard-bar{width:44px;height:4px;border-radius:2px;background:var(--color-surface);border:1px solid var(--color-border);transition:.3s}
+.wizard-bar.on{background:var(--color-accent);border-color:var(--color-accent)}
+.wizard-header{text-align:center;margin-bottom:28px}
+.wizard-title{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:8px}
+.wizard-desc{font-size:14px;color:var(--color-text-muted);max-width:440px;margin:0 auto;line-height:1.6}
+.wizard-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+.starter-section{background:var(--color-surface-2);border-radius:var(--radius-sm);padding:12px 14px;margin-top:14px}
+.starter-label{font-size:11px;color:var(--color-text-muted);margin-bottom:8px;display:flex;align-items:center;gap:5px;font-weight:500}
+.starter-chips{display:flex;flex-wrap:wrap;gap:6px}
+.starter-chip{font-size:12px;padding:5px 11px;border-radius:99px;border:1px solid var(--color-border);background:var(--color-surface);cursor:pointer;font-family:inherit;color:var(--color-text-muted);transition:.12s}
+.starter-chip:hover{border-color:var(--color-accent);color:var(--color-accent)}
 .age-pills{display:flex;flex-wrap:wrap;gap:8px}
-.age-pill{
-  font-size:13px;font-weight:600;padding:8px 16px;border-radius:99px;
-  border:1.5px solid var(--color-border);background:var(--color-surface);
-  cursor:pointer;font-family:inherit;color:var(--color-text-muted);transition:.12s;
-}
+.age-pill{font-size:13px;font-weight:600;padding:8px 16px;border-radius:99px;border:1.5px solid var(--color-border);background:var(--color-surface);cursor:pointer;font-family:inherit;color:var(--color-text-muted);transition:.12s}
 .age-pill:hover{border-color:var(--color-accent)}
 .age-pill.on{background:var(--color-accent-soft);border-color:var(--color-accent);color:var(--color-accent)}
-
-/* Tone grid */
 .tone-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tone-card{
-  background:var(--color-surface);border:1.5px solid var(--color-border);
-  border-radius:var(--radius-md);padding:18px;cursor:pointer;transition:.15s;
-  text-align:left;font-family:inherit;
-}
+.tone-card{background:var(--color-surface);border:1.5px solid var(--color-border);border-radius:var(--radius-md);padding:18px;cursor:pointer;transition:.15s;text-align:left;font-family:inherit}
 .tone-card:hover{border-color:var(--color-accent);transform:translateY(-1px)}
 .tone-card.on{border-color:var(--color-accent);background:var(--color-accent-soft)}
 .tone-emoji{font-size:26px;margin-bottom:8px}
 .tone-name{font-weight:700;font-size:14px;margin-bottom:4px}
 .tone-desc{font-size:12px;color:var(--color-text-muted);line-height:1.5}
+.wizard-actions{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
 
-.wizard-actions{
-  display:flex;justify-content:space-between;align-items:center;margin-top:24px;
-}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(28,25,23,.5);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s ease}
+.overlay.on{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--color-surface);border-radius:var(--radius-xl);padding:32px;width:480px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal h2{font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.modal p.modal-sub{font-size:13px;color:var(--color-text-muted);margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
 
-/* ======================== TOAST ======================== */
+/* TOAST + LOADER */
 .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
-.toast{
-  padding:12px 18px;border-radius:var(--radius-md);font-size:13px;font-weight:500;
-  color:#fff;background:var(--color-text);box-shadow:var(--shadow-lg);
-  animation:slideIn .2s ease;max-width:340px;
-}
+.toast{padding:12px 18px;border-radius:var(--radius-md);font-size:13px;font-weight:500;color:#fff;background:var(--color-text);box-shadow:var(--shadow-lg);animation:slideIn .2s ease;max-width:340px}
 .toast.success{background:var(--color-success)}
 .toast.error{background:var(--color-danger)}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-
-/* ======================== LOADER ======================== */
 #loader{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(2px);z-index:9998;display:none;align-items:center;justify-content:center}
 #loader.on{display:flex}
 .spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ======================== UTILITY ======================== */
 .hidden{display:none!important}
 .text-muted{color:var(--color-text-muted)}
 
-/* ======================== RESPONSIVE ======================== */
 @media (max-width:640px){
-  .topbar{padding:12px 16px}
+  .topbar{padding:12px 16px;flex-wrap:wrap}
   .container{padding:24px 16px}
   .welcome-title{font-size:24px}
   .tone-grid{grid-template-columns:1fr}
@@ -295,12 +240,13 @@ body{
   .wizard-card{padding:20px}
   .cta-banner{flex-direction:column;text-align:center}
   .cta-btn{width:100%;justify-content:center}
+  .workspace-header{flex-direction:column;text-align:center}
 }
 </style>
 </head>
 <body>
 
-<!-- ======================== AUTH SCREEN ======================== -->
+<!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-brand">
@@ -308,20 +254,16 @@ body{
       <div class="auth-title">YouTube Studio</div>
       <div class="auth-sub">AI-powered production for serious creators</div>
     </div>
-
     <div class="auth-tabs">
       <button class="auth-tab on" id="tab-login">Sign in</button>
       <button class="auth-tab" id="tab-signup">Create account</button>
     </div>
-
     <div class="auth-msg" id="auth-msg"></div>
-
     <div id="form-login">
       <div class="fld"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" /></div>
       <div class="fld"><label>Password</label><input type="password" id="login-pw" placeholder="Your password" autocomplete="current-password" /></div>
       <button class="btn primary full" id="login-btn">Sign in →</button>
     </div>
-
     <div id="form-signup" class="hidden">
       <div class="fld"><label>Full name</label><input type="text" id="signup-name" placeholder="Your name" autocomplete="name" /></div>
       <div class="fld"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" /></div>
@@ -331,34 +273,25 @@ body{
   </div>
 </div>
 
-<!-- ======================== DASHBOARD ======================== -->
-<div id="dashboard">
+<!-- APP SHELL (dashboard + workspace + settings) -->
+<div id="app-shell">
   <div class="topbar">
-    <div class="brand">
+    <a href="#/" class="brand">
       <div class="brand-mark">M</div>
       <span>MyCutiePie</span>
-    </div>
+    </a>
+    <div class="breadcrumb" id="breadcrumb"></div>
     <div class="user-menu">
       <span id="user-email"></span>
       <button class="btn ghost sm" id="signout-btn">Sign out</button>
     </div>
   </div>
-
-  <div class="container">
-    <div class="welcome">
-      <div class="welcome-label">Dashboard</div>
-      <div class="welcome-title" id="welcome-title">Hello</div>
-      <div class="welcome-sub" id="welcome-sub">Let's set up your channel.</div>
-    </div>
-
-    <div id="dashboard-content"></div>
-  </div>
+  <div class="container" id="view-container"></div>
 </div>
 
-<!-- ======================== WIZARD ======================== -->
+<!-- WIZARD -->
 <div id="wizard">
   <div class="wizard-container">
-
     <div class="wizard-progress">
       <div class="wizard-step-label" id="wizard-step-label">Step 1 of 4</div>
       <div class="wizard-bars">
@@ -371,19 +304,12 @@ body{
 
     <div id="wizard-step-1">
       <div class="wizard-header">
-        <div class="wizard-title">What's your channel called?</div>
+        <div class="wizard-title" id="w-title-1">What's your channel called?</div>
         <div class="wizard-desc">Choose the name and pick an icon. You can change them later.</div>
       </div>
-
       <div class="wizard-card">
-        <div class="fld">
-          <label>Channel name *</label>
-          <input type="text" id="w-name" placeholder="e.g. Catchy History" />
-        </div>
-        <div class="fld">
-          <label>YouTube handle (optional)</label>
-          <input type="text" id="w-handle" placeholder="@CatchyHistory" />
-        </div>
+        <div class="fld"><label>Channel name *</label><input type="text" id="w-name" placeholder="e.g. Catchy History" /></div>
+        <div class="fld"><label>YouTube handle (optional)</label><input type="text" id="w-handle" placeholder="@CatchyHistory" /></div>
         <div class="fld" style="margin-bottom:0">
           <label>Pick an icon</label>
           <div class="emoji-picker" id="w-emoji-picker">
@@ -405,7 +331,6 @@ body{
           </div>
         </div>
       </div>
-
       <div class="wizard-actions">
         <button class="btn ghost" id="w-cancel-1">Cancel</button>
         <button class="btn primary lg" id="w-next-1">Next →</button>
@@ -414,17 +339,15 @@ body{
 
     <div id="wizard-step-2" class="hidden">
       <div class="wizard-header">
-        <div class="wizard-title">What's your channel about?</div>
+        <div class="wizard-title" id="w-title-2">What's your channel about?</div>
         <div class="wizard-desc">Describe the topic in your own words. Our AI will analyze the market for you.</div>
       </div>
-
       <div class="wizard-card">
         <div class="fld">
           <label>Topic description *</label>
           <textarea id="w-topic" placeholder="e.g. History debunking, false myths, hidden truths and cover-ups about ancient civilizations"></textarea>
           <div class="fld-hint">💡 Be specific. The more detail, the better our AI matches your niche.</div>
         </div>
-
         <div class="starter-section">
           <div class="starter-label">✨ Or pick a starting point</div>
           <div class="starter-chips">
@@ -441,7 +364,6 @@ body{
           </div>
         </div>
       </div>
-
       <div class="wizard-actions">
         <button class="btn ghost" id="w-back-2">← Back</button>
         <button class="btn primary lg" id="w-next-2">Next →</button>
@@ -453,7 +375,6 @@ body{
         <div class="wizard-title">Who's watching?</div>
         <div class="wizard-desc">Tell us who your videos are for. This helps us tune the script style and SEO.</div>
       </div>
-
       <div class="wizard-card">
         <div class="fld">
           <label>Main language *</label>
@@ -467,7 +388,6 @@ body{
             <option value="other">Other</option>
           </select>
         </div>
-
         <div class="fld">
           <label>Age range</label>
           <div class="age-pills" id="w-age-pills">
@@ -480,13 +400,11 @@ body{
           </div>
           <div class="fld-hint">You can pick more than one.</div>
         </div>
-
         <div class="fld" style="margin-bottom:0">
           <label>Anything more to know? (optional)</label>
-          <input type="text" id="w-audience-extra" placeholder="e.g. People who love documentaries and don't trust mainstream history" />
+          <input type="text" id="w-audience-extra" placeholder="e.g. People who love documentaries" />
         </div>
       </div>
-
       <div class="wizard-actions">
         <button class="btn ghost" id="w-back-3">← Back</button>
         <button class="btn primary lg" id="w-next-3">Next →</button>
@@ -498,50 +416,52 @@ body{
         <div class="wizard-title">How should it sound?</div>
         <div class="wizard-desc">Pick the tone of your videos. This shapes scripts and voiceovers.</div>
       </div>
-
       <div class="tone-grid" id="w-tone-grid">
         <button type="button" class="tone-card" data-tone="documentary">
-          <div class="tone-emoji">🎬</div>
-          <div class="tone-name">Documentary</div>
+          <div class="tone-emoji">🎬</div><div class="tone-name">Documentary</div>
           <div class="tone-desc">Cinematic narrator. Dramatic pauses. Investigative tone.</div>
         </button>
         <button type="button" class="tone-card" data-tone="conversational">
-          <div class="tone-emoji">💬</div>
-          <div class="tone-name">Conversational</div>
+          <div class="tone-emoji">💬</div><div class="tone-name">Conversational</div>
           <div class="tone-desc">Friendly, warm. Like a smart friend explaining things.</div>
         </button>
         <button type="button" class="tone-card" data-tone="sharp">
-          <div class="tone-emoji">⚡</div>
-          <div class="tone-name">Sharp &amp; punchy</div>
+          <div class="tone-emoji">⚡</div><div class="tone-name">Sharp &amp; punchy</div>
           <div class="tone-desc">No filler. Fast pace. Maximum impact per second.</div>
         </button>
         <button type="button" class="tone-card" data-tone="educational">
-          <div class="tone-emoji">🎓</div>
-          <div class="tone-name">Educational</div>
+          <div class="tone-emoji">🎓</div><div class="tone-name">Educational</div>
           <div class="tone-desc">Calm, clear, methodical. Teacher in your headphones.</div>
         </button>
         <button type="button" class="tone-card" data-tone="storyteller">
-          <div class="tone-emoji">🎭</div>
-          <div class="tone-name">Storyteller</div>
+          <div class="tone-emoji">🎭</div><div class="tone-name">Storyteller</div>
           <div class="tone-desc">Narrative, emotional. Hooks viewers with stories.</div>
         </button>
         <button type="button" class="tone-card" data-tone="provocative">
-          <div class="tone-emoji">🔥</div>
-          <div class="tone-name">Provocative</div>
+          <div class="tone-emoji">🔥</div><div class="tone-name">Provocative</div>
           <div class="tone-desc">Bold opinions. Contrarian. Loves the controversy.</div>
         </button>
       </div>
-
       <div class="wizard-actions">
         <button class="btn ghost" id="w-back-4">← Back</button>
-        <button class="btn success lg" id="w-finish">✓ Create my channel</button>
+        <button class="btn success lg" id="w-finish">✓ <span id="w-finish-label">Create my channel</span></button>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ======================== LOADER + TOAST ======================== -->
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirm-modal">
+  <div class="modal">
+    <h2 id="confirm-title">Confirm</h2>
+    <p class="modal-sub" id="confirm-message">Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn danger" id="confirm-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div id="loader"><div class="spinner"></div></div>
 <div class="toast-wrap" id="toasts"></div>
 
@@ -560,18 +480,23 @@ const APP = {
   user: null,
   profile: null,
   channels: [],
-  // Wizard temp state
+  currentChannel: null,
   wizard: {
-    step: 1,
-    name: '',
-    handle: '',
-    emoji: '🎬',
-    topic: '',
-    language: 'en',
-    ages: [],
-    audienceExtra: '',
-    tone: '',
+    mode: 'create', // 'create' or 'pivot'
+    pivotChannelId: null,
+    step: 1, name: '', handle: '', emoji: '🎬',
+    topic: '', language: 'en', ages: [], audienceExtra: '', tone: '',
   },
+  confirmCallback: null,
+};
+
+const TONE_PRESETS = {
+  documentary: { name:'Documentary', description:'Cinematic narrator. Dramatic pauses. Investigative tone. Authoritative but accessible.' },
+  conversational: { name:'Conversational', description:'Friendly, warm, like a smart friend explaining things. Approachable and direct.' },
+  sharp: { name:'Sharp & punchy', description:'No filler. Fast pace. Maximum impact per second. Sharp, direct, energetic.' },
+  educational: { name:'Educational', description:'Calm, clear, methodical. Teacher in your headphones. Patient and structured.' },
+  storyteller: { name:'Storyteller', description:'Narrative, emotional. Hooks viewers with stories. Cinematic and immersive.' },
+  provocative: { name:'Provocative', description:'Bold opinions. Contrarian. Loves the controversy. Confident and unfiltered.' },
 };
 
 // ============================================================
@@ -597,12 +522,105 @@ function escapeHtml(t){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function showAuthMsg(text, type){
-  const el = $('auth-msg');
-  el.textContent = text;
-  el.className = 'auth-msg ' + type;
-}
+function showAuthMsg(text, type){ const el = $('auth-msg'); el.textContent = text; el.className = 'auth-msg ' + type; }
 function hideAuthMsg(){ $('auth-msg').className = 'auth-msg'; }
+
+function confirmModal(title, message, okLabel, callback){
+  $('confirm-title').textContent = title;
+  $('confirm-message').textContent = message;
+  $('confirm-ok').textContent = okLabel || 'Confirm';
+  APP.confirmCallback = callback;
+  show('confirm-modal');
+}
+
+$('confirm-cancel').addEventListener('click', () => hide('confirm-modal'));
+$('confirm-ok').addEventListener('click', () => {
+  hide('confirm-modal');
+  if (APP.confirmCallback) APP.confirmCallback();
+});
+$('confirm-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'confirm-modal') hide('confirm-modal');
+});
+
+// ============================================================
+// HASH ROUTER
+// ============================================================
+function parseHash(){
+  const hash = location.hash.slice(1) || '/'; // remove leading #
+  const parts = hash.split('/').filter(Boolean);
+  if (parts.length === 0) return { name: 'dashboard' };
+  if (parts[0] === 'channels' && parts[1] && parts[2] === 'settings') {
+    return { name: 'channel-settings', channelId: parts[1] };
+  }
+  if (parts[0] === 'channels' && parts[1]) {
+    return { name: 'channel-workspace', channelId: parts[1] };
+  }
+  return { name: 'dashboard' };
+}
+
+function navigate(route){
+  location.hash = route;
+}
+
+async function handleRoute(){
+  if (!APP.user) return;
+  const route = parseHash();
+
+  if (route.name === 'dashboard') {
+    APP.currentChannel = null;
+    renderDashboard();
+    renderBreadcrumb([]);
+    return;
+  }
+
+  if (route.name === 'channel-workspace' || route.name === 'channel-settings') {
+    // Make sure we have the channel
+    let channel = APP.channels.find(c => c.id === route.channelId);
+    if (!channel) {
+      // Maybe channel data not loaded yet — fetch directly
+      const { data, error } = await APP.sb
+        .from('channels')
+        .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(*), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(*)')
+        .eq('id', route.channelId)
+        .single();
+      if (error || !data) {
+        toast('Channel not found', 'error');
+        navigate('/');
+        return;
+      }
+      channel = data;
+    }
+    APP.currentChannel = channel;
+
+    if (route.name === 'channel-workspace') {
+      renderChannelWorkspace();
+      renderBreadcrumb([{ label: channel.name, current: true }]);
+    } else {
+      await renderChannelSettings();
+      renderBreadcrumb([
+        { label: channel.name, href: `#/channels/${channel.id}` },
+        { label: 'Settings', current: true }
+      ]);
+    }
+  }
+}
+
+window.addEventListener('hashchange', handleRoute);
+
+function renderBreadcrumb(items){
+  const el = $('breadcrumb');
+  if (!items || items.length === 0) { el.innerHTML = ''; return; }
+  let html = '<a href="#/">Dashboard</a>';
+  items.forEach(it => {
+    html += '<span class="sep">/</span>';
+    if (it.current) {
+      html += `<span class="current">${escapeHtml(it.label)}</span>`;
+    } else {
+      html += `<a href="${it.href}">${escapeHtml(it.label)}</a>`;
+    }
+  });
+  el.innerHTML = html;
+}
 
 // ============================================================
 // AUTH FLOW
@@ -628,15 +646,12 @@ async function onLogin(){
       .from('user_profiles').select('*').eq('id', APP.user.id).single();
 
     if (error) {
-      console.warn('Profile missing, creating manually:', error.message);
       const { data: newProfile, error: insErr } = await APP.sb
         .from('user_profiles')
         .insert({
-          id: APP.user.id,
-          email: APP.user.email,
+          id: APP.user.id, email: APP.user.email,
           full_name: APP.user.user_metadata?.full_name || '',
-          kind: 'youtuber',
-          default_language: 'en'
+          kind: 'youtuber', default_language: 'en'
         })
         .select().single();
       if (insErr) throw insErr;
@@ -646,9 +661,10 @@ async function onLogin(){
     }
 
     hide('auth-screen');
-    show('dashboard');
+    show('app-shell');
+    $('user-email').textContent = APP.profile.email;
     await loadChannels();
-    renderDashboard();
+    await handleRoute();
   } catch (e) {
     toast('Error loading profile: ' + e.message, 'error');
   } finally {
@@ -711,7 +727,7 @@ $('signup-btn').addEventListener('click', async () => {
 $('signout-btn').addEventListener('click', async () => {
   await APP.sb.auth.signOut();
   APP.user = null; APP.profile = null; APP.channels = [];
-  hide('dashboard');
+  hide('app-shell');
   show('auth-screen');
   $('login-email').value = ''; $('login-pw').value = '';
   hideAuthMsg();
@@ -719,12 +735,12 @@ $('signout-btn').addEventListener('click', async () => {
 });
 
 // ============================================================
-// DASHBOARD RENDER
+// LOAD CHANNELS
 // ============================================================
 async function loadChannels(){
   const { data, error } = await APP.sb
     .from('channels')
-    .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(name, sub_niche), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(name)')
+    .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(*), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(*)')
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -735,23 +751,20 @@ async function loadChannels(){
   APP.channels = data || [];
 }
 
+// ============================================================
+// VIEWS — DASHBOARD
+// ============================================================
 function renderDashboard(){
-  $('user-email').textContent = APP.profile.email;
   const firstName = (APP.profile.full_name || '').split(' ')[0] || 'there';
-  $('welcome-title').textContent = `Hello, ${firstName}`;
-
   const count = APP.channels.length;
-  if (count === 0) {
-    $('welcome-sub').textContent = "Let's set up your first money-making channel.";
-  } else {
-    $('welcome-sub').textContent = `${count} channel${count > 1 ? 's' : ''} ready · let's make money on YouTube`;
-  }
+  const sub = count === 0
+    ? "Let's set up your first money-making channel."
+    : `${count} channel${count > 1 ? 's' : ''} ready · let's make money on YouTube`;
 
-  const content = $('dashboard-content');
+  let body = '';
 
   if (count === 0) {
-    // First-time empty state
-    content.innerHTML = `
+    body = `
       <div class="empty-state">
         <div class="empty-state-emoji">🎬</div>
         <div class="empty-state-title">Welcome to MyCutiePie</div>
@@ -759,17 +772,14 @@ function renderDashboard(){
         <button class="btn primary lg" id="start-wizard-btn">Start setup →</button>
       </div>
     `;
-    $('start-wizard-btn').addEventListener('click', openWizard);
   } else {
-    // Channels list
-    let html = '';
     APP.channels.forEach(ch => {
       const nicheName = ch.active_niche_profile?.name || 'No niche yet';
       const toneName = ch.default_tone_template?.name || 'Default tone';
       const isReady = ch.status === 'active' || ch.active_niche_profile_id;
       const meta = ch.handle ? `${ch.handle} · ${nicheName} · ${toneName}` : `${nicheName} · ${toneName}`;
-      html += `
-        <div class="channel-card">
+      body += `
+        <div class="channel-card" data-channel-id="${ch.id}">
           <div class="channel-header">
             <div class="channel-emoji" style="background:${ch.brand_color}1a">${ch.emoji || '🎬'}</div>
             <div style="flex:1;min-width:0">
@@ -782,7 +792,7 @@ function renderDashboard(){
             <div class="cta-emoji">🎯</div>
             <div class="cta-content">
               <div class="cta-title">Ready to make your first video?</div>
-              <div class="cta-desc">We'll guide you through script, voice, and production. Takes ~5 minutes to set up.</div>
+              <div class="cta-desc">We'll guide you through script, voice, and production. Coming in next milestone.</div>
             </div>
             <button class="cta-btn" disabled style="opacity:.6;cursor:not-allowed">Start (coming soon) →</button>
           </div>
@@ -790,7 +800,7 @@ function renderDashboard(){
       `;
     });
 
-    html += `
+    body += `
       <div class="quick-actions">
         <button class="quick-action dashed" id="add-channel-btn">
           <div class="quick-action-icon">+</div>
@@ -799,46 +809,304 @@ function renderDashboard(){
             <div class="quick-action-desc">Diversify and scale</div>
           </div>
         </button>
-        <button class="quick-action" disabled style="opacity:.5;cursor:not-allowed">
-          <div class="quick-action-icon">⚙️</div>
-          <div>
-            <div class="quick-action-title">Edit channel setup</div>
-            <div class="quick-action-desc">Coming in next milestone</div>
-          </div>
-        </button>
       </div>
     `;
-    content.innerHTML = html;
-    $('add-channel-btn').addEventListener('click', openWizard);
   }
+
+  $('view-container').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-label">Dashboard</div>
+      <div class="welcome-title">Hello, ${escapeHtml(firstName)}</div>
+      <div class="welcome-sub">${escapeHtml(sub)}</div>
+    </div>
+    ${body}
+  `;
+
+  // Wire up clicks
+  const startBtn = $('start-wizard-btn');
+  if (startBtn) startBtn.addEventListener('click', () => openWizard('create'));
+  const addBtn = $('add-channel-btn');
+  if (addBtn) addBtn.addEventListener('click', () => openWizard('create'));
+
+  // Channel cards: click to open workspace, but NOT on the disabled CTA button
+  document.querySelectorAll('.channel-card[data-channel-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.cta-btn')) return; // don't navigate if disabled CTA clicked
+      navigate(`/channels/${card.dataset.channelId}`);
+    });
+  });
 }
 
 // ============================================================
-// WIZARD
+// VIEWS — CHANNEL WORKSPACE
 // ============================================================
-function openWizard(){
-  // Reset wizard state
+function renderChannelWorkspace(){
+  const ch = APP.currentChannel;
+  if (!ch) return;
+
+  const nicheName = ch.active_niche_profile?.name || 'No niche';
+  const toneName = ch.default_tone_template?.name || 'No tone';
+  const language = ch.active_niche_profile?.language || 'en';
+  const langLabel = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German',other:'Other'}[language] || language;
+
+  $('view-container').innerHTML = `
+    <div class="workspace-header">
+      <div class="workspace-emoji" style="background:${ch.brand_color}1a">${ch.emoji}</div>
+      <div class="workspace-info">
+        <div class="workspace-name">${escapeHtml(ch.name)}</div>
+        <div class="workspace-meta">${escapeHtml(ch.handle || 'No handle yet')}</div>
+        <div class="workspace-meta-row">
+          <span class="meta-chip">💡 ${escapeHtml(nicheName)}</span>
+          <span class="meta-chip">🎭 ${escapeHtml(toneName)}</span>
+          <span class="meta-chip">🌍 ${escapeHtml(langLabel)}</span>
+        </div>
+      </div>
+      <div>
+        <a href="#/channels/${ch.id}/settings" class="btn">⚙️ Settings</a>
+      </div>
+    </div>
+
+    <div class="section-title">Your videos</div>
+    <div class="video-empty">
+      <div class="video-empty-emoji">🎬</div>
+      <div class="video-empty-title">No videos yet</div>
+      <div class="video-empty-desc">Create your first video. We'll guide you through the script, voice, and production pipeline.</div>
+      <button class="btn primary lg" disabled style="opacity:.6;cursor:not-allowed">+ New video (coming in milestone 4)</button>
+    </div>
+  `;
+}
+
+// ============================================================
+// VIEWS — CHANNEL SETTINGS
+// ============================================================
+async function renderChannelSettings(){
+  const ch = APP.currentChannel;
+  if (!ch) return;
+
+  // Load pivot history
+  const { data: history, error } = await APP.sb
+    .from('channel_niche_history')
+    .select('*')
+    .eq('channel_id', ch.id)
+    .order('active_from', { ascending: false });
+
+  const historyItems = (history || []).map((h, idx) => `
+    <div class="history-item">
+      <div class="history-dot ${idx === 0 && !h.active_to ? 'current' : ''}"></div>
+      <div class="history-content">
+        <div class="history-name">${escapeHtml(h.niche_snapshot_name || 'Unknown')}</div>
+        <div class="history-date">
+          ${new Date(h.active_from).toLocaleDateString()}
+          ${h.active_to ? '→ ' + new Date(h.active_to).toLocaleDateString() : '(current)'}
+        </div>
+        ${h.pivot_reason ? `<div class="history-reason">${escapeHtml(h.pivot_reason)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  $('view-container').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-label">Channel settings</div>
+      <div class="welcome-title">${escapeHtml(ch.name)}</div>
+      <div class="welcome-sub">Edit identity, repositioning, and channel history.</div>
+    </div>
+
+    <!-- Identity -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <div>
+          <div class="settings-section-title">Identity</div>
+          <div class="settings-section-desc">Name, handle, and icon. Public-facing info.</div>
+        </div>
+      </div>
+      <div class="fld"><label>Channel name</label><input type="text" id="set-name" value="${escapeHtml(ch.name)}" /></div>
+      <div class="fld"><label>YouTube handle</label><input type="text" id="set-handle" value="${escapeHtml(ch.handle || '')}" placeholder="@yourchannel" /></div>
+      <div class="fld" style="margin-bottom:0">
+        <label>Icon</label>
+        <div class="emoji-picker" id="set-emoji-picker">
+          ${['🎬','📚','🎨','🧠','💰','⚖️','🔥','🚀','🎯','📺','🎭','🍳','🏋️','🎮','✈️'].map(e =>
+            `<button type="button" class="emoji-btn ${e === ch.emoji ? 'on' : ''}" data-emoji="${e}">${e}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div style="margin-top:16px;text-align:right">
+        <button class="btn primary" id="save-identity-btn">Save identity</button>
+      </div>
+    </div>
+
+    <!-- Positioning -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <div>
+          <div class="settings-section-title">Current positioning</div>
+          <div class="settings-section-desc">What your channel is currently about. You can pivot anytime if the market shifts.</div>
+        </div>
+      </div>
+      <div style="background:var(--color-surface-2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Topic</div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:10px">${escapeHtml(ch.active_niche_profile?.name || 'No topic set')}</div>
+        ${ch.active_niche_profile?.target_audience ? `
+          <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Audience</div>
+          <div style="font-size:13px;color:var(--color-text);margin-bottom:10px">${escapeHtml(ch.active_niche_profile.target_audience)}</div>
+        ` : ''}
+        <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Tone</div>
+        <div style="font-size:13px;color:var(--color-text)">${escapeHtml(ch.default_tone_template?.name || 'No tone')} — <span style="color:var(--color-text-muted)">${escapeHtml(ch.default_tone_template?.description || '')}</span></div>
+      </div>
+      <div style="text-align:right">
+        <button class="btn primary" id="pivot-btn">🔄 Reposition channel</button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <div>
+          <div class="settings-section-title">Positioning history</div>
+          <div class="settings-section-desc">Track all the pivots and repositionings of this channel.</div>
+        </div>
+      </div>
+      ${historyItems || '<div class="text-muted" style="font-size:13px">No history yet.</div>'}
+    </div>
+
+    <!-- Danger zone -->
+    <div class="danger-section">
+      <div class="danger-title">Danger zone</div>
+      <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:14px">Deleting a channel removes it permanently. Videos and history are also deleted.</p>
+      <button class="btn danger" id="delete-channel-btn">Delete this channel</button>
+    </div>
+  `;
+
+  // Wire emoji picker
+  document.querySelectorAll('#set-emoji-picker .emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#set-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+
+  // Save identity
+  $('save-identity-btn').addEventListener('click', saveIdentity);
+
+  // Pivot
+  $('pivot-btn').addEventListener('click', () => openWizard('pivot', ch.id));
+
+  // Delete
+  $('delete-channel-btn').addEventListener('click', () => {
+    confirmModal(
+      'Delete channel?',
+      `This will permanently delete "${ch.name}" and all its data. This action cannot be undone.`,
+      'Delete forever',
+      deleteChannel
+    );
+  });
+}
+
+async function saveIdentity(){
+  const ch = APP.currentChannel;
+  const name = $('set-name').value.trim();
+  if (!name) { toast('Channel name required', 'error'); return; }
+  const handle = $('set-handle').value.trim() || null;
+  const emoji = document.querySelector('#set-emoji-picker .emoji-btn.on')?.dataset.emoji || ch.emoji;
+
+  showLoader();
+  const { error } = await APP.sb.from('channels')
+    .update({ name, handle, emoji })
+    .eq('id', ch.id);
+  hideLoader();
+
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Identity updated ✓', 'success');
+  await loadChannels();
+  APP.currentChannel = APP.channels.find(c => c.id === ch.id);
+  await renderChannelSettings();
+}
+
+async function deleteChannel(){
+  const ch = APP.currentChannel;
+  showLoader();
+  const { error } = await APP.sb.from('channels').delete().eq('id', ch.id);
+  hideLoader();
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast(`Channel "${ch.name}" deleted`, 'success');
+  await loadChannels();
+  navigate('/');
+}
+
+// ============================================================
+// WIZARD (create + pivot mode)
+// ============================================================
+function openWizard(mode, channelId){
   APP.wizard = {
+    mode: mode || 'create',
+    pivotChannelId: channelId || null,
     step: 1, name: '', handle: '', emoji: '🎬',
     topic: '', language: 'en', ages: [], audienceExtra: '', tone: '',
   };
-  $('w-name').value = '';
-  $('w-handle').value = '';
-  $('w-topic').value = '';
-  $('w-language').value = 'en';
-  $('w-audience-extra').value = '';
-  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('on'));
-  document.querySelector('.emoji-btn[data-emoji="🎬"]').classList.add('on');
-  document.querySelectorAll('.age-pill').forEach(b => b.classList.remove('on'));
-  document.querySelectorAll('.tone-card').forEach(b => b.classList.remove('on'));
+
+  // If pivot mode, pre-fill from current channel
+  if (mode === 'pivot' && channelId) {
+    const ch = APP.channels.find(c => c.id === channelId);
+    if (ch) {
+      APP.wizard.name = ch.name;
+      APP.wizard.handle = ch.handle || '';
+      APP.wizard.emoji = ch.emoji || '🎬';
+      APP.wizard.topic = ch.active_niche_profile?.name || '';
+      APP.wizard.language = ch.active_niche_profile?.language || 'en';
+      APP.wizard.audienceExtra = '';
+      // Try to extract ages from target_audience
+      const audience = ch.active_niche_profile?.target_audience || '';
+      const ageMatches = audience.match(/Ages ([^.]+)/);
+      if (ageMatches) {
+        APP.wizard.ages = ageMatches[1].split(',').map(a => a.trim());
+      }
+      // Try to match tone
+      const toneName = ch.default_tone_template?.name || '';
+      for (const [k, v] of Object.entries(TONE_PRESETS)) {
+        if (v.name === toneName) { APP.wizard.tone = k; break; }
+      }
+    }
+  }
+
+  // Apply state to UI
+  $('w-name').value = APP.wizard.name;
+  $('w-handle').value = APP.wizard.handle;
+  $('w-topic').value = APP.wizard.topic;
+  $('w-language').value = APP.wizard.language;
+  $('w-audience-extra').value = APP.wizard.audienceExtra;
+
+  document.querySelectorAll('.emoji-btn').forEach(b => {
+    if (b.dataset.emoji === APP.wizard.emoji) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+  document.querySelectorAll('#w-age-pills .age-pill').forEach(b => {
+    if (APP.wizard.ages.includes(b.dataset.age)) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+  document.querySelectorAll('.tone-card').forEach(b => {
+    if (b.dataset.tone === APP.wizard.tone) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+
+  // Adapt titles + finish label
+  if (mode === 'pivot') {
+    $('w-title-1').textContent = 'Reposition: identity';
+    $('w-title-2').textContent = 'Reposition: new topic';
+    $('w-finish-label').textContent = 'Apply reposition';
+  } else {
+    $('w-title-1').textContent = "What's your channel called?";
+    $('w-title-2').textContent = "What's your channel about?";
+    $('w-finish-label').textContent = 'Create my channel';
+  }
+
   goToStep(1);
-  hide('dashboard');
+  hide('app-shell');
   show('wizard');
 }
 
 function closeWizard(){
   hide('wizard');
-  show('dashboard');
+  show('app-shell');
+  handleRoute();
 }
 
 function goToStep(step){
@@ -853,7 +1121,6 @@ function goToStep(step){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Step 1 interactions
 document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on'));
@@ -871,7 +1138,6 @@ $('w-next-1').addEventListener('click', () => {
   goToStep(2);
 });
 
-// Step 2 interactions
 document.querySelectorAll('.starter-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     $('w-topic').value = chip.dataset.starter;
@@ -888,7 +1154,6 @@ $('w-next-2').addEventListener('click', () => {
   goToStep(3);
 });
 
-// Step 3 interactions
 document.querySelectorAll('.age-pill').forEach(pill => {
   pill.addEventListener('click', () => {
     pill.classList.toggle('on');
@@ -908,7 +1173,6 @@ $('w-next-3').addEventListener('click', () => {
   goToStep(4);
 });
 
-// Step 4 interactions
 document.querySelectorAll('.tone-card').forEach(card => {
   card.addEventListener('click', () => {
     document.querySelectorAll('.tone-card').forEach(c => c.classList.remove('on'));
@@ -920,48 +1184,18 @@ document.querySelectorAll('.tone-card').forEach(card => {
 $('w-back-4').addEventListener('click', () => goToStep(3));
 $('w-finish').addEventListener('click', finishWizard);
 
-// ============================================================
-// WIZARD COMPLETION — Creates all DB rows
-// ============================================================
-const TONE_PRESETS = {
-  documentary: {
-    name: 'Documentary',
-    description: 'Cinematic narrator. Dramatic pauses. Investigative tone. Authoritative but accessible.',
-  },
-  conversational: {
-    name: 'Conversational',
-    description: 'Friendly, warm, like a smart friend explaining things. Approachable and direct.',
-  },
-  sharp: {
-    name: 'Sharp & punchy',
-    description: 'No filler. Fast pace. Maximum impact per second. Sharp, direct, energetic.',
-  },
-  educational: {
-    name: 'Educational',
-    description: 'Calm, clear, methodical. Teacher in your headphones. Patient and structured.',
-  },
-  storyteller: {
-    name: 'Storyteller',
-    description: 'Narrative, emotional. Hooks viewers with stories. Cinematic and immersive.',
-  },
-  provocative: {
-    name: 'Provocative',
-    description: 'Bold opinions. Contrarian. Loves the controversy. Confident and unfiltered.',
-  },
-};
-
 async function finishWizard(){
   const w = APP.wizard;
   if (!w.tone) { toast('Pick a tone', 'error'); return; }
 
   showLoader();
   try {
-    // 1. Create the niche_profile (basic data — AI analysis comes in Sprint 2)
     const audienceText = [
       w.ages.length ? `Ages ${w.ages.join(', ')}` : null,
       w.audienceExtra || null,
     ].filter(Boolean).join('. ');
 
+    // Create new niche_profile (always — even in pivot, we want history)
     const { data: niche, error: nicheErr } = await APP.sb
       .from('niche_profiles')
       .insert({
@@ -975,7 +1209,7 @@ async function finishWizard(){
       .select().single();
     if (nicheErr) throw nicheErr;
 
-    // 2. Create the tone_template
+    // Create new tone_template
     const tonePreset = TONE_PRESETS[w.tone];
     const { data: tone, error: toneErr } = await APP.sb
       .from('tone_templates')
@@ -988,42 +1222,78 @@ async function finishWizard(){
       .select().single();
     if (toneErr) throw toneErr;
 
-    // 3. Create the channel — link everything together
-    const { data: channel, error: chErr } = await APP.sb
-      .from('channels')
-      .insert({
+    if (w.mode === 'pivot' && w.pivotChannelId) {
+      // Close previous history entry
+      await APP.sb.from('channel_niche_history')
+        .update({ active_to: new Date().toISOString() })
+        .eq('channel_id', w.pivotChannelId)
+        .is('active_to', null);
+
+      // Update channel
+      const { data: channel, error: chErr } = await APP.sb
+        .from('channels')
+        .update({
+          name: w.name,
+          handle: w.handle || null,
+          emoji: w.emoji,
+          active_niche_profile_id: niche.id,
+          default_tone_template_id: tone.id,
+        })
+        .eq('id', w.pivotChannelId)
+        .select().single();
+      if (chErr) throw chErr;
+
+      // Add new history entry
+      await APP.sb.from('channel_niche_history').insert({
+        channel_id: channel.id,
         user_id: APP.user.id,
-        name: w.name,
-        handle: w.handle || null,
-        emoji: w.emoji,
-        brand_color: '#EC4899',
-        status: 'active',
-        active_niche_profile_id: niche.id,
-        default_tone_template_id: tone.id,
-      })
-      .select().single();
-    if (chErr) throw chErr;
+        niche_profile_id: niche.id,
+        niche_snapshot_name: niche.name,
+        active_from: new Date().toISOString(),
+        pivot_reason: 'Channel repositioned via settings',
+      });
 
-    // 4. Log the initial niche assignment in history
-    await APP.sb.from('channel_niche_history').insert({
-      channel_id: channel.id,
-      user_id: APP.user.id,
-      niche_profile_id: niche.id,
-      niche_snapshot_name: niche.name,
-      active_from: new Date().toISOString(),
-      pivot_reason: 'Initial channel setup',
-    });
+      hideLoader();
+      await loadChannels();
+      closeWizard();
+      toast(`🔄 Channel "${w.name}" repositioned!`, 'success');
+      navigate(`/channels/${channel.id}/settings`);
+    } else {
+      // Create new channel
+      const { data: channel, error: chErr } = await APP.sb
+        .from('channels')
+        .insert({
+          user_id: APP.user.id,
+          name: w.name,
+          handle: w.handle || null,
+          emoji: w.emoji,
+          brand_color: '#EC4899',
+          status: 'active',
+          active_niche_profile_id: niche.id,
+          default_tone_template_id: tone.id,
+        })
+        .select().single();
+      if (chErr) throw chErr;
 
-    hideLoader();
-    await loadChannels();
-    closeWizard();
-    renderDashboard();
-    toast(`🎉 Channel "${w.name}" is ready!`, 'success');
+      await APP.sb.from('channel_niche_history').insert({
+        channel_id: channel.id,
+        user_id: APP.user.id,
+        niche_profile_id: niche.id,
+        niche_snapshot_name: niche.name,
+        active_from: new Date().toISOString(),
+        pivot_reason: 'Initial channel setup',
+      });
 
+      hideLoader();
+      await loadChannels();
+      closeWizard();
+      toast(`🎉 Channel "${w.name}" is ready!`, 'success');
+      navigate(`/channels/${channel.id}`);
+    }
   } catch (e) {
     hideLoader();
     console.error('Wizard finish error:', e);
-    toast('Error creating channel: ' + e.message, 'error');
+    toast('Error: ' + e.message, 'error');
   }
 }
 
