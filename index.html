@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,6 +19,9 @@
   --color-accent-hover: #4f46e5;
   --color-accent-soft: #eef2ff;
   --color-pink: #EC4899;
+  --color-pink-soft: #FBEAF0;
+  --color-pink-dark: #993556;
+  --color-purple-soft: #EEEDFE;
   --color-success: #059669;
   --color-success-soft: #d1fae5;
   --color-warning: #d97706;
@@ -46,479 +49,252 @@ body{
 
 /* ======================== AUTH ======================== */
 #auth-screen{
-  min-height:100vh;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(135deg,#fafaf9 0%,#eef2ff 100%);
-  padding:24px;
+  min-height:100vh;display:none;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#fafaf9 0%,#eef2ff 100%);padding:24px;
 }
 #auth-screen.on{display:flex}
-
 .auth-card{
-  background:var(--color-surface);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-xl);
-  padding:40px;
-  width:420px;
-  max-width:100%;
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-xl);padding:40px;width:420px;max-width:100%;
   box-shadow:var(--shadow-lg);
 }
 .auth-brand{text-align:center;margin-bottom:28px}
-.auth-logo{
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  color:var(--color-text-muted);
-  margin-bottom:6px;
-}
+.auth-logo{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:6px}
 .auth-title{
-  font-size:26px;
-  font-weight:700;
-  letter-spacing:-.5px;
+  font-size:26px;font-weight:700;letter-spacing:-.5px;
   background:linear-gradient(135deg,var(--color-accent),var(--color-pink));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
-.auth-sub{
-  font-size:13px;
-  color:var(--color-text-muted);
-  margin-top:4px;
-}
-
-.auth-tabs{
-  display:flex;
-  background:var(--color-surface-2);
-  border-radius:var(--radius-md);
-  padding:4px;
-  margin-bottom:20px;
-}
-.auth-tab{
-  flex:1;
-  padding:8px;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  border:none;
-  background:transparent;
-  color:var(--color-text-muted);
-  font-family:inherit;
-  border-radius:var(--radius-sm);
-  transition:.15s;
-}
-.auth-tab.on{
-  background:var(--color-surface);
-  color:var(--color-text);
-  box-shadow:var(--shadow-sm);
-}
-
-.auth-msg{
-  font-size:12px;
-  padding:10px 12px;
-  border-radius:var(--radius-sm);
-  margin-bottom:14px;
-  display:none;
-}
+.auth-sub{font-size:13px;color:var(--color-text-muted);margin-top:4px}
+.auth-tabs{display:flex;background:var(--color-surface-2);border-radius:var(--radius-md);padding:4px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--color-text-muted);font-family:inherit;border-radius:var(--radius-sm);transition:.15s}
+.auth-tab.on{background:var(--color-surface);color:var(--color-text);box-shadow:var(--shadow-sm)}
+.auth-msg{font-size:12px;padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:14px;display:none}
 .auth-msg.error{background:var(--color-danger-soft);color:var(--color-danger);display:block}
 .auth-msg.success{background:var(--color-success-soft);color:var(--color-success);display:block}
 
 /* ======================== FIELDS ======================== */
 .fld{margin-bottom:14px}
-.fld label{
-  display:block;
-  font-size:11px;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:.06em;
-  color:var(--color-text-muted);
-  margin-bottom:6px;
-}
+.fld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:6px}
 .fld input,.fld select,.fld textarea{
-  width:100%;
-  padding:10px 13px;
-  font-size:14px;
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-sm);
-  background:var(--color-surface);
-  color:var(--color-text);
-  font-family:inherit;
-  transition:.15s;
+  width:100%;padding:10px 13px;font-size:14px;border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-text);
+  font-family:inherit;transition:.15s;
 }
-.fld input:focus,.fld select:focus,.fld textarea:focus{
-  outline:none;
-  border-color:var(--color-accent);
-  box-shadow:0 0 0 3px rgba(99,102,241,.1);
-}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
 .fld textarea{min-height:90px;resize:vertical;line-height:1.6}
+.fld-hint{font-size:11px;color:var(--color-text-subtle);margin-top:6px;display:flex;align-items:center;gap:4px}
 
 /* ======================== BUTTONS ======================== */
 .btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  padding:9px 16px;
-  font-size:13px;
-  font-weight:600;
-  font-family:inherit;
-  border-radius:var(--radius-sm);
-  border:1px solid var(--color-border);
-  background:var(--color-surface);
-  color:var(--color-text);
-  cursor:pointer;
-  transition:.12s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 16px;font-size:13px;font-weight:600;font-family:inherit;
+  border-radius:var(--radius-sm);border:1px solid var(--color-border);
+  background:var(--color-surface);color:var(--color-text);cursor:pointer;transition:.12s;
 }
 .btn:hover{background:var(--color-surface-2);border-color:var(--color-border-strong)}
 .btn.primary{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
 .btn.primary:hover{background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
+.btn.success{background:#10b981;color:#fff;border-color:#10b981}
+.btn.success:hover{background:#059669;border-color:#059669}
 .btn.ghost{background:transparent;border-color:transparent}
 .btn.ghost:hover{background:var(--color-surface-2)}
 .btn.danger{background:var(--color-danger-soft);color:var(--color-danger);border-color:transparent}
 .btn.danger:hover{background:#fee2e2}
 .btn.full{width:100%}
 .btn.sm{padding:6px 12px;font-size:12px}
+.btn.lg{padding:11px 22px;font-size:14px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* ======================== DASHBOARD ======================== */
-#dashboard{
-  display:none;
-  min-height:100vh;
-  background:var(--color-bg);
-}
+#dashboard{display:none;min-height:100vh;background:var(--color-bg)}
 #dashboard.on{display:block}
 
 .topbar{
-  background:var(--color-surface);
-  border-bottom:1px solid var(--color-border);
-  padding:14px 32px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  background:var(--color-surface);border-bottom:1px solid var(--color-border);
+  padding:14px 32px;display:flex;align-items:center;justify-content:space-between;
 }
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight:700;
-  font-size:16px;
-  letter-spacing:-.2px;
-}
-.brand-mark{
-  width:32px;
-  height:32px;
-  background:linear-gradient(135deg,var(--color-accent),var(--color-pink));
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:14px;
-}
-.user-menu{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-size:13px;
-  color:var(--color-text-muted);
-}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.2px}
+.brand-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--color-accent),var(--color-pink));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.user-menu{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--color-text-muted)}
 
-.container{
-  max-width:1200px;
-  margin:0 auto;
-  padding:40px 32px;
-}
+.container{max-width:900px;margin:0 auto;padding:40px 32px}
 
 .welcome{margin-bottom:36px}
-.welcome-label{
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  color:var(--color-text-muted);
-  margin-bottom:8px;
-}
-.welcome-title{
-  font-size:32px;
-  font-weight:700;
-  letter-spacing:-1px;
-  margin-bottom:6px;
-}
-.welcome-sub{
-  font-size:14px;
-  color:var(--color-text-muted);
-}
+.welcome-label{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:8px}
+.welcome-title{font-size:32px;font-weight:700;letter-spacing:-1px;margin-bottom:6px}
+.welcome-sub{font-size:14px;color:var(--color-text-muted)}
 
-.section-label{
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-  color:var(--color-text-muted);
-  margin-bottom:14px;
+/* Channel card (single, big) */
+.channel-card{
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);padding:24px;margin-bottom:14px;
 }
+.channel-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.channel-emoji{
+  width:52px;height:52px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:26px;flex-shrink:0;
+}
+.channel-name{font-weight:700;font-size:17px;letter-spacing:-.2px}
+.channel-meta{font-size:12px;color:var(--color-text-muted);margin-top:3px;line-height:1.5}
+.channel-status{
+  display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;padding:4px 10px;border-radius:99px;
+  background:var(--color-warning-soft);color:#854F0B;
+}
+.channel-status.ready{background:var(--color-success-soft);color:var(--color-success)}
 
-/* Channels grid */
-.ch-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:14px;
-  margin-bottom:36px;
+/* CTA banner */
+.cta-banner{
+  background:linear-gradient(135deg,var(--color-pink-soft) 0%,var(--color-purple-soft) 100%);
+  border-radius:var(--radius-md);padding:20px;display:flex;align-items:center;gap:16px;
 }
-.ch-card{
-  background:var(--color-surface);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-lg);
-  padding:20px;
-  cursor:pointer;
-  transition:.15s;
+.cta-emoji{font-size:36px;flex-shrink:0}
+.cta-content{flex:1;min-width:0}
+.cta-title{font-weight:700;font-size:15px;color:#4B1528;margin-bottom:3px;letter-spacing:-.1px}
+.cta-desc{font-size:12px;color:#72243E;line-height:1.5}
+.cta-btn{
+  background:var(--color-pink-dark);color:#fff;border:none;padding:11px 20px;
+  border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;
+  white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+  font-family:inherit;transition:.15s;
 }
-.ch-card:hover{
-  border-color:var(--color-accent);
-  transform:translateY(-2px);
-  box-shadow:var(--shadow-md);
-}
-.ch-card-header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:14px;
-}
-.ch-emoji{
-  width:44px;
-  height:44px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  flex-shrink:0;
-}
-.ch-name{
-  font-weight:600;
-  font-size:15px;
-  margin-bottom:2px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.ch-handle{
-  font-size:12px;
-  color:var(--color-text-subtle);
-  font-family:'JetBrains Mono',ui-monospace,monospace;
-}
-.ch-niche-label{
-  font-size:11px;
-  color:var(--color-text-muted);
-  margin-bottom:6px;
-}
-.ch-niche-tag{
-  display:inline-block;
-  font-size:11px;
-  font-weight:600;
-  padding:4px 10px;
-  border-radius:99px;
-  background:var(--color-accent-soft);
-  color:var(--color-accent);
-}
-.ch-niche-tag.empty{
-  background:var(--color-surface-2);
-  color:var(--color-text-subtle);
-  font-weight:500;
-  font-style:italic;
-}
-.ch-meta{
-  font-size:11px;
-  color:var(--color-text-subtle);
-  margin-top:12px;
-  padding-top:12px;
-  border-top:1px solid var(--color-border);
-}
+.cta-btn:hover{background:#7E2848;transform:translateY(-1px)}
 
-.ch-add{
-  background:transparent;
-  border:2px dashed var(--color-border-strong);
-  border-radius:var(--radius-lg);
-  padding:20px;
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  min-height:160px;
-  color:var(--color-text-muted);
-  transition:.15s;
-  font-family:inherit;
-  font-size:14px;
-  font-weight:600;
+/* Quick actions */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.quick-action{
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;text-align:left;
+  font-family:inherit;display:flex;align-items:center;gap:12px;transition:.15s;
 }
-.ch-add:hover{
-  border-color:var(--color-accent);
-  color:var(--color-accent);
-  background:var(--color-accent-soft);
-}
-.ch-add-icon{
-  font-size:28px;
-  margin-bottom:8px;
-}
+.quick-action.dashed{border-style:dashed;border-color:var(--color-border-strong)}
+.quick-action:hover{border-color:var(--color-accent);background:var(--color-accent-soft);transform:translateY(-1px)}
+.quick-action-icon{font-size:22px;color:var(--color-text-muted)}
+.quick-action-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.quick-action-desc{font-size:11px;color:var(--color-text-subtle)}
 
-/* Library overview */
-.library-card{
-  background:var(--color-surface);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-lg);
-  padding:18px 22px;
-}
-.library-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:18px;
-}
-.library-item{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-.library-item-icon{font-size:18px;margin-bottom:4px}
-.library-item-count{
-  font-size:22px;
-  font-weight:700;
-  color:var(--color-text);
-  letter-spacing:-.5px;
-}
-.library-item-label{
-  font-size:12px;
-  color:var(--color-text-muted);
-}
-.library-cta{
-  margin-top:14px;
-  padding-top:14px;
-  border-top:1px solid var(--color-border);
-  text-align:right;
-}
-
-/* Empty state */
+/* Empty state for first signup */
 .empty-state{
-  text-align:center;
-  padding:40px 20px;
-  color:var(--color-text-muted);
+  background:var(--color-surface);border:2px dashed var(--color-border-strong);
+  border-radius:var(--radius-lg);padding:48px 28px;text-align:center;
 }
-.empty-state-icon{font-size:40px;margin-bottom:12px;opacity:.4}
-.empty-state-title{
-  font-size:15px;
-  font-weight:600;
-  color:var(--color-text);
-  margin-bottom:6px;
-}
-.empty-state-desc{font-size:13px;line-height:1.6;max-width:380px;margin:0 auto}
+.empty-state-emoji{font-size:48px;margin-bottom:16px}
+.empty-state-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:8px}
+.empty-state-desc{font-size:14px;color:var(--color-text-muted);max-width:380px;margin:0 auto 24px;line-height:1.6}
 
-/* ======================== MODAL ======================== */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(28,25,23,.5);
-  backdrop-filter:blur(4px);
-  z-index:1000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  animation:fadeIn .2s ease;
+/* ======================== WIZARD ======================== */
+#wizard{
+  display:none;min-height:100vh;background:var(--color-surface-2);
+  align-items:flex-start;justify-content:center;padding:40px 24px;
 }
-.overlay.on{display:flex}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+#wizard.on{display:flex}
 
-.modal{
-  background:var(--color-surface);
-  border-radius:var(--radius-xl);
-  padding:32px;
-  width:520px;
-  max-width:100%;
-  max-height:88vh;
-  overflow-y:auto;
-  box-shadow:var(--shadow-lg);
+.wizard-container{width:100%;max-width:620px}
+
+.wizard-progress{text-align:center;margin-bottom:28px}
+.wizard-step-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:10px}
+.wizard-bars{display:flex;gap:6px;justify-content:center}
+.wizard-bar{
+  width:44px;height:4px;border-radius:2px;background:var(--color-surface);
+  border:1px solid var(--color-border);transition:.3s;
 }
-.modal h2{
-  font-size:20px;
-  font-weight:700;
-  margin-bottom:4px;
-  letter-spacing:-.3px;
-}
-.modal p.modal-sub{
-  font-size:13px;
-  color:var(--color-text-muted);
-  margin-bottom:20px;
+.wizard-bar.on{background:var(--color-accent);border-color:var(--color-accent)}
+
+.wizard-header{text-align:center;margin-bottom:28px}
+.wizard-title{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:8px}
+.wizard-desc{font-size:14px;color:var(--color-text-muted);max-width:440px;margin:0 auto;line-height:1.6}
+
+.wizard-card{
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);
 }
 
-.modal-actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-  margin-top:20px;
+/* Emoji picker */
+.emoji-picker{display:flex;gap:8px;flex-wrap:wrap}
+.emoji-btn{
+  width:44px;height:44px;font-size:22px;border:1.5px solid var(--color-border);
+  background:var(--color-surface);border-radius:var(--radius-sm);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.12s;
+}
+.emoji-btn:hover{border-color:var(--color-accent)}
+.emoji-btn.on{border-color:var(--color-accent);background:var(--color-accent-soft)}
+
+/* Topic starter chips */
+.starter-section{
+  background:var(--color-surface-2);border-radius:var(--radius-sm);
+  padding:12px 14px;margin-top:14px;
+}
+.starter-label{
+  font-size:11px;color:var(--color-text-muted);margin-bottom:8px;
+  display:flex;align-items:center;gap:5px;font-weight:500;
+}
+.starter-chips{display:flex;flex-wrap:wrap;gap:6px}
+.starter-chip{
+  font-size:12px;padding:5px 11px;border-radius:99px;
+  border:1px solid var(--color-border);background:var(--color-surface);
+  cursor:pointer;font-family:inherit;color:var(--color-text-muted);transition:.12s;
+}
+.starter-chip:hover{border-color:var(--color-accent);color:var(--color-accent)}
+
+/* Age range pills */
+.age-pills{display:flex;flex-wrap:wrap;gap:8px}
+.age-pill{
+  font-size:13px;font-weight:600;padding:8px 16px;border-radius:99px;
+  border:1.5px solid var(--color-border);background:var(--color-surface);
+  cursor:pointer;font-family:inherit;color:var(--color-text-muted);transition:.12s;
+}
+.age-pill:hover{border-color:var(--color-accent)}
+.age-pill.on{background:var(--color-accent-soft);border-color:var(--color-accent);color:var(--color-accent)}
+
+/* Tone grid */
+.tone-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tone-card{
+  background:var(--color-surface);border:1.5px solid var(--color-border);
+  border-radius:var(--radius-md);padding:18px;cursor:pointer;transition:.15s;
+  text-align:left;font-family:inherit;
+}
+.tone-card:hover{border-color:var(--color-accent);transform:translateY(-1px)}
+.tone-card.on{border-color:var(--color-accent);background:var(--color-accent-soft)}
+.tone-emoji{font-size:26px;margin-bottom:8px}
+.tone-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.tone-desc{font-size:12px;color:var(--color-text-muted);line-height:1.5}
+
+.wizard-actions{
+  display:flex;justify-content:space-between;align-items:center;margin-top:24px;
 }
 
 /* ======================== TOAST ======================== */
-.toast-wrap{
-  position:fixed;
-  bottom:24px;
-  right:24px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  z-index:9999;
-}
+.toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
 .toast{
-  padding:12px 18px;
-  border-radius:var(--radius-md);
-  font-size:13px;
-  font-weight:500;
-  color:#fff;
-  background:var(--color-text);
-  box-shadow:var(--shadow-lg);
-  animation:slideIn .2s ease;
-  max-width:340px;
+  padding:12px 18px;border-radius:var(--radius-md);font-size:13px;font-weight:500;
+  color:#fff;background:var(--color-text);box-shadow:var(--shadow-lg);
+  animation:slideIn .2s ease;max-width:340px;
 }
 .toast.success{background:var(--color-success)}
 .toast.error{background:var(--color-danger)}
-@keyframes slideIn{
-  from{opacity:0;transform:translateX(20px)}
-  to{opacity:1;transform:translateX(0)}
-}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
 /* ======================== LOADER ======================== */
-#loader{
-  position:fixed;
-  inset:0;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(2px);
-  z-index:9998;
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
+#loader{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(2px);z-index:9998;display:none;align-items:center;justify-content:center}
 #loader.on{display:flex}
-.spinner{
-  width:36px;
-  height:36px;
-  border:3px solid var(--color-border);
-  border-top-color:var(--color-accent);
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-}
+.spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ======================== UTILITY ======================== */
 .hidden{display:none!important}
 .text-muted{color:var(--color-text-muted)}
-.mb-md{margin-bottom:16px}
 
 /* ======================== RESPONSIVE ======================== */
 @media (max-width:640px){
   .topbar{padding:12px 16px}
   .container{padding:24px 16px}
   .welcome-title{font-size:24px}
-  .modal{padding:24px}
+  .tone-grid{grid-template-columns:1fr}
+  .quick-actions{grid-template-columns:1fr}
+  .wizard-card{padding:20px}
+  .cta-banner{flex-direction:column;text-align:center}
+  .cta-btn{width:100%;justify-content:center}
 }
 </style>
 </head>
@@ -540,25 +316,16 @@ body{
 
     <div class="auth-msg" id="auth-msg"></div>
 
-    <!-- LOGIN -->
     <div id="form-login">
       <div class="fld"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" /></div>
       <div class="fld"><label>Password</label><input type="password" id="login-pw" placeholder="Your password" autocomplete="current-password" /></div>
       <button class="btn primary full" id="login-btn">Sign in →</button>
     </div>
 
-    <!-- SIGNUP -->
     <div id="form-signup" class="hidden">
       <div class="fld"><label>Full name</label><input type="text" id="signup-name" placeholder="Your name" autocomplete="name" /></div>
       <div class="fld"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" /></div>
       <div class="fld"><label>Password</label><input type="password" id="signup-pw" placeholder="Min 6 characters" autocomplete="new-password" /></div>
-      <div class="fld"><label>I am a...</label>
-        <select id="signup-kind">
-          <option value="youtuber">YouTuber — I create my own channels</option>
-          <option value="professional">Professional — I offer services to creators</option>
-          <option value="agency">Agency — I manage multiple creators</option>
-        </select>
-      </div>
       <button class="btn primary full" id="signup-btn">Create account →</button>
     </div>
   </div>
@@ -566,7 +333,6 @@ body{
 
 <!-- ======================== DASHBOARD ======================== -->
 <div id="dashboard">
-
   <div class="topbar">
     <div class="brand">
       <div class="brand-mark">M</div>
@@ -579,89 +345,199 @@ body{
   </div>
 
   <div class="container">
-
     <div class="welcome">
-      <div class="welcome-label" id="welcome-label">Dashboard</div>
+      <div class="welcome-label">Dashboard</div>
       <div class="welcome-title" id="welcome-title">Hello</div>
-      <div class="welcome-sub" id="welcome-sub">Your creative studio.</div>
+      <div class="welcome-sub" id="welcome-sub">Let's set up your channel.</div>
     </div>
 
-    <div class="section-label">Your channels</div>
-    <div class="ch-grid" id="channels-grid">
-      <!-- channels go here -->
-    </div>
-
-    <div class="section-label">Your library</div>
-    <div class="library-card">
-      <div class="library-grid">
-        <div class="library-item">
-          <div class="library-item-icon">💡</div>
-          <div class="library-item-count" id="lib-niches">0</div>
-          <div class="library-item-label">Niches</div>
-        </div>
-        <div class="library-item">
-          <div class="library-item-icon">🎙️</div>
-          <div class="library-item-count" id="lib-voices">0</div>
-          <div class="library-item-label">Voice presets</div>
-        </div>
-        <div class="library-item">
-          <div class="library-item-icon">💬</div>
-          <div class="library-item-count" id="lib-tones">0</div>
-          <div class="library-item-label">Tone templates</div>
-        </div>
-        <div class="library-item">
-          <div class="library-item-icon">👥</div>
-          <div class="library-item-count" id="lib-freelancers">0</div>
-          <div class="library-item-label">Freelancers</div>
-        </div>
-      </div>
-      <div class="library-cta">
-        <span class="text-muted" style="font-size:12px">Library management coming in next milestone →</span>
-      </div>
-    </div>
-
+    <div id="dashboard-content"></div>
   </div>
 </div>
 
-<!-- ======================== NEW CHANNEL MODAL ======================== -->
-<div class="overlay" id="channel-modal">
-  <div class="modal">
-    <h2>New channel</h2>
-    <p class="modal-sub">Create a new YouTube channel identity. You'll position it on a niche later.</p>
+<!-- ======================== WIZARD ======================== -->
+<div id="wizard">
+  <div class="wizard-container">
 
-    <div class="fld"><label>Channel name *</label><input type="text" id="ch-name-in" placeholder="e.g. Catchy History" /></div>
-    <div class="fld"><label>YouTube handle</label><input type="text" id="ch-handle-in" placeholder="@CatchyHistory" /></div>
-    <div class="fld"><label>YouTube URL (optional)</label><input type="text" id="ch-url-in" placeholder="https://youtube.com/@CatchyHistory" /></div>
-    <div class="fld"><label>Emoji</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="emoji-picker">
-        <button type="button" class="btn" data-emoji="🎬">🎬</button>
-        <button type="button" class="btn" data-emoji="📺">📺</button>
-        <button type="button" class="btn" data-emoji="🎨">🎨</button>
-        <button type="button" class="btn" data-emoji="🧠">🧠</button>
-        <button type="button" class="btn" data-emoji="💰">💰</button>
-        <button type="button" class="btn" data-emoji="⚖️">⚖️</button>
-        <button type="button" class="btn" data-emoji="🔥">🔥</button>
-        <button type="button" class="btn" data-emoji="🚀">🚀</button>
-        <button type="button" class="btn" data-emoji="📚">📚</button>
-        <button type="button" class="btn" data-emoji="🎯">🎯</button>
-      </div>
-    </div>
-    <div class="fld"><label>Brand color</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="color-picker">
-        <button type="button" class="color-opt" data-color="#6366F1" style="width:32px;height:32px;border-radius:8px;background:#6366F1;border:2px solid transparent;cursor:pointer"></button>
-        <button type="button" class="color-opt" data-color="#EC4899" style="width:32px;height:32px;border-radius:8px;background:#EC4899;border:2px solid transparent;cursor:pointer"></button>
-        <button type="button" class="color-opt" data-color="#F59E0B" style="width:32px;height:32px;border-radius:8px;background:#F59E0B;border:2px solid transparent;cursor:pointer"></button>
-        <button type="button" class="color-opt" data-color="#10B981" style="width:32px;height:32px;border-radius:8px;background:#10B981;border:2px solid transparent;cursor:pointer"></button>
-        <button type="button" class="color-opt" data-color="#3B82F6" style="width:32px;height:32px;border-radius:8px;background:#3B82F6;border:2px solid transparent;cursor:pointer"></button>
-        <button type="button" class="color-opt" data-color="#EF4444" style="width:32px;height:32px;border-radius:8px;background:#EF4444;border:2px solid transparent;cursor:pointer"></button>
-        <button type="button" class="color-opt" data-color="#8B5CF6" style="width:32px;height:32px;border-radius:8px;background:#8B5CF6;border:2px solid transparent;cursor:pointer"></button>
+    <div class="wizard-progress">
+      <div class="wizard-step-label" id="wizard-step-label">Step 1 of 4</div>
+      <div class="wizard-bars">
+        <div class="wizard-bar on" data-step="1"></div>
+        <div class="wizard-bar" data-step="2"></div>
+        <div class="wizard-bar" data-step="3"></div>
+        <div class="wizard-bar" data-step="4"></div>
       </div>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn ghost" id="ch-cancel">Cancel</button>
-      <button class="btn primary" id="ch-save">Create channel</button>
+    <div id="wizard-step-1">
+      <div class="wizard-header">
+        <div class="wizard-title">What's your channel called?</div>
+        <div class="wizard-desc">Choose the name and pick an icon. You can change them later.</div>
+      </div>
+
+      <div class="wizard-card">
+        <div class="fld">
+          <label>Channel name *</label>
+          <input type="text" id="w-name" placeholder="e.g. Catchy History" />
+        </div>
+        <div class="fld">
+          <label>YouTube handle (optional)</label>
+          <input type="text" id="w-handle" placeholder="@CatchyHistory" />
+        </div>
+        <div class="fld" style="margin-bottom:0">
+          <label>Pick an icon</label>
+          <div class="emoji-picker" id="w-emoji-picker">
+            <button type="button" class="emoji-btn on" data-emoji="🎬">🎬</button>
+            <button type="button" class="emoji-btn" data-emoji="📚">📚</button>
+            <button type="button" class="emoji-btn" data-emoji="🎨">🎨</button>
+            <button type="button" class="emoji-btn" data-emoji="🧠">🧠</button>
+            <button type="button" class="emoji-btn" data-emoji="💰">💰</button>
+            <button type="button" class="emoji-btn" data-emoji="⚖️">⚖️</button>
+            <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
+            <button type="button" class="emoji-btn" data-emoji="🚀">🚀</button>
+            <button type="button" class="emoji-btn" data-emoji="🎯">🎯</button>
+            <button type="button" class="emoji-btn" data-emoji="📺">📺</button>
+            <button type="button" class="emoji-btn" data-emoji="🎭">🎭</button>
+            <button type="button" class="emoji-btn" data-emoji="🍳">🍳</button>
+            <button type="button" class="emoji-btn" data-emoji="🏋️">🏋️</button>
+            <button type="button" class="emoji-btn" data-emoji="🎮">🎮</button>
+            <button type="button" class="emoji-btn" data-emoji="✈️">✈️</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-actions">
+        <button class="btn ghost" id="w-cancel-1">Cancel</button>
+        <button class="btn primary lg" id="w-next-1">Next →</button>
+      </div>
     </div>
+
+    <div id="wizard-step-2" class="hidden">
+      <div class="wizard-header">
+        <div class="wizard-title">What's your channel about?</div>
+        <div class="wizard-desc">Describe the topic in your own words. Our AI will analyze the market for you.</div>
+      </div>
+
+      <div class="wizard-card">
+        <div class="fld">
+          <label>Topic description *</label>
+          <textarea id="w-topic" placeholder="e.g. History debunking, false myths, hidden truths and cover-ups about ancient civilizations"></textarea>
+          <div class="fld-hint">💡 Be specific. The more detail, the better our AI matches your niche.</div>
+        </div>
+
+        <div class="starter-section">
+          <div class="starter-label">✨ Or pick a starting point</div>
+          <div class="starter-chips">
+            <button type="button" class="starter-chip" data-starter="Finance, investing, and how to grow wealth">Finance &amp; Investing</button>
+            <button type="button" class="starter-chip" data-starter="Psychology behind TV shows and movie characters">Psychology &amp; TV</button>
+            <button type="button" class="starter-chip" data-starter="Historical mysteries, debunking myths, untold stories">History &amp; Mystery</button>
+            <button type="button" class="starter-chip" data-starter="True crime cases and unsolved mysteries">True Crime</button>
+            <button type="button" class="starter-chip" data-starter="Tech product reviews and tutorials">Tech Reviews</button>
+            <button type="button" class="starter-chip" data-starter="Lifestyle, productivity, personal growth">Lifestyle</button>
+            <button type="button" class="starter-chip" data-starter="Gaming, esports, game reviews">Gaming</button>
+            <button type="button" class="starter-chip" data-starter="Fitness, workouts, healthy living">Fitness</button>
+            <button type="button" class="starter-chip" data-starter="Cooking, recipes, food culture">Cooking</button>
+            <button type="button" class="starter-chip" data-starter="Business, entrepreneurship, startups">Business</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-actions">
+        <button class="btn ghost" id="w-back-2">← Back</button>
+        <button class="btn primary lg" id="w-next-2">Next →</button>
+      </div>
+    </div>
+
+    <div id="wizard-step-3" class="hidden">
+      <div class="wizard-header">
+        <div class="wizard-title">Who's watching?</div>
+        <div class="wizard-desc">Tell us who your videos are for. This helps us tune the script style and SEO.</div>
+      </div>
+
+      <div class="wizard-card">
+        <div class="fld">
+          <label>Main language *</label>
+          <select id="w-language">
+            <option value="en">English</option>
+            <option value="it">Italian</option>
+            <option value="es">Spanish</option>
+            <option value="pt">Portuguese</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="fld">
+          <label>Age range</label>
+          <div class="age-pills" id="w-age-pills">
+            <button type="button" class="age-pill" data-age="13-17">13-17</button>
+            <button type="button" class="age-pill" data-age="18-24">18-24</button>
+            <button type="button" class="age-pill" data-age="25-34">25-34</button>
+            <button type="button" class="age-pill" data-age="35-44">35-44</button>
+            <button type="button" class="age-pill" data-age="45-54">45-54</button>
+            <button type="button" class="age-pill" data-age="55+">55+</button>
+          </div>
+          <div class="fld-hint">You can pick more than one.</div>
+        </div>
+
+        <div class="fld" style="margin-bottom:0">
+          <label>Anything more to know? (optional)</label>
+          <input type="text" id="w-audience-extra" placeholder="e.g. People who love documentaries and don't trust mainstream history" />
+        </div>
+      </div>
+
+      <div class="wizard-actions">
+        <button class="btn ghost" id="w-back-3">← Back</button>
+        <button class="btn primary lg" id="w-next-3">Next →</button>
+      </div>
+    </div>
+
+    <div id="wizard-step-4" class="hidden">
+      <div class="wizard-header">
+        <div class="wizard-title">How should it sound?</div>
+        <div class="wizard-desc">Pick the tone of your videos. This shapes scripts and voiceovers.</div>
+      </div>
+
+      <div class="tone-grid" id="w-tone-grid">
+        <button type="button" class="tone-card" data-tone="documentary">
+          <div class="tone-emoji">🎬</div>
+          <div class="tone-name">Documentary</div>
+          <div class="tone-desc">Cinematic narrator. Dramatic pauses. Investigative tone.</div>
+        </button>
+        <button type="button" class="tone-card" data-tone="conversational">
+          <div class="tone-emoji">💬</div>
+          <div class="tone-name">Conversational</div>
+          <div class="tone-desc">Friendly, warm. Like a smart friend explaining things.</div>
+        </button>
+        <button type="button" class="tone-card" data-tone="sharp">
+          <div class="tone-emoji">⚡</div>
+          <div class="tone-name">Sharp &amp; punchy</div>
+          <div class="tone-desc">No filler. Fast pace. Maximum impact per second.</div>
+        </button>
+        <button type="button" class="tone-card" data-tone="educational">
+          <div class="tone-emoji">🎓</div>
+          <div class="tone-name">Educational</div>
+          <div class="tone-desc">Calm, clear, methodical. Teacher in your headphones.</div>
+        </button>
+        <button type="button" class="tone-card" data-tone="storyteller">
+          <div class="tone-emoji">🎭</div>
+          <div class="tone-name">Storyteller</div>
+          <div class="tone-desc">Narrative, emotional. Hooks viewers with stories.</div>
+        </button>
+        <button type="button" class="tone-card" data-tone="provocative">
+          <div class="tone-emoji">🔥</div>
+          <div class="tone-name">Provocative</div>
+          <div class="tone-desc">Bold opinions. Contrarian. Loves the controversy.</div>
+        </button>
+      </div>
+
+      <div class="wizard-actions">
+        <button class="btn ghost" id="w-back-4">← Back</button>
+        <button class="btn success lg" id="w-finish">✓ Create my channel</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -684,14 +560,18 @@ const APP = {
   user: null,
   profile: null,
   channels: [],
-  library: {
-    niches: 0,
-    voices: 0,
-    tones: 0,
-    freelancers: 0,
+  // Wizard temp state
+  wizard: {
+    step: 1,
+    name: '',
+    handle: '',
+    emoji: '🎬',
+    topic: '',
+    language: 'en',
+    ages: [],
+    audienceExtra: '',
+    tone: '',
   },
-  selectedEmoji: '🎬',
-  selectedColor: '#6366F1',
 };
 
 // ============================================================
@@ -714,8 +594,7 @@ function toast(msg, type){
 
 function escapeHtml(t){
   return (t == null ? '' : String(t))
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function showAuthMsg(text, type){
@@ -723,10 +602,7 @@ function showAuthMsg(text, type){
   el.textContent = text;
   el.className = 'auth-msg ' + type;
 }
-
-function hideAuthMsg(){
-  $('auth-msg').className = 'auth-msg';
-}
+function hideAuthMsg(){ $('auth-msg').className = 'auth-msg'; }
 
 // ============================================================
 // AUTH FLOW
@@ -748,28 +624,21 @@ async function initApp(){
 async function onLogin(){
   showLoader();
   try {
-    // Carica profilo utente (auto-creato dal trigger SQL al signup)
     const { data: profile, error } = await APP.sb
-      .from('user_profiles')
-      .select('*')
-      .eq('id', APP.user.id)
-      .single();
+      .from('user_profiles').select('*').eq('id', APP.user.id).single();
 
     if (error) {
-      // Edge case: trigger non ha creato il profilo (es. utente pre-refactor)
-      // Lo creiamo manualmente
       console.warn('Profile missing, creating manually:', error.message);
       const { data: newProfile, error: insErr } = await APP.sb
         .from('user_profiles')
         .insert({
           id: APP.user.id,
           email: APP.user.email,
-          full_name: APP.user.user_metadata?.full_name || APP.user.user_metadata?.nome || '',
-          kind: APP.user.user_metadata?.kind || APP.user.user_metadata?.tipo || 'youtuber',
+          full_name: APP.user.user_metadata?.full_name || '',
+          kind: 'youtuber',
           default_language: 'en'
         })
-        .select()
-        .single();
+        .select().single();
       if (insErr) throw insErr;
       APP.profile = newProfile;
     } else {
@@ -778,9 +647,8 @@ async function onLogin(){
 
     hide('auth-screen');
     show('dashboard');
-    renderDashboard();
     await loadChannels();
-    await loadLibraryCounts();
+    renderDashboard();
   } catch (e) {
     toast('Error loading profile: ' + e.message, 'error');
   } finally {
@@ -788,7 +656,6 @@ async function onLogin(){
   }
 }
 
-// Switch auth tabs
 $('tab-login').addEventListener('click', () => {
   $('tab-login').classList.add('on');
   $('tab-signup').classList.remove('on');
@@ -804,46 +671,35 @@ $('tab-signup').addEventListener('click', () => {
   hideAuthMsg();
 });
 
-// Login
 $('login-btn').addEventListener('click', async () => {
   const email = $('login-email').value.trim();
   const pw = $('login-pw').value;
   if (!email || !pw) { showAuthMsg('Enter email and password.', 'error'); return; }
-
   showLoader();
   const { data, error } = await APP.sb.auth.signInWithPassword({ email, password: pw });
   hideLoader();
-
   if (error) { showAuthMsg(error.message, 'error'); return; }
   APP.user = data.user;
   await onLogin();
 });
 
-// Signup
 $('signup-btn').addEventListener('click', async () => {
   const name = $('signup-name').value.trim();
   const email = $('signup-email').value.trim();
   const pw = $('signup-pw').value;
-  const kind = $('signup-kind').value;
   if (!name || !email || !pw) { showAuthMsg('Fill in all fields.', 'error'); return; }
-
   showLoader();
   const { data, error } = await APP.sb.auth.signUp({
-    email,
-    password: pw,
-    options: { data: { full_name: name, kind: kind } }
+    email, password: pw,
+    options: { data: { full_name: name, kind: 'youtuber' } }
   });
   hideLoader();
-
   if (error) { showAuthMsg(error.message, 'error'); return; }
-
-  showAuthMsg('Account created! Welcome ' + name + '. Logging in...', 'success');
-  // Il trigger SQL auto-crea user_profiles. Procediamo al login.
+  showAuthMsg('Account created! Welcome ' + name + '.', 'success');
   if (data.session) {
     APP.user = data.user;
     setTimeout(onLogin, 800);
   } else {
-    // Email confirmation flow (improbabile dato che è DISABLED, ma per sicurezza)
     setTimeout(() => {
       $('login-email').value = email;
       $('tab-login').click();
@@ -852,16 +708,12 @@ $('signup-btn').addEventListener('click', async () => {
   }
 });
 
-// Signout
 $('signout-btn').addEventListener('click', async () => {
   await APP.sb.auth.signOut();
-  APP.user = null;
-  APP.profile = null;
-  APP.channels = [];
+  APP.user = null; APP.profile = null; APP.channels = [];
   hide('dashboard');
   show('auth-screen');
-  $('login-email').value = '';
-  $('login-pw').value = '';
+  $('login-email').value = ''; $('login-pw').value = '';
   hideAuthMsg();
   toast('Signed out', 'success');
 });
@@ -869,22 +721,10 @@ $('signout-btn').addEventListener('click', async () => {
 // ============================================================
 // DASHBOARD RENDER
 // ============================================================
-function renderDashboard(){
-  $('user-email').textContent = APP.profile.email;
-  const firstName = (APP.profile.full_name || '').split(' ')[0] || 'there';
-  $('welcome-title').textContent = `Hello, ${firstName}`;
-
-  const channelCount = APP.channels.length;
-  const niches = APP.library.niches;
-  $('welcome-sub').textContent = channelCount === 0
-    ? "Let's set up your first channel."
-    : `${channelCount} channel${channelCount > 1 ? 's' : ''} active · ${niches} niche${niches !== 1 ? 's' : ''} in library`;
-}
-
 async function loadChannels(){
   const { data, error } = await APP.sb
     .from('channels')
-    .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(name)')
+    .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(name, sub_niche), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(name)')
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -892,157 +732,300 @@ async function loadChannels(){
     toast('Error loading channels: ' + error.message, 'error');
     return;
   }
-
   APP.channels = data || [];
-  renderChannels();
-  renderDashboard();
 }
 
-function renderChannels(){
-  const grid = $('channels-grid');
-  let html = '';
+function renderDashboard(){
+  $('user-email').textContent = APP.profile.email;
+  const firstName = (APP.profile.full_name || '').split(' ')[0] || 'there';
+  $('welcome-title').textContent = `Hello, ${firstName}`;
 
-  // Channel cards
-  APP.channels.forEach(ch => {
-    const nicheName = ch.active_niche_profile?.name;
-    html += `
-      <div class="ch-card" data-id="${ch.id}">
-        <div class="ch-card-header">
-          <div class="ch-emoji" style="background:${ch.brand_color}1a;color:${ch.brand_color}">${ch.emoji || '🎬'}</div>
-          <div style="min-width:0;flex:1">
-            <div class="ch-name">${escapeHtml(ch.name)}</div>
-            <div class="ch-handle">${escapeHtml(ch.handle || '—')}</div>
-          </div>
-        </div>
-        <div class="ch-niche-label">Positioned on</div>
-        ${nicheName
-          ? `<span class="ch-niche-tag" style="background:${ch.brand_color}1a;color:${ch.brand_color}">${escapeHtml(nicheName)}</span>`
-          : `<span class="ch-niche-tag empty">No niche yet</span>`}
-        <div class="ch-meta">Created ${new Date(ch.created_at).toLocaleDateString()}</div>
+  const count = APP.channels.length;
+  if (count === 0) {
+    $('welcome-sub').textContent = "Let's set up your first money-making channel.";
+  } else {
+    $('welcome-sub').textContent = `${count} channel${count > 1 ? 's' : ''} ready · let's make money on YouTube`;
+  }
+
+  const content = $('dashboard-content');
+
+  if (count === 0) {
+    // First-time empty state
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-emoji">🎬</div>
+        <div class="empty-state-title">Welcome to MyCutiePie</div>
+        <div class="empty-state-desc">Your AI-powered YouTube studio. We'll guide you through creating your first channel in about 2 minutes.</div>
+        <button class="btn primary lg" id="start-wizard-btn">Start setup →</button>
       </div>
     `;
-  });
+    $('start-wizard-btn').addEventListener('click', openWizard);
+  } else {
+    // Channels list
+    let html = '';
+    APP.channels.forEach(ch => {
+      const nicheName = ch.active_niche_profile?.name || 'No niche yet';
+      const toneName = ch.default_tone_template?.name || 'Default tone';
+      const isReady = ch.status === 'active' || ch.active_niche_profile_id;
+      const meta = ch.handle ? `${ch.handle} · ${nicheName} · ${toneName}` : `${nicheName} · ${toneName}`;
+      html += `
+        <div class="channel-card">
+          <div class="channel-header">
+            <div class="channel-emoji" style="background:${ch.brand_color}1a">${ch.emoji || '🎬'}</div>
+            <div style="flex:1;min-width:0">
+              <div class="channel-name">${escapeHtml(ch.name)}</div>
+              <div class="channel-meta">${escapeHtml(meta)}</div>
+            </div>
+            <div class="channel-status ${isReady ? 'ready' : ''}">${isReady ? 'Ready' : 'Draft'}</div>
+          </div>
+          <div class="cta-banner">
+            <div class="cta-emoji">🎯</div>
+            <div class="cta-content">
+              <div class="cta-title">Ready to make your first video?</div>
+              <div class="cta-desc">We'll guide you through script, voice, and production. Takes ~5 minutes to set up.</div>
+            </div>
+            <button class="cta-btn" disabled style="opacity:.6;cursor:not-allowed">Start (coming soon) →</button>
+          </div>
+        </div>
+      `;
+    });
 
-  // Add channel button
-  html += `
-    <button class="ch-add" id="add-channel-btn">
-      <div class="ch-add-icon">+</div>
-      <div>New channel</div>
-    </button>
-  `;
-
-  grid.innerHTML = html;
-
-  // Attach handlers
-  $('add-channel-btn').addEventListener('click', openChannelModal);
-  // (clicks on channel cards will navigate to channel workspace in Milestone 3)
-}
-
-async function loadLibraryCounts(){
-  try {
-    const [niches, voices, tones, freelancers] = await Promise.all([
-      APP.sb.from('niche_profiles').select('id', { count: 'exact', head: true }),
-      APP.sb.from('voice_presets').select('id', { count: 'exact', head: true }),
-      APP.sb.from('tone_templates').select('id', { count: 'exact', head: true }),
-      APP.sb.from('freelancers').select('id', { count: 'exact', head: true }),
-    ]);
-
-    APP.library.niches = niches.count || 0;
-    APP.library.voices = voices.count || 0;
-    APP.library.tones = tones.count || 0;
-    APP.library.freelancers = freelancers.count || 0;
-
-    $('lib-niches').textContent = APP.library.niches;
-    $('lib-voices').textContent = APP.library.voices;
-    $('lib-tones').textContent = APP.library.tones;
-    $('lib-freelancers').textContent = APP.library.freelancers;
-
-    renderDashboard();
-  } catch (e) {
-    console.error('Library counts error:', e);
+    html += `
+      <div class="quick-actions">
+        <button class="quick-action dashed" id="add-channel-btn">
+          <div class="quick-action-icon">+</div>
+          <div>
+            <div class="quick-action-title">Add another channel</div>
+            <div class="quick-action-desc">Diversify and scale</div>
+          </div>
+        </button>
+        <button class="quick-action" disabled style="opacity:.5;cursor:not-allowed">
+          <div class="quick-action-icon">⚙️</div>
+          <div>
+            <div class="quick-action-title">Edit channel setup</div>
+            <div class="quick-action-desc">Coming in next milestone</div>
+          </div>
+        </button>
+      </div>
+    `;
+    content.innerHTML = html;
+    $('add-channel-btn').addEventListener('click', openWizard);
   }
 }
 
 // ============================================================
-// NEW CHANNEL MODAL
+// WIZARD
 // ============================================================
-function openChannelModal(){
-  $('ch-name-in').value = '';
-  $('ch-handle-in').value = '';
-  $('ch-url-in').value = '';
-  APP.selectedEmoji = '🎬';
-  APP.selectedColor = '#6366F1';
-  updateEmojiPickerSelection();
-  updateColorPickerSelection();
-  show('channel-modal');
-  setTimeout(() => $('ch-name-in').focus(), 100);
+function openWizard(){
+  // Reset wizard state
+  APP.wizard = {
+    step: 1, name: '', handle: '', emoji: '🎬',
+    topic: '', language: 'en', ages: [], audienceExtra: '', tone: '',
+  };
+  $('w-name').value = '';
+  $('w-handle').value = '';
+  $('w-topic').value = '';
+  $('w-language').value = 'en';
+  $('w-audience-extra').value = '';
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('on'));
+  document.querySelector('.emoji-btn[data-emoji="🎬"]').classList.add('on');
+  document.querySelectorAll('.age-pill').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.tone-card').forEach(b => b.classList.remove('on'));
+  goToStep(1);
+  hide('dashboard');
+  show('wizard');
 }
 
-function updateEmojiPickerSelection(){
-  document.querySelectorAll('#emoji-picker [data-emoji]').forEach(b => {
-    if (b.dataset.emoji === APP.selectedEmoji) {
-      b.style.background = 'var(--color-accent-soft)';
-      b.style.borderColor = 'var(--color-accent)';
+function closeWizard(){
+  hide('wizard');
+  show('dashboard');
+}
+
+function goToStep(step){
+  APP.wizard.step = step;
+  [1,2,3,4].forEach(s => {
+    if (s === step) $('wizard-step-' + s).classList.remove('hidden');
+    else $('wizard-step-' + s).classList.add('hidden');
+    const bar = document.querySelector(`.wizard-bar[data-step="${s}"]`);
+    if (s <= step) bar.classList.add('on'); else bar.classList.remove('on');
+  });
+  $('wizard-step-label').textContent = `Step ${step} of 4`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Step 1 interactions
+document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    APP.wizard.emoji = btn.dataset.emoji;
+  });
+});
+
+$('w-cancel-1').addEventListener('click', closeWizard);
+$('w-next-1').addEventListener('click', () => {
+  const name = $('w-name').value.trim();
+  if (!name) { toast('Channel name is required', 'error'); $('w-name').focus(); return; }
+  APP.wizard.name = name;
+  APP.wizard.handle = $('w-handle').value.trim();
+  goToStep(2);
+});
+
+// Step 2 interactions
+document.querySelectorAll('.starter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $('w-topic').value = chip.dataset.starter;
+    $('w-topic').focus();
+  });
+});
+
+$('w-back-2').addEventListener('click', () => goToStep(1));
+$('w-next-2').addEventListener('click', () => {
+  const topic = $('w-topic').value.trim();
+  if (!topic) { toast('Topic description is required', 'error'); $('w-topic').focus(); return; }
+  if (topic.length < 10) { toast('Please describe in a bit more detail', 'error'); $('w-topic').focus(); return; }
+  APP.wizard.topic = topic;
+  goToStep(3);
+});
+
+// Step 3 interactions
+document.querySelectorAll('.age-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    pill.classList.toggle('on');
+    const age = pill.dataset.age;
+    if (pill.classList.contains('on')) {
+      if (!APP.wizard.ages.includes(age)) APP.wizard.ages.push(age);
     } else {
-      b.style.background = '';
-      b.style.borderColor = '';
+      APP.wizard.ages = APP.wizard.ages.filter(a => a !== age);
     }
   });
-}
+});
 
-function updateColorPickerSelection(){
-  document.querySelectorAll('#color-picker .color-opt').forEach(b => {
-    b.style.borderColor = b.dataset.color === APP.selectedColor ? 'var(--color-text)' : 'transparent';
-  });
-}
+$('w-back-3').addEventListener('click', () => goToStep(2));
+$('w-next-3').addEventListener('click', () => {
+  APP.wizard.language = $('w-language').value;
+  APP.wizard.audienceExtra = $('w-audience-extra').value.trim();
+  goToStep(4);
+});
 
-document.querySelectorAll('#emoji-picker [data-emoji]').forEach(b => {
-  b.addEventListener('click', () => {
-    APP.selectedEmoji = b.dataset.emoji;
-    updateEmojiPickerSelection();
+// Step 4 interactions
+document.querySelectorAll('.tone-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.tone-card').forEach(c => c.classList.remove('on'));
+    card.classList.add('on');
+    APP.wizard.tone = card.dataset.tone;
   });
 });
 
-document.querySelectorAll('#color-picker .color-opt').forEach(b => {
-  b.addEventListener('click', () => {
-    APP.selectedColor = b.dataset.color;
-    updateColorPickerSelection();
-  });
-});
+$('w-back-4').addEventListener('click', () => goToStep(3));
+$('w-finish').addEventListener('click', finishWizard);
 
-$('ch-cancel').addEventListener('click', () => hide('channel-modal'));
+// ============================================================
+// WIZARD COMPLETION — Creates all DB rows
+// ============================================================
+const TONE_PRESETS = {
+  documentary: {
+    name: 'Documentary',
+    description: 'Cinematic narrator. Dramatic pauses. Investigative tone. Authoritative but accessible.',
+  },
+  conversational: {
+    name: 'Conversational',
+    description: 'Friendly, warm, like a smart friend explaining things. Approachable and direct.',
+  },
+  sharp: {
+    name: 'Sharp & punchy',
+    description: 'No filler. Fast pace. Maximum impact per second. Sharp, direct, energetic.',
+  },
+  educational: {
+    name: 'Educational',
+    description: 'Calm, clear, methodical. Teacher in your headphones. Patient and structured.',
+  },
+  storyteller: {
+    name: 'Storyteller',
+    description: 'Narrative, emotional. Hooks viewers with stories. Cinematic and immersive.',
+  },
+  provocative: {
+    name: 'Provocative',
+    description: 'Bold opinions. Contrarian. Loves the controversy. Confident and unfiltered.',
+  },
+};
 
-$('ch-save').addEventListener('click', async () => {
-  const name = $('ch-name-in').value.trim();
-  if (!name) { toast('Channel name is required', 'error'); return; }
-
-  const payload = {
-    user_id: APP.user.id,
-    name: name,
-    handle: $('ch-handle-in').value.trim() || null,
-    youtube_url: $('ch-url-in').value.trim() || null,
-    emoji: APP.selectedEmoji,
-    brand_color: APP.selectedColor,
-    status: 'draft',
-  };
+async function finishWizard(){
+  const w = APP.wizard;
+  if (!w.tone) { toast('Pick a tone', 'error'); return; }
 
   showLoader();
-  const { data, error } = await APP.sb.from('channels').insert(payload).select().single();
-  hideLoader();
+  try {
+    // 1. Create the niche_profile (basic data — AI analysis comes in Sprint 2)
+    const audienceText = [
+      w.ages.length ? `Ages ${w.ages.join(', ')}` : null,
+      w.audienceExtra || null,
+    ].filter(Boolean).join('. ');
 
-  if (error) { toast('Error: ' + error.message, 'error'); return; }
+    const { data: niche, error: nicheErr } = await APP.sb
+      .from('niche_profiles')
+      .insert({
+        user_id: APP.user.id,
+        name: w.topic.slice(0, 80),
+        sub_niche: null,
+        language: w.language,
+        target_audience: audienceText || null,
+        preferred_format: null,
+      })
+      .select().single();
+    if (nicheErr) throw nicheErr;
 
-  APP.channels.push(data);
-  renderChannels();
-  renderDashboard();
-  hide('channel-modal');
-  toast('Channel "' + name + '" created ✓', 'success');
-});
+    // 2. Create the tone_template
+    const tonePreset = TONE_PRESETS[w.tone];
+    const { data: tone, error: toneErr } = await APP.sb
+      .from('tone_templates')
+      .insert({
+        user_id: APP.user.id,
+        name: tonePreset.name,
+        description: tonePreset.description,
+        language: w.language,
+      })
+      .select().single();
+    if (toneErr) throw toneErr;
 
-// Close modal on backdrop click
-$('channel-modal').addEventListener('click', (e) => {
-  if (e.target.id === 'channel-modal') hide('channel-modal');
-});
+    // 3. Create the channel — link everything together
+    const { data: channel, error: chErr } = await APP.sb
+      .from('channels')
+      .insert({
+        user_id: APP.user.id,
+        name: w.name,
+        handle: w.handle || null,
+        emoji: w.emoji,
+        brand_color: '#EC4899',
+        status: 'active',
+        active_niche_profile_id: niche.id,
+        default_tone_template_id: tone.id,
+      })
+      .select().single();
+    if (chErr) throw chErr;
+
+    // 4. Log the initial niche assignment in history
+    await APP.sb.from('channel_niche_history').insert({
+      channel_id: channel.id,
+      user_id: APP.user.id,
+      niche_profile_id: niche.id,
+      niche_snapshot_name: niche.name,
+      active_from: new Date().toISOString(),
+      pivot_reason: 'Initial channel setup',
+    });
+
+    hideLoader();
+    await loadChannels();
+    closeWizard();
+    renderDashboard();
+    toast(`🎉 Channel "${w.name}" is ready!`, 'success');
+
+  } catch (e) {
+    hideLoader();
+    console.error('Wizard finish error:', e);
+    toast('Error creating channel: ' + e.message, 'error');
+  }
+}
 
 // ============================================================
 // START
