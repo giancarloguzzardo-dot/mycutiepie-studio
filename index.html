@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -278,6 +278,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 .wf-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end}
 .wf-actions .btn{font-size:11px;padding:5px 10px}
 .wf-brief-box{background:var(--color-surface);border-radius:var(--radius-sm);padding:10px;margin-top:8px;font-size:12px;color:var(--color-text);line-height:1.5}
+
+/* CUTIEPULSE */
+.pulse-hero{background:linear-gradient(135deg,var(--color-pink-soft),var(--color-purple-soft));border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px}
+.pulse-hero-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--color-pink-dark);margin-bottom:6px}
+.pulse-hero-title{font-size:17px;font-weight:700;letter-spacing:-.2px;color:#4B1528;margin-bottom:4px}
+.pulse-hero-desc{font-size:12px;color:#72243E;line-height:1.5}
+.pulse-score-card{background:var(--color-surface);border:2px solid var(--color-border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.pulse-score-card.green{border-color:var(--color-success);background:#f0fdf4}
+.pulse-score-card.yellow{border-color:var(--color-warning);background:#fffbeb}
+.pulse-score-card.red{border-color:var(--color-danger);background:#fef2f2}
+.pulse-score-circle{width:96px;height:96px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
+.pulse-score-circle.green{background:var(--color-success)}
+.pulse-score-circle.yellow{background:var(--color-warning)}
+.pulse-score-circle.red{background:var(--color-danger)}
+.pulse-score-num{font-size:30px;line-height:1}
+.pulse-score-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;opacity:.9}
+.pulse-recommendation{font-size:13px;line-height:1.6;color:var(--color-text)}
+.pulse-recommendation strong{font-weight:700}
+.pulse-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px}
+.pulse-metric{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 14px}
+.pulse-metric-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:4px}
+.pulse-metric-value{font-size:14px;font-weight:600;color:var(--color-text);line-height:1.4}
+.pulse-metric-detail{font-size:11px;color:var(--color-text-muted);margin-top:4px;line-height:1.4}
+.pulse-section{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:12px}
+.pulse-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:8px}
+.pulse-section-body{font-size:13px;line-height:1.6;color:var(--color-text)}
+.pulse-section-body ul{margin-left:18px;margin-top:6px}
+.title-variant{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+.title-variant-text{font-size:14px;font-weight:600;color:var(--color-text);line-height:1.4}
+.title-variant-reason{font-size:11px;color:var(--color-text-muted);margin-top:4px;line-height:1.4}
+.title-variant-score{font-size:18px;font-weight:700;padding:8px 12px;border-radius:var(--radius-sm);min-width:56px;text-align:center;color:#fff}
+.title-variant-score.high{background:var(--color-success)}
+.title-variant-score.med{background:var(--color-warning)}
+.title-variant-score.low{background:var(--color-text-muted)}
 
 /* WIZARDS (channel + video) */
 #wizard,#video-wizard{display:none;min-height:100vh;background:var(--color-surface-2);align-items:flex-start;justify-content:center;padding:40px 24px}
@@ -725,7 +759,7 @@ const APP = {
   channels: [],
   currentChannel: null,
   currentProject: null,
-  currentTab: 'outline',
+  currentTab: 'idea',
   // Wizard temp state (channel)
   wizard: {
     mode: 'create',
@@ -924,6 +958,18 @@ async function handleRoute(){
         .from('projects').select('*').eq('id', route.projectId).single();
       if (error || !project) { toast('Video not found', 'error'); navigate(`/channels/${channel.id}`); return; }
       APP.currentProject = project;
+      // Smart default tab based on project progress
+      if (!project.idea_gate_score) {
+        APP.currentTab = 'idea';
+      } else if (!project.outline) {
+        APP.currentTab = 'outline';
+      } else if (!project.script) {
+        APP.currentTab = 'script';
+      } else {
+        APP.currentTab = project.current_stage || 'outline';
+        // Normalize: if current_stage is idea but gate is done, jump to outline
+        if (APP.currentTab === 'idea' && project.idea_gate_score) APP.currentTab = 'outline';
+      }
       await renderVideoStudio();
       renderBreadcrumb([
         { label: channel.name, href: `#/channels/${channel.id}` },
@@ -1331,10 +1377,10 @@ async function renderVideoStudio(){
   if (!ch || !p) return;
 
   const isProMode = APP.profile.studio_mode === 'pro';
-  const stages = ['outline', 'script', 'voice', 'workflow', 'export'];
+  const stages = ['idea', 'outline', 'script', 'voice', 'prepublish', 'workflow', 'export'];
   const currentStage = p.current_stage || 'idea';
+  // currentStage tracks where the user is in the workflow; idea is start
   const currentStageIdx = stages.indexOf(currentStage);
-  const activeTabIdx = stages.indexOf(APP.currentTab);
 
   // Build chips (DNA preview)
   const nicheName = ch.active_niche_profile?.name || 'No niche';
@@ -1342,21 +1388,21 @@ async function renderVideoStudio(){
 
   // Build timeline
   let timelineHtml = '<div class="timeline">';
-  ['idea', ...stages].forEach((stg, i) => {
+  stages.forEach((stg, i) => {
     if (i > 0) {
-      const connectorDone = i <= currentStageIdx + 1;
+      const connectorDone = i <= currentStageIdx;
       timelineHtml += `<div class="timeline-connector ${connectorDone ? 'done' : ''}"></div>`;
     }
-    const allStages = ['idea', ...stages];
-    const stgIdx = allStages.indexOf(stg);
-    const isDone = stgIdx < currentStageIdx + 1;
-    const isCurrent = stg === APP.currentTab || (APP.currentTab === 'outline' && stg === 'outline');
-    const isClickable = isProMode || stgIdx <= currentStageIdx + 1;
+    const isDone = i < currentStageIdx;
+    const isCurrent = stg === APP.currentTab;
+    // In beginner mode, only allow clicking on current stage and prior stages (no jumping ahead)
+    const isClickable = isProMode || i <= currentStageIdx;
     const cls = (isDone ? 'done ' : '') + (isCurrent ? 'current ' : '') + (!isClickable ? 'disabled' : '');
-    const num = stgIdx === 0 ? '💡' : stgIdx;
+    const num = stg === 'idea' ? '💡' : (stg === 'prepublish' ? '🎯' : i);
+    const label = stg === 'prepublish' ? 'pre-publish' : stg;
     timelineHtml += `<button class="timeline-step ${cls}" data-stage="${stg}" ${!isClickable ? 'disabled' : ''}>
       <div class="timeline-dot">${isDone ? '✓' : num}</div>
-      <div class="timeline-label">${stg}</div>
+      <div class="timeline-label">${label}</div>
     </button>`;
   });
   timelineHtml += '</div>';
@@ -1366,9 +1412,11 @@ async function renderVideoStudio(){
   if (isProMode) {
     sidebarHtml = `<aside class="studio-sidebar">
       <nav class="studio-nav">
+        <button class="studio-nav-item ${APP.currentTab === 'idea' ? 'on' : ''}" data-tab="idea"><span class="studio-nav-icon">💡</span>Idea</button>
         <button class="studio-nav-item ${APP.currentTab === 'outline' ? 'on' : ''}" data-tab="outline"><span class="studio-nav-icon">📋</span>Outline</button>
         <button class="studio-nav-item ${APP.currentTab === 'script' ? 'on' : ''}" data-tab="script"><span class="studio-nav-icon">📝</span>Script</button>
         <button class="studio-nav-item ${APP.currentTab === 'voice' ? 'on' : ''}" data-tab="voice"><span class="studio-nav-icon">🎙</span>Voice</button>
+        <button class="studio-nav-item ${APP.currentTab === 'prepublish' ? 'on' : ''}" data-tab="prepublish"><span class="studio-nav-icon">🎯</span>Pre-publish</button>
         <button class="studio-nav-item ${APP.currentTab === 'workflow' ? 'on' : ''}" data-tab="workflow"><span class="studio-nav-icon">🗂</span>Workflow</button>
         <button class="studio-nav-item ${APP.currentTab === 'export' ? 'on' : ''}" data-tab="export"><span class="studio-nav-icon">📦</span>Export</button>
       </nav>
@@ -1407,7 +1455,7 @@ async function renderVideoStudio(){
       e.preventDefault();
       e.stopPropagation();
       const stage = el.dataset.stage || el.dataset.tab;
-      if (!stage || stage === 'idea') return;
+      if (!stage) return;
       APP.currentTab = stage;
       renderVideoStudio();
     });
@@ -1441,12 +1489,432 @@ async function toggleStudioMode(){
 
 function renderStudioPanel(){
   const tab = APP.currentTab;
+  if (tab === 'idea') return renderIdeaPanel();
   if (tab === 'outline') return renderOutlinePanel();
   if (tab === 'script') return renderScriptPanel();
   if (tab === 'voice') return renderVoicePanel();
+  if (tab === 'prepublish') return renderPrePublishPanel();
   if (tab === 'workflow') return renderProjectWorkflowPanel();
   if (tab === 'export') return renderExportPanel();
-  renderOutlinePanel();
+  renderIdeaPanel();
+}
+
+// ============================================================
+// IDEA PANEL (CutiePulse Idea Gate)
+// ============================================================
+function renderIdeaPanel(){
+  const p = APP.currentProject;
+  const hasGate = !!p.idea_gate_score;
+  const lightCls = p.idea_gate_light || 'yellow';
+
+  // Try to extract structured analysis from idea_brief if stored as JSON
+  let gateData = null;
+  if (hasGate && p.idea_brief) {
+    try { gateData = JSON.parse(p.idea_brief); } catch {}
+  }
+
+  let resultHtml = '';
+  if (hasGate && gateData) {
+    resultHtml = `
+      <div class="pulse-score-card ${lightCls}">
+        <div class="pulse-score-circle ${lightCls}">
+          <div class="pulse-score-num">${p.idea_gate_score}</div>
+          <div class="pulse-score-label">/ 100</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:6px">Recommendation</div>
+          <div class="pulse-recommendation">${escapeHtml(gateData.recommendation || 'No recommendation provided.')}</div>
+        </div>
+      </div>
+      ${gateData.metrics ? `<div class="pulse-metrics">${
+        Object.entries(gateData.metrics).map(([key, val]: any) => {
+          const v = val || {};
+          return `<div class="pulse-metric">
+            <div class="pulse-metric-label">${escapeHtml(key.replace(/_/g, ' '))}</div>
+            <div class="pulse-metric-value">${escapeHtml(v.value || v.score || '—')}</div>
+            ${v.detail ? `<div class="pulse-metric-detail">${escapeHtml(v.detail)}</div>` : ''}
+          </div>`;
+        }).join('')
+      }</div>` : ''}
+      ${gateData.suggested_angle ? `<div class="pulse-section">
+        <div class="pulse-section-title">Suggested Angle</div>
+        <div class="pulse-section-body">${escapeHtml(gateData.suggested_angle)}</div>
+      </div>` : ''}
+      ${gateData.risks ? `<div class="pulse-section">
+        <div class="pulse-section-title">⚠️ Risks to consider</div>
+        <div class="pulse-section-body">${formatList(gateData.risks)}</div>
+      </div>` : ''}
+      ${gateData.opportunities ? `<div class="pulse-section">
+        <div class="pulse-section-title">✨ Opportunities</div>
+        <div class="pulse-section-body">${formatList(gateData.opportunities)}</div>
+      </div>` : ''}
+    `;
+  } else if (hasGate) {
+    // Fallback if no JSON parse: show raw text
+    resultHtml = `<div class="out-box">${escapeHtml(p.idea_brief || 'Score: ' + p.idea_gate_score)}</div>`;
+  }
+
+  $('studio-content').innerHTML = `
+    <div class="panel">
+      <div class="pulse-hero">
+        <div class="pulse-hero-label">CutiePulse · Idea Gate</div>
+        <div class="pulse-hero-title">💡 Should you produce this video?</div>
+        <div class="pulse-hero-desc">Before you invest hours producing, our AI analyzes demand, competition, and audience match. Save time. Make better content.</div>
+      </div>
+
+      <div class="fld">
+        <label>Idea description (what's the video about?)</label>
+        <textarea id="idea-brief-input" placeholder="e.g. Explain why most index fund investors underperform — focusing on behavioral mistakes, not strategy">${hasGate && !gateData ? '' : ''}</textarea>
+        <div class="fld-hint">Be specific. The more detail, the better the analysis.</div>
+      </div>
+
+      <div class="ai-action-bar">
+        <button class="btn primary" id="run-gate-btn">${hasGate ? '🔄 Re-run analysis' : '✨ Run Idea Gate'}</button>
+        ${hasGate ? '<button class="btn" id="continue-outline-btn">Continue to Outline →</button>' : ''}
+      </div>
+
+      ${resultHtml}
+    </div>`;
+
+  // Pre-fill textarea with previous input if we have a gate result
+  if (hasGate && gateData?.input_brief) {
+    $('idea-brief-input').value = gateData.input_brief;
+  } else if (p.title) {
+    $('idea-brief-input').value = p.title;
+  }
+
+  $('run-gate-btn').addEventListener('click', runIdeaGate);
+  if ($('continue-outline-btn')) {
+    $('continue-outline-btn').addEventListener('click', () => { APP.currentTab = 'outline'; renderVideoStudio(); });
+  }
+}
+
+function formatList(value) {
+  if (Array.isArray(value)) {
+    return '<ul>' + value.map(v => `<li>${escapeHtml(v)}</li>`).join('') + '</ul>';
+  }
+  return escapeHtml(String(value));
+}
+
+async function runIdeaGate(){
+  const p = APP.currentProject;
+  const ch = APP.currentChannel;
+  const brief = $('idea-brief-input').value.trim();
+  if (!brief || brief.length < 15) {
+    toast('Describe your idea in more detail (min 15 chars)', 'error');
+    $('idea-brief-input').focus();
+    return;
+  }
+
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  showLoader('Running CutiePulse analysis (fetching market data + scoring)...');
+  try {
+    const system = `You are CutiePulse, an AI strategist that analyzes YouTube video ideas BEFORE they're produced. Your job is to save the creator from wasting time on ideas that won't perform.
+
+You MUST respond with valid JSON only, no preamble, in this exact structure:
+{
+  "input_brief": "<the user idea verbatim>",
+  "overall_score": <0-100 integer>,
+  "traffic_light": "<green|yellow|red>",
+  "recommendation": "<2-3 sentences with clear go/pivot/skip advice>",
+  "metrics": {
+    "demand": {"value": "<rating>", "detail": "<why>"},
+    "competition": {"value": "<rating>", "detail": "<who and how strong>"},
+    "audience_match": {"value": "<rating>", "detail": "<why for this channel>"},
+    "trend": {"value": "<rising|stable|declining>", "detail": "<context>"},
+    "format_fit": {"value": "<good|okay|poor>", "detail": "<best format>"}
+  },
+  "suggested_angle": "<one specific reframe that would 10x the appeal>",
+  "risks": ["<risk1>", "<risk2>"],
+  "opportunities": ["<opp1>", "<opp2>"]
+}
+
+Scoring rubric:
+- 80-100 green: strong demand, beatable competition, on-channel
+- 60-79 yellow: works but needs differentiation
+- below 60 red: skip or completely reframe`;
+
+    // Build prompt
+    let prompt = `Analyze this video idea for CutiePulse Idea Gate.
+
+CHANNEL CONTEXT:
+- Niche: ${nicheName}
+- Target audience: ${audience}
+- Tone: ${toneName}
+- Format: ${FORMAT_LABELS[p.format] || p.format}
+- Output language: ${langName}
+
+USER'S IDEA:
+${brief}
+
+Respond with the JSON structure described in the system prompt. Be specific and data-grounded.`;
+
+    // Include the topic_query so the router can fetch YouTube data
+    const result = await AI.invoke('analyze_topic', {
+      prompt,
+      system,
+      topic_query: brief.slice(0, 100),
+      idea_brief: brief,
+    }, { projectId: p.id });
+
+    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    // Try to extract JSON from response
+    let analysis;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+      analysis.input_brief = brief;  // make sure we have it
+    } catch (e) {
+      throw new Error('AI returned malformed JSON. Try again.');
+    }
+
+    // Save in DB
+    const { error } = await APP.sb.from('projects').update({
+      idea_gate_score: analysis.overall_score,
+      idea_gate_light: analysis.traffic_light,
+      idea_brief: JSON.stringify(analysis),
+      current_stage: 'idea',
+    }).eq('id', p.id).select().single();
+    if (error) throw error;
+
+    // Log to cutiepulse_analyses
+    await APP.sb.from('cutiepulse_analyses').insert({
+      user_id: APP.user.id,
+      project_id: p.id,
+      analysis_type: 'idea_gate',
+      input_data: { brief, channel_context: { nicheName, audience, toneName, format: p.format } },
+      overall_score: analysis.overall_score,
+      traffic_light: analysis.traffic_light,
+      output_data: analysis,
+      raw_response: rawText,
+      user_action: 'pending',
+    });
+
+    // Update local state
+    APP.currentProject.idea_gate_score = analysis.overall_score;
+    APP.currentProject.idea_gate_light = analysis.traffic_light;
+    APP.currentProject.idea_brief = JSON.stringify(analysis);
+    APP.currentProject.current_stage = 'idea';
+
+    hideLoader();
+    toast(`Idea Gate: ${analysis.overall_score}/100 ${analysis.traffic_light === 'green' ? '🟢' : analysis.traffic_light === 'yellow' ? '🟡' : '🔴'}`, 'success');
+    renderVideoStudio();
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// PRE-PUBLISH PANEL (CutiePulse Title Scoring + Thumbnail Critique)
+// ============================================================
+function renderPrePublishPanel(){
+  const p = APP.currentProject;
+  const hasScript = !!p.script;
+
+  $('studio-content').innerHTML = `
+    <div class="panel">
+      <div class="pulse-hero">
+        <div class="pulse-hero-label">CutiePulse · Pre-publish</div>
+        <div class="pulse-hero-title">🎯 Final check before publishing</div>
+        <div class="pulse-hero-desc">Score your title against alternatives. Critique your thumbnail brief. Catch issues now, not after publish.</div>
+      </div>
+
+      ${!hasScript ? '<div style="background:var(--color-warning-soft);color:#854F0B;padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px">⚠️ Generate the full script first — title scoring needs the script context.</div>' : ''}
+
+      <div class="studio-tabs">
+        <button class="studio-tab on" data-tab="titles">Title scoring</button>
+        <button class="studio-tab" data-tab="thumbnail">Thumbnail critique</button>
+      </div>
+
+      <div class="tab-pnl on" id="pp-titles">
+        <div class="ai-action-bar">
+          <button class="btn primary" id="score-titles-btn" ${!hasScript ? 'disabled' : ''}>✨ Generate &amp; score 8 title variants</button>
+        </div>
+        <div id="titles-result"></div>
+      </div>
+
+      <div class="tab-pnl" id="pp-thumbnail">
+        <div class="ai-action-bar">
+          <button class="btn primary" id="critique-thumb-btn" ${!hasScript ? 'disabled' : ''}>✨ Critique thumbnail brief</button>
+        </div>
+        <div id="thumb-result"></div>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('.studio-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.studio-tab').forEach(x => x.classList.remove('on'));
+      document.querySelectorAll('.tab-pnl').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      $('pp-' + t.dataset.tab).classList.add('on');
+    });
+  });
+
+  if ($('score-titles-btn')) $('score-titles-btn').addEventListener('click', scoreTitles);
+  if ($('critique-thumb-btn')) $('critique-thumb-btn').addEventListener('click', critiqueThumbnail);
+}
+
+async function scoreTitles(){
+  const p = APP.currentProject;
+  const ch = APP.currentChannel;
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+
+  showLoader('Generating &amp; scoring title variants...');
+  try {
+    const system = `You are CutiePulse, an expert YouTube CTR optimizer.
+
+Generate 8 title variants for this video, then score each on predicted CTR.
+
+Respond with JSON ONLY in this structure:
+{
+  "variants": [
+    {
+      "title": "<title text, max 60 chars>",
+      "score": <0-100 integer>,
+      "tier": "<high|med|low>",
+      "reason": "<one sentence why this score>",
+      "tactics": ["<tactic1>", "<tactic2>"]
+    }
+  ]
+}
+
+Mix tactics: curiosity gap, numbers, contrarian, emotional, specificity, urgency. Keep tones consistent with the channel.`;
+
+    const prompt = `Generate 8 title variants for this video and score each.
+
+CHANNEL: ${nicheName}
+TONE: ${toneName}
+CURRENT TITLE: ${p.title}
+
+SCRIPT EXCERPT (first 1500 chars):
+${(p.script || '').slice(0, 1500)}
+
+OUTLINE:
+${(p.outline || '').slice(0, 800)}`;
+
+    const result = await AI.invoke('score_titles', { prompt, system }, { projectId: p.id });
+    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    let parsed;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch (e) {
+      throw new Error('AI returned malformed JSON. Try again.');
+    }
+
+    // Save variants to ab_test_variants
+    if (parsed.variants && Array.isArray(parsed.variants)) {
+      for (const v of parsed.variants) {
+        await APP.sb.from('ab_test_variants').insert({
+          user_id: APP.user.id,
+          project_id: p.id,
+          variant_type: 'title',
+          variant_name: v.title.slice(0, 40),
+          content: v.title,
+          predicted_score: v.score,
+        });
+      }
+    }
+
+    // Render
+    const variantsHtml = (parsed.variants || []).map(v => {
+      const tierCls = v.tier === 'high' ? 'high' : v.tier === 'med' ? 'med' : 'low';
+      return `<div class="title-variant">
+        <div>
+          <div class="title-variant-text">${escapeHtml(v.title)}</div>
+          <div class="title-variant-reason">${escapeHtml(v.reason || '')}</div>
+        </div>
+        <div class="title-variant-score ${tierCls}">${v.score}</div>
+      </div>`;
+    }).join('');
+
+    $('titles-result').innerHTML = variantsHtml || '<div class="out-box">No variants generated.</div>';
+    hideLoader();
+    toast('Title variants scored ✓', 'success');
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function critiqueThumbnail(){
+  const p = APP.currentProject;
+  const sections = parseScriptSections(p.script || '');
+  const thumbSection = sections.find(s => s.title.toLowerCase().includes('thumbnail'));
+  const thumbBrief = thumbSection?.body || '';
+
+  if (!thumbBrief) {
+    toast('No thumbnail brief found in script. Generate script first.', 'error');
+    return;
+  }
+
+  showLoader('Critiquing thumbnail brief...');
+  try {
+    const system = `You are CutiePulse, an expert YouTube thumbnail strategist.
+
+Critique a thumbnail brief and identify improvements. Respond with JSON only:
+{
+  "overall_score": <0-100>,
+  "tier": "<high|med|low>",
+  "strengths": ["<strength1>", "<strength2>"],
+  "weaknesses": ["<weakness1>", "<weakness2>"],
+  "improvements": ["<concrete improvement1>", "<concrete improvement2>"],
+  "rewritten_brief": "<your rewritten version of the brief>"
+}
+
+Focus on: contrast, focal point, emotional trigger, text legibility at mobile size, character expression, distinctiveness from competition.`;
+
+    const prompt = `Critique this thumbnail brief:
+
+VIDEO TITLE: ${p.title}
+
+THUMBNAIL BRIEF:
+${thumbBrief}`;
+
+    const result = await AI.invoke('critique_thumbnail', { prompt, system }, { projectId: p.id });
+    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    let parsed;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch {
+      throw new Error('AI returned malformed JSON. Try again.');
+    }
+
+    const tierCls = parsed.tier === 'high' ? 'green' : parsed.tier === 'med' ? 'yellow' : 'red';
+    $('thumb-result').innerHTML = `
+      <div class="pulse-score-card ${tierCls}">
+        <div class="pulse-score-circle ${tierCls}">
+          <div class="pulse-score-num">${parsed.overall_score}</div>
+          <div class="pulse-score-label">/ 100</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:6px">Thumbnail Score</div>
+          <div class="pulse-recommendation">Tier: <strong>${escapeHtml(parsed.tier)}</strong></div>
+        </div>
+      </div>
+      ${parsed.strengths ? `<div class="pulse-section"><div class="pulse-section-title">✅ Strengths</div><div class="pulse-section-body">${formatList(parsed.strengths)}</div></div>` : ''}
+      ${parsed.weaknesses ? `<div class="pulse-section"><div class="pulse-section-title">⚠️ Weaknesses</div><div class="pulse-section-body">${formatList(parsed.weaknesses)}</div></div>` : ''}
+      ${parsed.improvements ? `<div class="pulse-section"><div class="pulse-section-title">💡 Improvements</div><div class="pulse-section-body">${formatList(parsed.improvements)}</div></div>` : ''}
+      ${parsed.rewritten_brief ? `<div class="pulse-section"><div class="pulse-section-title">✨ Rewritten Brief</div><div class="pulse-section-body" style="white-space:pre-wrap">${escapeHtml(parsed.rewritten_brief)}</div></div>` : ''}
+    `;
+
+    hideLoader();
+    toast('Thumbnail critiqued ✓', 'success');
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
 }
 
 // ============================================================
