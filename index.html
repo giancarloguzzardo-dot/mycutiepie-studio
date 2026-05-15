@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -280,8 +280,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 .wf-brief-box{background:var(--color-surface);border-radius:var(--radius-sm);padding:10px;margin-top:8px;font-size:12px;color:var(--color-text);line-height:1.5}
 
 /* WIZARDS (channel + video) */
-#wizard{display:none;min-height:100vh;background:var(--color-surface-2);align-items:flex-start;justify-content:center;padding:40px 24px}
-#wizard.on{display:flex}
+#wizard,#video-wizard{display:none;min-height:100vh;background:var(--color-surface-2);align-items:flex-start;justify-content:center;padding:40px 24px}
+#wizard.on,#video-wizard.on{display:flex}
 .wizard-container{width:100%;max-width:620px}
 .wizard-progress{text-align:center;margin-bottom:28px}
 .wizard-step-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:10px}
@@ -1400,9 +1400,12 @@ async function renderVideoStudio(){
   // Wire mode toggle
   $('studio-mode-toggle').addEventListener('click', toggleStudioMode);
 
-  // Wire timeline + sidebar
-  document.querySelectorAll('.timeline-step:not(.disabled), .studio-nav-item').forEach(el => {
-    el.addEventListener('click', () => {
+  // Wire timeline + sidebar — scoped to view-container only (avoids picking elements from hidden wizards)
+  const viewContainer = $('view-container');
+  viewContainer.querySelectorAll('.timeline-step:not(.disabled), .studio-nav-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const stage = el.dataset.stage || el.dataset.tab;
       if (!stage || stage === 'idea') return;
       APP.currentTab = stage;
@@ -1417,7 +1420,7 @@ async function renderVideoStudio(){
 async function saveProjectTitle(){
   const newTitle = $('studio-title-input').value.trim();
   if (!newTitle || newTitle === APP.currentProject.title) return;
-  const { error } = await APP.sb.from('projects').update({ title: newTitle }).eq('id', APP.currentProject.id);
+  const { error } = await APP.sb.from('projects').update({ title: newTitle }).eq('id', APP.currentProject.id).select().single();
   if (error) { toast('Error saving title: ' + error.message, 'error'); return; }
   APP.currentProject.title = newTitle;
   toast('Title saved', 'success');
@@ -1501,7 +1504,7 @@ Be specific. Use the tone described above. Target 15-22 minutes total length.`;
 
     const { error } = await APP.sb.from('projects')
       .update({ outline: outlineText, stage: 'outline', current_stage: 'outline' })
-      .eq('id', p.id);
+      .eq('id', p.id).select().single();
     if (error) throw error;
 
     APP.currentProject.outline = outlineText;
@@ -1647,7 +1650,7 @@ Be specific. Write in the ${toneName} tone. Target 18-22 minutes total runtime.`
 
     const { error } = await APP.sb.from('projects')
       .update({ script: scriptText, stage: 'script', current_stage: 'script' })
-      .eq('id', p.id);
+      .eq('id', p.id).select().single();
     if (error) throw error;
 
     APP.currentProject.script = scriptText;
@@ -1750,7 +1753,7 @@ async function generateVoice(){
     </div>`;
 
     // Update project stage
-    await APP.sb.from('projects').update({ current_stage: 'voice' }).eq('id', APP.currentProject.id);
+    await APP.sb.from('projects').update({ current_stage: 'voice' }).eq('id', APP.currentProject.id).select().single();
     APP.currentProject.current_stage = 'voice';
     hideLoader();
     toast('Voiceover ready ✓', 'success');
@@ -2055,14 +2058,21 @@ async function finishWizard(){
 // VIDEO WIZARD
 // ============================================================
 function openVideoWizard(channelId){
-  APP.vwizard = { step: 1, title: '', angle: '', format: 'listicle', channelId };
+  // Remember where we came from (so Cancel can go back)
+  const previousRoute = APP.currentProject ? `/channels/${channelId}/videos/${APP.currentProject.id}` : `/channels/${channelId}`;
+  APP.vwizard = { step: 1, title: '', angle: '', format: 'listicle', channelId, returnTo: previousRoute };
   $('vw-title').value = ''; $('vw-angle').value = '';
   document.querySelectorAll('#vw-format-grid .format-card').forEach(c => { if (c.dataset.format === 'listicle') c.classList.add('on'); else c.classList.remove('on'); });
   vwGoToStep(1);
   hide('app-shell'); show('video-wizard');
 }
 
-function closeVideoWizard(){ hide('video-wizard'); show('app-shell'); navigate(`/channels/${APP.vwizard.channelId}`); }
+function closeVideoWizard(){
+  hide('video-wizard');
+  show('app-shell');
+  // Go back to where we came from (the previous video, or channel if no video)
+  navigate(APP.vwizard.returnTo || `/channels/${APP.vwizard.channelId}`);
+}
 
 function vwGoToStep(step){
   APP.vwizard.step = step;
