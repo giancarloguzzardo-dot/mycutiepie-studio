@@ -39,10 +39,7 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
-  background:var(--color-bg);color:var(--color-text);line-height:1.5;-webkit-font-smoothing:antialiased;
-}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--color-bg);color:var(--color-text);line-height:1.5;-webkit-font-smoothing:antialiased}
 
 /* AUTH */
 #auth-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fafaf9 0%,#eef2ff 100%);padding:24px}
@@ -87,16 +84,17 @@ body{
 .topbar{background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.2px;cursor:pointer;text-decoration:none;color:var(--color-text)}
 .brand-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--color-accent),var(--color-pink));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
-.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-muted);flex:1;min-width:0}
-.breadcrumb a{color:var(--color-text-muted);text-decoration:none}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-muted);flex:1;min-width:0;overflow:hidden}
+.breadcrumb a{color:var(--color-text-muted);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 .breadcrumb a:hover{color:var(--color-accent)}
 .breadcrumb .sep{color:var(--color-text-subtle)}
-.breadcrumb .current{color:var(--color-text);font-weight:600}
+.breadcrumb .current{color:var(--color-text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-menu{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--color-text-muted)}
 
 #app-shell{display:none;min-height:100vh;background:var(--color-bg)}
 #app-shell.on{display:block}
-.container{max-width:900px;margin:0 auto;padding:40px 32px}
+.container{max-width:1000px;margin:0 auto;padding:40px 32px}
+.container.narrow{max-width:900px}
 
 /* DASHBOARD */
 .welcome{margin-bottom:36px}
@@ -106,8 +104,6 @@ body{
 
 .channel-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:24px;margin-bottom:14px;cursor:pointer;transition:.15s}
 .channel-card:hover{border-color:var(--color-accent);transform:translateY(-1px);box-shadow:var(--shadow-md)}
-.channel-card.no-hover{cursor:default}
-.channel-card.no-hover:hover{transform:none;border-color:var(--color-border);box-shadow:none}
 .channel-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .channel-emoji{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
 .channel-name{font-weight:700;font-size:17px;letter-spacing:-.2px}
@@ -120,7 +116,7 @@ body{
 .cta-content{flex:1;min-width:0}
 .cta-title{font-weight:700;font-size:15px;color:#4B1528;margin-bottom:3px;letter-spacing:-.1px}
 .cta-desc{font-size:12px;color:#72243E;line-height:1.5}
-.cta-btn{background:var(--color-pink-dark);color:#fff;border:none;padding:11px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.15s}
+.cta-btn{background:var(--color-pink-dark);color:#fff;border:none;padding:11px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.15s;text-decoration:none}
 .cta-btn:hover{background:#7E2848;transform:translateY(-1px)}
 
 .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
@@ -144,8 +140,25 @@ body{
 .workspace-meta{font-size:13px;color:var(--color-text-muted);line-height:1.5}
 .workspace-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:99px;background:var(--color-surface-2);color:var(--color-text-muted)}
+.workspace-actions{display:flex;gap:8px}
 
-.section-title{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:14px;margin-top:8px}
+.section-title{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:14px;margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+
+/* VIDEO LIST */
+.video-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.video-item{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.12s;text-decoration:none;color:var(--color-text)}
+.video-item:hover{border-color:var(--color-accent);transform:translateX(2px)}
+.video-item-stage-dot{width:8px;height:8px;border-radius:50%;background:var(--color-text-subtle);flex-shrink:0}
+.video-item-stage-dot.idea{background:var(--color-text-subtle)}
+.video-item-stage-dot.outline{background:#94a3b8}
+.video-item-stage-dot.script{background:#fbbf24}
+.video-item-stage-dot.production{background:var(--color-warning)}
+.video-item-stage-dot.review{background:var(--color-accent)}
+.video-item-stage-dot.published{background:var(--color-success)}
+.video-item-info{flex:1;min-width:0}
+.video-item-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.video-item-meta{font-size:11px;color:var(--color-text-subtle);margin-top:2px}
+.video-item-stage{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:99px;background:var(--color-surface-2);color:var(--color-text-muted)}
 
 .video-empty{background:var(--color-surface);border:2px dashed var(--color-border-strong);border-radius:var(--radius-lg);padding:40px 24px;text-align:center}
 .video-empty-emoji{font-size:42px;margin-bottom:14px}
@@ -157,13 +170,10 @@ body{
 .settings-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--color-border)}
 .settings-section-title{font-size:15px;font-weight:700;letter-spacing:-.1px}
 .settings-section-desc{font-size:12px;color:var(--color-text-muted);margin-top:2px}
-
 .emoji-picker{display:flex;gap:8px;flex-wrap:wrap}
 .emoji-btn{width:44px;height:44px;font-size:22px;border:1.5px solid var(--color-border);background:var(--color-surface);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s}
 .emoji-btn:hover{border-color:var(--color-accent)}
 .emoji-btn.on{border-color:var(--color-accent);background:var(--color-accent-soft)}
-
-/* PIVOT HISTORY */
 .history-item{display:flex;align-items:start;gap:12px;padding:14px 0;border-bottom:1px solid var(--color-border)}
 .history-item:last-child{border-bottom:none;padding-bottom:0}
 .history-dot{width:10px;height:10px;border-radius:50%;background:var(--color-text-subtle);margin-top:6px;flex-shrink:0}
@@ -172,12 +182,104 @@ body{
 .history-name{font-size:13px;font-weight:600;margin-bottom:2px}
 .history-date{font-size:11px;color:var(--color-text-subtle)}
 .history-reason{font-size:12px;color:var(--color-text-muted);margin-top:4px;font-style:italic}
-
-/* DANGER ZONE */
 .danger-section{background:var(--color-surface);border:1px solid var(--color-danger-soft);border-radius:var(--radius-lg);padding:24px;margin-top:16px}
 .danger-title{font-size:14px;font-weight:700;color:var(--color-danger);margin-bottom:14px}
 
-/* WIZARD (riusato per pivot) */
+/* VIDEO STUDIO */
+.studio-header{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:20px}
+.studio-title-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.studio-title{font-size:20px;font-weight:700;letter-spacing:-.3px;flex:1;min-width:0;line-height:1.3}
+.studio-title-input{font-size:20px;font-weight:700;letter-spacing:-.3px;border:none;background:transparent;padding:4px 8px;flex:1;min-width:0;border-radius:var(--radius-sm)}
+.studio-title-input:hover{background:var(--color-surface-2)}
+.studio-title-input:focus{background:var(--color-surface-2);outline:1px solid var(--color-accent)}
+.studio-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dna-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:99px;background:var(--color-accent-soft);color:var(--color-accent);cursor:default}
+.dna-chip.override{background:var(--color-warning-soft);color:#854F0B}
+.studio-mode-toggle{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-text-muted)}
+.toggle-switch{position:relative;width:38px;height:20px;background:var(--color-border);border-radius:99px;cursor:pointer;transition:.15s}
+.toggle-switch.on{background:var(--color-accent)}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.15s}
+.toggle-switch.on::after{transform:translateX(18px)}
+
+/* TIMELINE (Beginner mode) */
+.timeline{display:flex;align-items:center;gap:0;padding:8px 0 16px;margin-bottom:20px;overflow-x:auto}
+.timeline-step{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:90px;cursor:pointer;transition:.12s;text-decoration:none;color:var(--color-text-muted)}
+.timeline-step:hover{color:var(--color-accent)}
+.timeline-step.disabled{cursor:not-allowed;opacity:.4}
+.timeline-step.disabled:hover{color:var(--color-text-muted)}
+.timeline-step.current{color:var(--color-accent)}
+.timeline-step.done{color:var(--color-success)}
+.timeline-dot{width:32px;height:32px;border-radius:50%;background:var(--color-surface);border:2px solid var(--color-border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;transition:.15s}
+.timeline-step.current .timeline-dot{background:var(--color-accent);border-color:var(--color-accent);color:#fff}
+.timeline-step.done .timeline-dot{background:var(--color-success);border-color:var(--color-success);color:#fff}
+.timeline-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.timeline-connector{flex:1;height:2px;background:var(--color-border);min-width:20px}
+.timeline-connector.done{background:var(--color-success)}
+
+/* STUDIO LAYOUT (Pro mode) */
+.studio-layout{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start}
+.studio-sidebar{position:sticky;top:24px}
+.studio-nav{display:flex;flex-direction:column;gap:2px}
+.studio-nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--color-text-muted);cursor:pointer;border-radius:var(--radius-sm);transition:.12s;border:none;background:transparent;font-family:inherit;text-align:left;width:100%;text-decoration:none}
+.studio-nav-item:hover{background:var(--color-surface-2);color:var(--color-text)}
+.studio-nav-item.on{background:var(--color-accent-soft);color:var(--color-accent)}
+.studio-nav-icon{font-size:15px;width:18px;text-align:center}
+.studio-content{min-width:0}
+
+/* PRODUCTION PANELS */
+.panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:28px}
+.panel-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px}
+.panel-desc{font-size:13px;color:var(--color-text-muted);margin-bottom:24px}
+
+.ai-action-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+
+.out-box{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:18px;font-size:13px;line-height:1.7;color:var(--color-text);white-space:pre-wrap;min-height:120px;max-height:600px;overflow-y:auto;word-break:break-word;font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace}
+
+.script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
+.script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
+.script-section-header:hover{background:var(--color-surface-2)}
+.script-section-body{padding:16px;font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--color-text);display:none;font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace}
+.script-section-body.on{display:block}
+.script-section.vocal .script-section-header{background:var(--color-accent-soft);color:var(--color-accent)}
+
+.studio-tabs{display:flex;border-bottom:1px solid var(--color-border);margin-bottom:18px;overflow-x:auto}
+.studio-tab{padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--color-text-muted);font-family:inherit;white-space:nowrap}
+.studio-tab:hover{color:var(--color-text)}
+.studio-tab.on{color:var(--color-accent);border-bottom-color:var(--color-accent)}
+.tab-pnl{display:none}
+.tab-pnl.on{display:block}
+
+/* VOCAL PARTS */
+.vocal-queue{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.vq-item{background:var(--color-accent-soft);border:1px solid #c7d2fe;border-radius:var(--radius-md);padding:14px}
+.vq-label{font-size:10px;font-weight:700;color:var(--color-accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.vq-text{font-size:12px;color:var(--color-text);line-height:1.6;max-height:80px;overflow:hidden;white-space:pre-wrap}
+.vq-actions{margin-top:10px;display:flex;gap:6px}
+
+/* WORKFLOW PANEL */
+.wf-tasks{display:flex;flex-direction:column;gap:10px}
+.wf-task{background:var(--color-surface-2);border:1px solid var(--color-border);border-left:3px solid var(--color-text-subtle);border-radius:var(--radius-md);padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.wf-task[data-status="in_progress"]{border-left-color:var(--color-warning)}
+.wf-task[data-status="submitted"]{border-left-color:var(--color-accent)}
+.wf-task[data-status="approved"]{border-left-color:var(--color-success)}
+.wf-task[data-status="rejected"]{border-left-color:var(--color-danger)}
+.wf-role-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--color-accent),var(--color-pink));display:grid;place-items:center;font-size:18px;color:#fff;flex-shrink:0}
+.wf-task-main{min-width:0}
+.wf-task-role{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--color-text-muted);margin-bottom:3px}
+.wf-task-assignee{font-weight:600;font-size:14px}
+.wf-email{color:var(--color-text-muted);font-weight:400;font-size:12px;margin-left:6px}
+.wf-task-meta{display:flex;gap:12px;margin-top:5px;font-size:11px;color:var(--color-text-muted);flex-wrap:wrap}
+.wf-deadline.overdue{color:var(--color-danger);font-weight:600}
+.wf-status-pill{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:99px;background:var(--color-surface);color:var(--color-text-muted)}
+[data-status="in_progress"] .wf-status-pill{background:var(--color-warning-soft);color:#92400e}
+[data-status="submitted"] .wf-status-pill{background:var(--color-accent-soft);color:var(--color-accent)}
+[data-status="approved"] .wf-status-pill{background:var(--color-success-soft);color:var(--color-success)}
+[data-status="rejected"] .wf-status-pill{background:var(--color-danger-soft);color:var(--color-danger)}
+.wf-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end}
+.wf-actions .btn{font-size:11px;padding:5px 10px}
+.wf-brief-box{background:var(--color-surface);border-radius:var(--radius-sm);padding:10px;margin-top:8px;font-size:12px;color:var(--color-text);line-height:1.5}
+
+/* WIZARDS (channel + video) */
 #wizard{display:none;min-height:100vh;background:var(--color-surface-2);align-items:flex-start;justify-content:center;padding:40px 24px}
 #wizard.on{display:flex}
 .wizard-container{width:100%;max-width:620px}
@@ -208,7 +310,15 @@ body{
 .tone-desc{font-size:12px;color:var(--color-text-muted);line-height:1.5}
 .wizard-actions{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
 
-/* MODAL */
+/* Format cards (for video wizard) */
+.format-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.format-card{background:var(--color-surface);border:1.5px solid var(--color-border);border-radius:var(--radius-md);padding:14px;cursor:pointer;transition:.15s;text-align:left;font-family:inherit}
+.format-card:hover{border-color:var(--color-accent)}
+.format-card.on{border-color:var(--color-accent);background:var(--color-accent-soft)}
+.format-name{font-weight:700;font-size:14px;margin-bottom:3px}
+.format-desc{font-size:11px;color:var(--color-text-muted)}
+
+/* MODALS */
 .overlay{position:fixed;inset:0;background:rgba(28,25,23,.5);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s ease}
 .overlay.on{display:flex}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -223,29 +333,36 @@ body{
 .toast.success{background:var(--color-success)}
 .toast.error{background:var(--color-danger)}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-#loader{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(2px);z-index:9998;display:none;align-items:center;justify-content:center}
+#loader{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(2px);z-index:9998;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 #loader.on{display:flex}
 .spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.loader-msg{font-size:13px;color:var(--color-text-muted);font-weight:500;text-align:center;max-width:300px}
 
 .hidden{display:none!important}
 .text-muted{color:var(--color-text-muted)}
 
-@media (max-width:640px){
+@media (max-width:768px){
   .topbar{padding:12px 16px;flex-wrap:wrap}
   .container{padding:24px 16px}
   .welcome-title{font-size:24px}
-  .tone-grid{grid-template-columns:1fr}
+  .tone-grid,.format-grid{grid-template-columns:1fr}
   .quick-actions{grid-template-columns:1fr}
   .wizard-card{padding:20px}
   .cta-banner{flex-direction:column;text-align:center}
   .cta-btn{width:100%;justify-content:center}
   .workspace-header{flex-direction:column;text-align:center}
+  .studio-layout{grid-template-columns:1fr}
+  .studio-sidebar{position:static}
+  .timeline{padding:8px 0;gap:0}
+  .timeline-step{min-width:70px}
+  .timeline-label{font-size:10px}
+  .wf-task{grid-template-columns:auto 1fr}
+  .wf-task-meta{grid-column:1/-1}
 }
 </style>
 </head>
 <body>
-
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="auth-card">
@@ -273,7 +390,7 @@ body{
   </div>
 </div>
 
-<!-- APP SHELL (dashboard + workspace + settings) -->
+<!-- APP SHELL -->
 <div id="app-shell">
   <div class="topbar">
     <a href="#/" class="brand">
@@ -289,12 +406,12 @@ body{
   <div class="container" id="view-container"></div>
 </div>
 
-<!-- WIZARD -->
-<div id="wizard">
+<!-- CHANNEL WIZARD -->
+<div id="wizard" data-mode="channel">
   <div class="wizard-container">
     <div class="wizard-progress">
       <div class="wizard-step-label" id="wizard-step-label">Step 1 of 4</div>
-      <div class="wizard-bars">
+      <div class="wizard-bars" id="wizard-bars">
         <div class="wizard-bar on" data-step="1"></div>
         <div class="wizard-bar" data-step="2"></div>
         <div class="wizard-bar" data-step="3"></div>
@@ -302,10 +419,11 @@ body{
       </div>
     </div>
 
-    <div id="wizard-step-1">
+    <!-- Channel wizard step 1: identity -->
+    <div id="wizard-step-1" class="wizard-step">
       <div class="wizard-header">
         <div class="wizard-title" id="w-title-1">What's your channel called?</div>
-        <div class="wizard-desc">Choose the name and pick an icon. You can change them later.</div>
+        <div class="wizard-desc" id="w-desc-1">Choose the name and pick an icon. You can change them later.</div>
       </div>
       <div class="wizard-card">
         <div class="fld"><label>Channel name *</label><input type="text" id="w-name" placeholder="e.g. Catchy History" /></div>
@@ -337,10 +455,10 @@ body{
       </div>
     </div>
 
-    <div id="wizard-step-2" class="hidden">
+    <div id="wizard-step-2" class="wizard-step hidden">
       <div class="wizard-header">
         <div class="wizard-title" id="w-title-2">What's your channel about?</div>
-        <div class="wizard-desc">Describe the topic in your own words. Our AI will analyze the market for you.</div>
+        <div class="wizard-desc" id="w-desc-2">Describe the topic in your own words. Our AI will analyze the market for you.</div>
       </div>
       <div class="wizard-card">
         <div class="fld">
@@ -370,7 +488,7 @@ body{
       </div>
     </div>
 
-    <div id="wizard-step-3" class="hidden">
+    <div id="wizard-step-3" class="wizard-step hidden">
       <div class="wizard-header">
         <div class="wizard-title">Who's watching?</div>
         <div class="wizard-desc">Tell us who your videos are for. This helps us tune the script style and SEO.</div>
@@ -411,7 +529,7 @@ body{
       </div>
     </div>
 
-    <div id="wizard-step-4" class="hidden">
+    <div id="wizard-step-4" class="wizard-step hidden">
       <div class="wizard-header">
         <div class="wizard-title">How should it sound?</div>
         <div class="wizard-desc">Pick the tone of your videos. This shapes scripts and voiceovers.</div>
@@ -450,6 +568,128 @@ body{
   </div>
 </div>
 
+<!-- VIDEO WIZARD -->
+<div id="video-wizard">
+  <div class="wizard-container">
+    <div class="wizard-progress">
+      <div class="wizard-step-label" id="vw-step-label">Step 1 of 3</div>
+      <div class="wizard-bars">
+        <div class="wizard-bar on" data-step="1"></div>
+        <div class="wizard-bar" data-step="2"></div>
+        <div class="wizard-bar" data-step="3"></div>
+      </div>
+    </div>
+
+    <div id="vw-step-1" class="wizard-step">
+      <div class="wizard-header">
+        <div class="wizard-title">What's this video about?</div>
+        <div class="wizard-desc">Give your video a working title. You can refine it later with AI.</div>
+      </div>
+      <div class="wizard-card">
+        <div class="fld">
+          <label>Video title *</label>
+          <input type="text" id="vw-title" placeholder="e.g. 10 Lies About Ancient Egypt You Were Taught in School" />
+          <div class="fld-hint">💡 Don't worry about perfection — we'll help you optimize it.</div>
+        </div>
+        <div class="fld" style="margin-bottom:0">
+          <label>Optional: psychological angle</label>
+          <input type="text" id="vw-angle" placeholder="e.g. Curiosity gap + authority debunked" />
+        </div>
+      </div>
+      <div class="wizard-actions">
+        <button class="btn ghost" id="vw-cancel-1">Cancel</button>
+        <button class="btn primary lg" id="vw-next-1">Next →</button>
+      </div>
+    </div>
+
+    <div id="vw-step-2" class="wizard-step hidden">
+      <div class="wizard-header">
+        <div class="wizard-title">Pick a format</div>
+        <div class="wizard-desc">Different formats work for different topics. Choose the one that fits.</div>
+      </div>
+      <div class="format-grid" id="vw-format-grid">
+        <button type="button" class="format-card on" data-format="listicle">
+          <div class="format-name">📋 Listicle</div>
+          <div class="format-desc">"10 things that...", "7 ways to...". Great for evergreen content.</div>
+        </button>
+        <button type="button" class="format-card" data-format="deep_dive">
+          <div class="format-name">🔍 Deep Dive</div>
+          <div class="format-desc">One topic, explored in depth. Best for authority building.</div>
+        </button>
+        <button type="button" class="format-card" data-format="tutorial">
+          <div class="format-name">🛠️ Tutorial</div>
+          <div class="format-desc">Step-by-step how-to. Drives high retention and saves.</div>
+        </button>
+        <button type="button" class="format-card" data-format="story">
+          <div class="format-name">📖 Story</div>
+          <div class="format-desc">Narrative arc with characters. High emotional engagement.</div>
+        </button>
+        <button type="button" class="format-card" data-format="failure_autopsy">
+          <div class="format-name">💀 Failure Autopsy</div>
+          <div class="format-desc">"Why X failed", "What went wrong". Strong CTR magnet.</div>
+        </button>
+        <button type="button" class="format-card" data-format="explainer">
+          <div class="format-name">💡 Explainer</div>
+          <div class="format-desc">"How X works". Best for tech, science, complex topics.</div>
+        </button>
+      </div>
+      <div class="wizard-actions">
+        <button class="btn ghost" id="vw-back-2">← Back</button>
+        <button class="btn primary lg" id="vw-next-2">Next →</button>
+      </div>
+    </div>
+
+    <div id="vw-step-3" class="wizard-step hidden">
+      <div class="wizard-header">
+        <div class="wizard-title">Review and create</div>
+        <div class="wizard-desc">Your video will inherit your channel's DNA. You can override later.</div>
+      </div>
+      <div class="wizard-card">
+        <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Video</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:14px" id="vw-review-title">—</div>
+
+        <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Format</div>
+        <div style="font-size:14px;margin-bottom:14px" id="vw-review-format">—</div>
+
+        <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Inherited from channel</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:0">
+          <span class="dna-chip" id="vw-review-niche">💡 —</span>
+          <span class="dna-chip" id="vw-review-tone">🎭 —</span>
+        </div>
+      </div>
+      <div class="wizard-actions">
+        <button class="btn ghost" id="vw-back-3">← Back</button>
+        <button class="btn success lg" id="vw-finish">✓ Create video and open studio →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL (workflow) -->
+<div class="overlay" id="task-modal">
+  <div class="modal">
+    <h2>Assign a task</h2>
+    <p class="modal-sub">Invite a freelancer to work on this video. They'll get a magic link.</p>
+    <div class="fld">
+      <label>Role</label>
+      <select id="task-role">
+        <option value="voice_actor">Voice Actor</option>
+        <option value="video_editor">Video Editor</option>
+        <option value="thumbnail_designer">Thumbnail Designer</option>
+        <option value="reviewer">Reviewer</option>
+      </select>
+    </div>
+    <div class="fld"><label>Freelancer name</label><input type="text" id="task-name" placeholder="e.g. Maria Rossi" /></div>
+    <div class="fld"><label>Freelancer email *</label><input type="email" id="task-email" placeholder="freelancer@email.com" /></div>
+    <div class="fld"><label>Deadline</label><input type="date" id="task-deadline" /></div>
+    <div class="fld"><label>Brief (optional)</label><textarea id="task-brief" placeholder="What does the freelancer need to know to do this well?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="task-cancel">Cancel</button>
+      <button class="btn primary" id="task-save">Assign & send invite</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM MODAL -->
 <div class="overlay" id="confirm-modal">
   <div class="modal">
@@ -462,9 +702,12 @@ body{
   </div>
 </div>
 
-<div id="loader"><div class="spinner"></div></div>
+<!-- LOADER + TOASTS -->
+<div id="loader">
+  <div class="spinner"></div>
+  <div class="loader-msg" id="loader-msg">Loading...</div>
+</div>
 <div class="toast-wrap" id="toasts"></div>
-
 <script>
 // ============================================================
 // CONFIG
@@ -481,11 +724,18 @@ const APP = {
   profile: null,
   channels: [],
   currentChannel: null,
+  currentProject: null,
+  currentTab: 'outline',
+  // Wizard temp state (channel)
   wizard: {
-    mode: 'create', // 'create' or 'pivot'
+    mode: 'create',
     pivotChannelId: null,
     step: 1, name: '', handle: '', emoji: '🎬',
     topic: '', language: 'en', ages: [], audienceExtra: '', tone: '',
+  },
+  // Video wizard temp state
+  vwizard: {
+    step: 1, title: '', angle: '', format: 'listicle', channelId: null,
   },
   confirmCallback: null,
 };
@@ -499,13 +749,22 @@ const TONE_PRESETS = {
   provocative: { name:'Provocative', description:'Bold opinions. Contrarian. Loves the controversy. Confident and unfiltered.' },
 };
 
+const FORMAT_LABELS = {
+  listicle: '📋 Listicle',
+  deep_dive: '🔍 Deep Dive',
+  tutorial: '🛠️ Tutorial',
+  story: '📖 Story',
+  failure_autopsy: '💀 Failure Autopsy',
+  explainer: '💡 Explainer',
+};
+
 // ============================================================
 // HELPERS
 // ============================================================
 function $(id){ return document.getElementById(id); }
 function show(id){ $(id).classList.add('on'); }
 function hide(id){ $(id).classList.remove('on'); }
-function showLoader(){ show('loader'); }
+function showLoader(msg){ $('loader-msg').textContent = msg || 'Loading...'; show('loader'); }
 function hideLoader(){ hide('loader'); }
 
 function toast(msg, type){
@@ -534,23 +793,73 @@ function confirmModal(title, message, okLabel, callback){
 }
 
 $('confirm-cancel').addEventListener('click', () => hide('confirm-modal'));
-$('confirm-ok').addEventListener('click', () => {
-  hide('confirm-modal');
-  if (APP.confirmCallback) APP.confirmCallback();
-});
-$('confirm-modal').addEventListener('click', (e) => {
-  if (e.target.id === 'confirm-modal') hide('confirm-modal');
-});
+$('confirm-ok').addEventListener('click', () => { hide('confirm-modal'); if (APP.confirmCallback) APP.confirmCallback(); });
+$('confirm-modal').addEventListener('click', (e) => { if (e.target.id === 'confirm-modal') hide('confirm-modal'); });
+
+// ============================================================
+// AI INVOKE (the abstraction layer client)
+// ============================================================
+const AI = {
+  async invoke(capability, params, options) {
+    options = options || {};
+    const session = (await APP.sb.auth.getSession()).data.session;
+    if (!session) throw new Error('Not authenticated');
+
+    const body = {
+      capability: capability,
+      params: params || {},
+      project_id: options.projectId || null,
+    };
+
+    // For voice synthesis, get binary response
+    const isBinary = capability === 'generate_voice';
+
+    const r = await fetch(SUPA_URL + '/functions/v1/ai-router', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!r.ok) {
+      let errMsg = 'AI invocation failed';
+      try {
+        const errData = await r.json();
+        errMsg = errData.error || errMsg;
+      } catch(e){}
+      throw new Error(errMsg);
+    }
+
+    if (isBinary) {
+      return await r.blob();
+    }
+
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'AI returned non-ok status');
+    return data.data;
+  }
+};
 
 // ============================================================
 // HASH ROUTER
 // ============================================================
 function parseHash(){
-  const hash = location.hash.slice(1) || '/'; // remove leading #
+  const hash = location.hash.slice(1) || '/';
   const parts = hash.split('/').filter(Boolean);
   if (parts.length === 0) return { name: 'dashboard' };
   if (parts[0] === 'channels' && parts[1] && parts[2] === 'settings') {
     return { name: 'channel-settings', channelId: parts[1] };
+  }
+  if (parts[0] === 'channels' && parts[1] && parts[2] === 'workflow') {
+    return { name: 'channel-workflow', channelId: parts[1] };
+  }
+  if (parts[0] === 'channels' && parts[1] && parts[2] === 'videos' && parts[3] === 'new') {
+    return { name: 'video-new', channelId: parts[1] };
+  }
+  if (parts[0] === 'channels' && parts[1] && parts[2] === 'videos' && parts[3]) {
+    return { name: 'video-studio', channelId: parts[1], projectId: parts[3] };
   }
   if (parts[0] === 'channels' && parts[1]) {
     return { name: 'channel-workspace', channelId: parts[1] };
@@ -558,49 +867,69 @@ function parseHash(){
   return { name: 'dashboard' };
 }
 
-function navigate(route){
-  location.hash = route;
-}
+function navigate(route){ location.hash = route; }
 
 async function handleRoute(){
   if (!APP.user) return;
   const route = parseHash();
+  hide('wizard'); hide('video-wizard');
+  show('app-shell');
 
   if (route.name === 'dashboard') {
-    APP.currentChannel = null;
+    APP.currentChannel = null; APP.currentProject = null;
     renderDashboard();
     renderBreadcrumb([]);
     return;
   }
 
-  if (route.name === 'channel-workspace' || route.name === 'channel-settings') {
-    // Make sure we have the channel
+  if (route.name.startsWith('channel-') || route.name === 'video-new' || route.name === 'video-studio') {
     let channel = APP.channels.find(c => c.id === route.channelId);
     if (!channel) {
-      // Maybe channel data not loaded yet — fetch directly
       const { data, error } = await APP.sb
         .from('channels')
         .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(*), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(*)')
-        .eq('id', route.channelId)
-        .single();
-      if (error || !data) {
-        toast('Channel not found', 'error');
-        navigate('/');
-        return;
-      }
+        .eq('id', route.channelId).single();
+      if (error || !data) { toast('Channel not found', 'error'); navigate('/'); return; }
       channel = data;
     }
     APP.currentChannel = channel;
 
     if (route.name === 'channel-workspace') {
-      renderChannelWorkspace();
+      await renderChannelWorkspace();
       renderBreadcrumb([{ label: channel.name, current: true }]);
-    } else {
+      return;
+    }
+    if (route.name === 'channel-settings') {
       await renderChannelSettings();
       renderBreadcrumb([
         { label: channel.name, href: `#/channels/${channel.id}` },
         { label: 'Settings', current: true }
       ]);
+      return;
+    }
+    if (route.name === 'channel-workflow') {
+      await renderChannelWorkflow();
+      renderBreadcrumb([
+        { label: channel.name, href: `#/channels/${channel.id}` },
+        { label: 'Workflow', current: true }
+      ]);
+      return;
+    }
+    if (route.name === 'video-new') {
+      openVideoWizard(route.channelId);
+      return;
+    }
+    if (route.name === 'video-studio') {
+      const { data: project, error } = await APP.sb
+        .from('projects').select('*').eq('id', route.projectId).single();
+      if (error || !project) { toast('Video not found', 'error'); navigate(`/channels/${channel.id}`); return; }
+      APP.currentProject = project;
+      await renderVideoStudio();
+      renderBreadcrumb([
+        { label: channel.name, href: `#/channels/${channel.id}` },
+        { label: project.title || 'Untitled', current: true }
+      ]);
+      return;
     }
   }
 }
@@ -613,241 +942,207 @@ function renderBreadcrumb(items){
   let html = '<a href="#/">Dashboard</a>';
   items.forEach(it => {
     html += '<span class="sep">/</span>';
-    if (it.current) {
-      html += `<span class="current">${escapeHtml(it.label)}</span>`;
-    } else {
-      html += `<a href="${it.href}">${escapeHtml(it.label)}</a>`;
-    }
+    if (it.current) html += `<span class="current">${escapeHtml(it.label)}</span>`;
+    else html += `<a href="${it.href}">${escapeHtml(it.label)}</a>`;
   });
   el.innerHTML = html;
 }
 
 // ============================================================
-// AUTH FLOW
+// AUTH
 // ============================================================
 async function initApp(){
   APP.sb = supabase.createClient(SUPA_URL, SUPA_KEY, {
     auth: { persistSession: true, autoRefreshToken: true }
   });
-
   const { data: { session } } = await APP.sb.auth.getSession();
-  if (session) {
-    APP.user = session.user;
-    await onLogin();
-  } else {
-    show('auth-screen');
-  }
+  if (session) { APP.user = session.user; await onLogin(); }
+  else show('auth-screen');
 }
 
 async function onLogin(){
-  showLoader();
+  showLoader('Loading your profile...');
   try {
     const { data: profile, error } = await APP.sb
       .from('user_profiles').select('*').eq('id', APP.user.id).single();
-
     if (error) {
-      const { data: newProfile, error: insErr } = await APP.sb
-        .from('user_profiles')
+      const { data: newProfile, error: insErr } = await APP.sb.from('user_profiles')
         .insert({
           id: APP.user.id, email: APP.user.email,
           full_name: APP.user.user_metadata?.full_name || '',
           kind: 'youtuber', default_language: 'en'
-        })
-        .select().single();
+        }).select().single();
       if (insErr) throw insErr;
       APP.profile = newProfile;
-    } else {
-      APP.profile = profile;
-    }
+    } else APP.profile = profile;
 
-    hide('auth-screen');
-    show('app-shell');
+    hide('auth-screen'); show('app-shell');
     $('user-email').textContent = APP.profile.email;
     await loadChannels();
     await handleRoute();
-  } catch (e) {
-    toast('Error loading profile: ' + e.message, 'error');
-  } finally {
-    hideLoader();
-  }
+  } catch (e) { toast('Error loading profile: ' + e.message, 'error'); }
+  finally { hideLoader(); }
 }
 
 $('tab-login').addEventListener('click', () => {
-  $('tab-login').classList.add('on');
-  $('tab-signup').classList.remove('on');
-  $('form-login').classList.remove('hidden');
-  $('form-signup').classList.add('hidden');
+  $('tab-login').classList.add('on'); $('tab-signup').classList.remove('on');
+  $('form-login').classList.remove('hidden'); $('form-signup').classList.add('hidden');
   hideAuthMsg();
 });
 $('tab-signup').addEventListener('click', () => {
-  $('tab-signup').classList.add('on');
-  $('tab-login').classList.remove('on');
-  $('form-signup').classList.remove('hidden');
-  $('form-login').classList.add('hidden');
+  $('tab-signup').classList.add('on'); $('tab-login').classList.remove('on');
+  $('form-signup').classList.remove('hidden'); $('form-login').classList.add('hidden');
   hideAuthMsg();
 });
 
 $('login-btn').addEventListener('click', async () => {
-  const email = $('login-email').value.trim();
-  const pw = $('login-pw').value;
+  const email = $('login-email').value.trim(); const pw = $('login-pw').value;
   if (!email || !pw) { showAuthMsg('Enter email and password.', 'error'); return; }
-  showLoader();
+  showLoader('Signing in...');
   const { data, error } = await APP.sb.auth.signInWithPassword({ email, password: pw });
   hideLoader();
   if (error) { showAuthMsg(error.message, 'error'); return; }
-  APP.user = data.user;
-  await onLogin();
+  APP.user = data.user; await onLogin();
 });
 
 $('signup-btn').addEventListener('click', async () => {
-  const name = $('signup-name').value.trim();
-  const email = $('signup-email').value.trim();
-  const pw = $('signup-pw').value;
+  const name = $('signup-name').value.trim(); const email = $('signup-email').value.trim(); const pw = $('signup-pw').value;
   if (!name || !email || !pw) { showAuthMsg('Fill in all fields.', 'error'); return; }
-  showLoader();
+  showLoader('Creating account...');
   const { data, error } = await APP.sb.auth.signUp({
-    email, password: pw,
-    options: { data: { full_name: name, kind: 'youtuber' } }
+    email, password: pw, options: { data: { full_name: name, kind: 'youtuber' } }
   });
   hideLoader();
   if (error) { showAuthMsg(error.message, 'error'); return; }
   showAuthMsg('Account created! Welcome ' + name + '.', 'success');
-  if (data.session) {
-    APP.user = data.user;
-    setTimeout(onLogin, 800);
-  } else {
-    setTimeout(() => {
-      $('login-email').value = email;
-      $('tab-login').click();
-      showAuthMsg('Check your email to confirm, then sign in.', 'success');
-    }, 1500);
-  }
+  if (data.session) { APP.user = data.user; setTimeout(onLogin, 800); }
+  else { setTimeout(() => { $('login-email').value = email; $('tab-login').click(); showAuthMsg('Check your email to confirm, then sign in.', 'success'); }, 1500); }
 });
 
 $('signout-btn').addEventListener('click', async () => {
   await APP.sb.auth.signOut();
-  APP.user = null; APP.profile = null; APP.channels = [];
-  hide('app-shell');
-  show('auth-screen');
-  $('login-email').value = ''; $('login-pw').value = '';
-  hideAuthMsg();
+  APP.user = null; APP.profile = null; APP.channels = []; APP.currentChannel = null; APP.currentProject = null;
+  hide('app-shell'); show('auth-screen');
+  $('login-email').value = ''; $('login-pw').value = ''; hideAuthMsg();
   toast('Signed out', 'success');
 });
 
 // ============================================================
-// LOAD CHANNELS
+// DATA LOAD
 // ============================================================
 async function loadChannels(){
-  const { data, error } = await APP.sb
-    .from('channels')
+  const { data, error } = await APP.sb.from('channels')
     .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(*), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(*)')
     .order('created_at', { ascending: true });
-
-  if (error) {
-    console.error('Channels load error:', error);
-    toast('Error loading channels: ' + error.message, 'error');
-    return;
-  }
+  if (error) { toast('Error loading channels: ' + error.message, 'error'); return; }
   APP.channels = data || [];
 }
 
+async function loadProjects(channelId){
+  const { data, error } = await APP.sb.from('projects')
+    .select('*').eq('channel_id', channelId).order('created_at', { ascending: false });
+  if (error) { console.error('Projects load error:', error); return []; }
+  return data || [];
+}
+
 // ============================================================
-// VIEWS — DASHBOARD
+// VIEW: DASHBOARD
 // ============================================================
 function renderDashboard(){
   const firstName = (APP.profile.full_name || '').split(' ')[0] || 'there';
   const count = APP.channels.length;
-  const sub = count === 0
-    ? "Let's set up your first money-making channel."
-    : `${count} channel${count > 1 ? 's' : ''} ready · let's make money on YouTube`;
-
+  const sub = count === 0 ? "Let's set up your first money-making channel." : `${count} channel${count > 1 ? 's' : ''} ready · let's make money on YouTube`;
   let body = '';
-
   if (count === 0) {
-    body = `
-      <div class="empty-state">
-        <div class="empty-state-emoji">🎬</div>
-        <div class="empty-state-title">Welcome to MyCutiePie</div>
-        <div class="empty-state-desc">Your AI-powered YouTube studio. We'll guide you through creating your first channel in about 2 minutes.</div>
-        <button class="btn primary lg" id="start-wizard-btn">Start setup →</button>
-      </div>
-    `;
+    body = `<div class="empty-state">
+      <div class="empty-state-emoji">🎬</div>
+      <div class="empty-state-title">Welcome to MyCutiePie</div>
+      <div class="empty-state-desc">Your AI-powered YouTube studio. We'll guide you through creating your first channel in about 2 minutes.</div>
+      <button class="btn primary lg" id="start-wizard-btn">Start setup →</button>
+    </div>`;
   } else {
     APP.channels.forEach(ch => {
       const nicheName = ch.active_niche_profile?.name || 'No niche yet';
       const toneName = ch.default_tone_template?.name || 'Default tone';
       const isReady = ch.status === 'active' || ch.active_niche_profile_id;
       const meta = ch.handle ? `${ch.handle} · ${nicheName} · ${toneName}` : `${nicheName} · ${toneName}`;
-      body += `
-        <div class="channel-card" data-channel-id="${ch.id}">
-          <div class="channel-header">
-            <div class="channel-emoji" style="background:${ch.brand_color}1a">${ch.emoji || '🎬'}</div>
-            <div style="flex:1;min-width:0">
-              <div class="channel-name">${escapeHtml(ch.name)}</div>
-              <div class="channel-meta">${escapeHtml(meta)}</div>
-            </div>
-            <div class="channel-status ${isReady ? 'ready' : ''}">${isReady ? 'Ready' : 'Draft'}</div>
-          </div>
-          <div class="cta-banner">
-            <div class="cta-emoji">🎯</div>
-            <div class="cta-content">
-              <div class="cta-title">Ready to make your first video?</div>
-              <div class="cta-desc">We'll guide you through script, voice, and production. Coming in next milestone.</div>
-            </div>
-            <button class="cta-btn" disabled style="opacity:.6;cursor:not-allowed">Start (coming soon) →</button>
-          </div>
+      body += `<div class="channel-card" data-channel-id="${ch.id}">
+        <div class="channel-header">
+          <div class="channel-emoji" style="background:${ch.brand_color}1a">${ch.emoji || '🎬'}</div>
+          <div style="flex:1;min-width:0"><div class="channel-name">${escapeHtml(ch.name)}</div><div class="channel-meta">${escapeHtml(meta)}</div></div>
+          <div class="channel-status ${isReady ? 'ready' : ''}">${isReady ? 'Ready' : 'Draft'}</div>
         </div>
-      `;
-    });
-
-    body += `
-      <div class="quick-actions">
-        <button class="quick-action dashed" id="add-channel-btn">
-          <div class="quick-action-icon">+</div>
-          <div>
-            <div class="quick-action-title">Add another channel</div>
-            <div class="quick-action-desc">Diversify and scale</div>
+        <div class="cta-banner">
+          <div class="cta-emoji">🎯</div>
+          <div class="cta-content">
+            <div class="cta-title">Ready to make your first video?</div>
+            <div class="cta-desc">We'll guide you through script, voice, and production.</div>
           </div>
-        </button>
-      </div>
-    `;
+          <a href="#/channels/${ch.id}/videos/new" class="cta-btn">Start →</a>
+        </div>
+      </div>`;
+    });
+    body += `<div class="quick-actions">
+      <button class="quick-action dashed" id="add-channel-btn">
+        <div class="quick-action-icon">+</div>
+        <div><div class="quick-action-title">Add another channel</div><div class="quick-action-desc">Diversify and scale</div></div>
+      </button>
+    </div>`;
   }
-
   $('view-container').innerHTML = `
     <div class="welcome">
       <div class="welcome-label">Dashboard</div>
       <div class="welcome-title">Hello, ${escapeHtml(firstName)}</div>
       <div class="welcome-sub">${escapeHtml(sub)}</div>
-    </div>
-    ${body}
-  `;
-
-  // Wire up clicks
-  const startBtn = $('start-wizard-btn');
-  if (startBtn) startBtn.addEventListener('click', () => openWizard('create'));
-  const addBtn = $('add-channel-btn');
-  if (addBtn) addBtn.addEventListener('click', () => openWizard('create'));
-
-  // Channel cards: click to open workspace, but NOT on the disabled CTA button
+    </div>${body}`;
+  if ($('start-wizard-btn')) $('start-wizard-btn').addEventListener('click', () => openWizard('create'));
+  if ($('add-channel-btn')) $('add-channel-btn').addEventListener('click', () => openWizard('create'));
   document.querySelectorAll('.channel-card[data-channel-id]').forEach(card => {
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.cta-btn')) return; // don't navigate if disabled CTA clicked
+      if (e.target.closest('.cta-btn')) return;
       navigate(`/channels/${card.dataset.channelId}`);
     });
   });
 }
 
 // ============================================================
-// VIEWS — CHANNEL WORKSPACE
+// VIEW: CHANNEL WORKSPACE
 // ============================================================
-function renderChannelWorkspace(){
-  const ch = APP.currentChannel;
-  if (!ch) return;
-
+async function renderChannelWorkspace(){
+  const ch = APP.currentChannel; if (!ch) return;
+  const projects = await loadProjects(ch.id);
   const nicheName = ch.active_niche_profile?.name || 'No niche';
   const toneName = ch.default_tone_template?.name || 'No tone';
   const language = ch.active_niche_profile?.language || 'en';
   const langLabel = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German',other:'Other'}[language] || language;
+
+  let videosHtml = '';
+  if (projects.length === 0) {
+    videosHtml = `<div class="video-empty">
+      <div class="video-empty-emoji">🎬</div>
+      <div class="video-empty-title">No videos yet</div>
+      <div class="video-empty-desc">Create your first video. We'll guide you through the script, voice, and production pipeline.</div>
+      <a href="#/channels/${ch.id}/videos/new" class="btn primary lg">+ Create your first video</a>
+    </div>`;
+  } else {
+    videosHtml = '<div class="video-list">';
+    projects.forEach(p => {
+      const stage = p.current_stage || p.stage || 'idea';
+      videosHtml += `<a href="#/channels/${ch.id}/videos/${p.id}" class="video-item">
+        <div class="video-item-stage-dot ${stage}"></div>
+        <div class="video-item-info">
+          <div class="video-item-title">${escapeHtml(p.title || 'Untitled video')}</div>
+          <div class="video-item-meta">Updated ${new Date(p.updated_at).toLocaleDateString()}</div>
+        </div>
+        <span class="video-item-stage">${escapeHtml(stage)}</span>
+      </a>`;
+    });
+    videosHtml += '</div>';
+    videosHtml += `<a href="#/channels/${ch.id}/videos/new" class="quick-action dashed" style="display:flex">
+      <div class="quick-action-icon">+</div>
+      <div><div class="quick-action-title">New video</div><div class="quick-action-desc">Start the production pipeline</div></div>
+    </a>`;
+  }
 
   $('view-container').innerHTML = `
     <div class="workspace-header">
@@ -861,48 +1156,30 @@ function renderChannelWorkspace(){
           <span class="meta-chip">🌍 ${escapeHtml(langLabel)}</span>
         </div>
       </div>
-      <div>
+      <div class="workspace-actions">
+        <a href="#/channels/${ch.id}/workflow" class="btn">🗂 Workflow</a>
         <a href="#/channels/${ch.id}/settings" class="btn">⚙️ Settings</a>
       </div>
     </div>
-
-    <div class="section-title">Your videos</div>
-    <div class="video-empty">
-      <div class="video-empty-emoji">🎬</div>
-      <div class="video-empty-title">No videos yet</div>
-      <div class="video-empty-desc">Create your first video. We'll guide you through the script, voice, and production pipeline.</div>
-      <button class="btn primary lg" disabled style="opacity:.6;cursor:not-allowed">+ New video (coming in milestone 4)</button>
-    </div>
-  `;
+    <div class="section-title"><span>Your videos</span><span style="font-weight:normal;text-transform:none;letter-spacing:0">${projects.length} total</span></div>
+    ${videosHtml}`;
 }
 
 // ============================================================
-// VIEWS — CHANNEL SETTINGS
+// VIEW: CHANNEL SETTINGS
 // ============================================================
 async function renderChannelSettings(){
-  const ch = APP.currentChannel;
-  if (!ch) return;
-
-  // Load pivot history
-  const { data: history, error } = await APP.sb
-    .from('channel_niche_history')
-    .select('*')
-    .eq('channel_id', ch.id)
-    .order('active_from', { ascending: false });
-
-  const historyItems = (history || []).map((h, idx) => `
-    <div class="history-item">
-      <div class="history-dot ${idx === 0 && !h.active_to ? 'current' : ''}"></div>
-      <div class="history-content">
-        <div class="history-name">${escapeHtml(h.niche_snapshot_name || 'Unknown')}</div>
-        <div class="history-date">
-          ${new Date(h.active_from).toLocaleDateString()}
-          ${h.active_to ? '→ ' + new Date(h.active_to).toLocaleDateString() : '(current)'}
-        </div>
-        ${h.pivot_reason ? `<div class="history-reason">${escapeHtml(h.pivot_reason)}</div>` : ''}
-      </div>
+  const ch = APP.currentChannel; if (!ch) return;
+  const { data: history } = await APP.sb.from('channel_niche_history')
+    .select('*').eq('channel_id', ch.id).order('active_from', { ascending: false });
+  const historyItems = (history || []).map((h, idx) => `<div class="history-item">
+    <div class="history-dot ${idx === 0 && !h.active_to ? 'current' : ''}"></div>
+    <div class="history-content">
+      <div class="history-name">${escapeHtml(h.niche_snapshot_name || 'Unknown')}</div>
+      <div class="history-date">${new Date(h.active_from).toLocaleDateString()} ${h.active_to ? '→ ' + new Date(h.active_to).toLocaleDateString() : '(current)'}</div>
+      ${h.pivot_reason ? `<div class="history-reason">${escapeHtml(h.pivot_reason)}</div>` : ''}
     </div>
-  `).join('');
+  </div>`).join('');
 
   $('view-container').innerHTML = `
     <div class="welcome">
@@ -910,110 +1187,57 @@ async function renderChannelSettings(){
       <div class="welcome-title">${escapeHtml(ch.name)}</div>
       <div class="welcome-sub">Edit identity, repositioning, and channel history.</div>
     </div>
-
-    <!-- Identity -->
     <div class="settings-section">
-      <div class="settings-section-header">
-        <div>
-          <div class="settings-section-title">Identity</div>
-          <div class="settings-section-desc">Name, handle, and icon. Public-facing info.</div>
-        </div>
-      </div>
+      <div class="settings-section-header"><div><div class="settings-section-title">Identity</div><div class="settings-section-desc">Name, handle, and icon. Public-facing info.</div></div></div>
       <div class="fld"><label>Channel name</label><input type="text" id="set-name" value="${escapeHtml(ch.name)}" /></div>
       <div class="fld"><label>YouTube handle</label><input type="text" id="set-handle" value="${escapeHtml(ch.handle || '')}" placeholder="@yourchannel" /></div>
       <div class="fld" style="margin-bottom:0">
         <label>Icon</label>
         <div class="emoji-picker" id="set-emoji-picker">
-          ${['🎬','📚','🎨','🧠','💰','⚖️','🔥','🚀','🎯','📺','🎭','🍳','🏋️','🎮','✈️'].map(e =>
-            `<button type="button" class="emoji-btn ${e === ch.emoji ? 'on' : ''}" data-emoji="${e}">${e}</button>`
-          ).join('')}
+          ${['🎬','📚','🎨','🧠','💰','⚖️','🔥','🚀','🎯','📺','🎭','🍳','🏋️','🎮','✈️'].map(e => `<button type="button" class="emoji-btn ${e === ch.emoji ? 'on' : ''}" data-emoji="${e}">${e}</button>`).join('')}
         </div>
       </div>
-      <div style="margin-top:16px;text-align:right">
-        <button class="btn primary" id="save-identity-btn">Save identity</button>
-      </div>
+      <div style="margin-top:16px;text-align:right"><button class="btn primary" id="save-identity-btn">Save identity</button></div>
     </div>
-
-    <!-- Positioning -->
     <div class="settings-section">
-      <div class="settings-section-header">
-        <div>
-          <div class="settings-section-title">Current positioning</div>
-          <div class="settings-section-desc">What your channel is currently about. You can pivot anytime if the market shifts.</div>
-        </div>
-      </div>
+      <div class="settings-section-header"><div><div class="settings-section-title">Current positioning</div><div class="settings-section-desc">What your channel is currently about. You can pivot anytime if the market shifts.</div></div></div>
       <div style="background:var(--color-surface-2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px">
         <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Topic</div>
         <div style="font-weight:600;font-size:14px;margin-bottom:10px">${escapeHtml(ch.active_niche_profile?.name || 'No topic set')}</div>
-        ${ch.active_niche_profile?.target_audience ? `
-          <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Audience</div>
-          <div style="font-size:13px;color:var(--color-text);margin-bottom:10px">${escapeHtml(ch.active_niche_profile.target_audience)}</div>
-        ` : ''}
+        ${ch.active_niche_profile?.target_audience ? `<div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Audience</div><div style="font-size:13px;color:var(--color-text);margin-bottom:10px">${escapeHtml(ch.active_niche_profile.target_audience)}</div>` : ''}
         <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Tone</div>
         <div style="font-size:13px;color:var(--color-text)">${escapeHtml(ch.default_tone_template?.name || 'No tone')} — <span style="color:var(--color-text-muted)">${escapeHtml(ch.default_tone_template?.description || '')}</span></div>
       </div>
-      <div style="text-align:right">
-        <button class="btn primary" id="pivot-btn">🔄 Reposition channel</button>
-      </div>
+      <div style="text-align:right"><button class="btn primary" id="pivot-btn">🔄 Reposition channel</button></div>
     </div>
-
-    <!-- History -->
     <div class="settings-section">
-      <div class="settings-section-header">
-        <div>
-          <div class="settings-section-title">Positioning history</div>
-          <div class="settings-section-desc">Track all the pivots and repositionings of this channel.</div>
-        </div>
-      </div>
+      <div class="settings-section-header"><div><div class="settings-section-title">Positioning history</div><div class="settings-section-desc">Track all the pivots and repositionings of this channel.</div></div></div>
       ${historyItems || '<div class="text-muted" style="font-size:13px">No history yet.</div>'}
     </div>
-
-    <!-- Danger zone -->
     <div class="danger-section">
       <div class="danger-title">Danger zone</div>
       <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:14px">Deleting a channel removes it permanently. Videos and history are also deleted.</p>
       <button class="btn danger" id="delete-channel-btn">Delete this channel</button>
-    </div>
-  `;
+    </div>`;
 
-  // Wire emoji picker
   document.querySelectorAll('#set-emoji-picker .emoji-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#set-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on'));
-      btn.classList.add('on');
-    });
+    btn.addEventListener('click', () => { document.querySelectorAll('#set-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on')); btn.classList.add('on'); });
   });
-
-  // Save identity
   $('save-identity-btn').addEventListener('click', saveIdentity);
-
-  // Pivot
   $('pivot-btn').addEventListener('click', () => openWizard('pivot', ch.id));
-
-  // Delete
   $('delete-channel-btn').addEventListener('click', () => {
-    confirmModal(
-      'Delete channel?',
-      `This will permanently delete "${ch.name}" and all its data. This action cannot be undone.`,
-      'Delete forever',
-      deleteChannel
-    );
+    confirmModal('Delete channel?', `This will permanently delete "${ch.name}" and all its videos. This cannot be undone.`, 'Delete forever', deleteChannel);
   });
 }
 
 async function saveIdentity(){
-  const ch = APP.currentChannel;
-  const name = $('set-name').value.trim();
+  const ch = APP.currentChannel; const name = $('set-name').value.trim();
   if (!name) { toast('Channel name required', 'error'); return; }
   const handle = $('set-handle').value.trim() || null;
   const emoji = document.querySelector('#set-emoji-picker .emoji-btn.on')?.dataset.emoji || ch.emoji;
-
-  showLoader();
-  const { error } = await APP.sb.from('channels')
-    .update({ name, handle, emoji })
-    .eq('id', ch.id);
+  showLoader('Saving...');
+  const { error } = await APP.sb.from('channels').update({ name, handle, emoji }).eq('id', ch.id);
   hideLoader();
-
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Identity updated ✓', 'success');
   await loadChannels();
@@ -1022,280 +1246,876 @@ async function saveIdentity(){
 }
 
 async function deleteChannel(){
-  const ch = APP.currentChannel;
-  showLoader();
+  const ch = APP.currentChannel; showLoader('Deleting...');
   const { error } = await APP.sb.from('channels').delete().eq('id', ch.id);
   hideLoader();
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast(`Channel "${ch.name}" deleted`, 'success');
-  await loadChannels();
-  navigate('/');
+  await loadChannels(); navigate('/');
 }
 
 // ============================================================
-// WIZARD (create + pivot mode)
+// VIEW: CHANNEL WORKFLOW (cross-video)
+// ============================================================
+async function renderChannelWorkflow(){
+  const ch = APP.currentChannel; if (!ch) return;
+  const projects = await loadProjects(ch.id);
+  const projectIds = projects.map(p => p.id);
+  let tasks = [];
+  if (projectIds.length > 0) {
+    const { data } = await APP.sb.from('workflow_tasks')
+      .select('*').in('project_id', projectIds).order('created_at', { ascending: false });
+    tasks = data || [];
+  }
+
+  const overdueTasks = tasks.filter(t => t.deadline && new Date(t.deadline) < new Date() && t.status !== 'approved');
+  const projectsById = Object.fromEntries(projects.map(p => [p.id, p]));
+
+  let tasksHtml = '';
+  if (tasks.length === 0) {
+    tasksHtml = `<div class="video-empty">
+      <div class="video-empty-emoji">🗂</div>
+      <div class="video-empty-title">No tasks yet</div>
+      <div class="video-empty-desc">Workflow tasks across all videos of this channel will appear here.</div>
+    </div>`;
+  } else {
+    tasksHtml = '<div class="wf-tasks">';
+    tasks.forEach(t => {
+      const project = projectsById[t.project_id];
+      const overdueClass = t.deadline && new Date(t.deadline) < new Date() && t.status !== 'approved' ? 'overdue' : '';
+      tasksHtml += renderWorkflowTaskCard(t, project?.title || 'Unknown video', project?.id, overdueClass);
+    });
+    tasksHtml += '</div>';
+  }
+
+  $('view-container').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-label">Workflow</div>
+      <div class="welcome-title">${escapeHtml(ch.name)} — all tasks</div>
+      <div class="welcome-sub">All freelancer tasks across all videos of this channel.</div>
+    </div>
+    ${overdueTasks.length > 0 ? `<div style="background:var(--color-danger-soft);color:var(--color-danger);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:20px;font-size:13px;font-weight:600">⚠️ ${overdueTasks.length} task${overdueTasks.length > 1 ? 's' : ''} overdue</div>` : ''}
+    ${tasksHtml}`;
+}
+
+function renderWorkflowTaskCard(t, videoTitle, projectId, overdueClass){
+  const roleIcons = { voice_actor: '🎙', video_editor: '🎬', thumbnail_designer: '🎨', reviewer: '👀' };
+  const roleLabels = { voice_actor: 'Voice Actor', video_editor: 'Video Editor', thumbnail_designer: 'Thumbnail Designer', reviewer: 'Reviewer' };
+  return `<div class="wf-task" data-status="${t.status}" data-task-id="${t.id}">
+    <div class="wf-role-icon">${roleIcons[t.role] || '👤'}</div>
+    <div class="wf-task-main">
+      <div class="wf-task-role">${escapeHtml(roleLabels[t.role] || t.role)}</div>
+      <div class="wf-task-assignee">${escapeHtml(t.assignee_name || 'Unnamed')}<span class="wf-email">${escapeHtml(t.assignee_email)}</span></div>
+      <div class="wf-task-meta">
+        ${videoTitle ? `<span>📹 <a href="#/channels/${APP.currentChannel.id}/videos/${projectId}" style="color:inherit">${escapeHtml(videoTitle)}</a></span>` : ''}
+        ${t.deadline ? `<span class="wf-deadline ${overdueClass}">📅 ${new Date(t.deadline).toLocaleDateString()}</span>` : ''}
+        ${t.deliverable_url ? `<span>🔗 <a href="${escapeHtml(t.deliverable_url)}" target="_blank" rel="noopener" style="color:inherit">Deliverable</a></span>` : ''}
+      </div>
+      ${t.brief ? `<div class="wf-brief-box">${escapeHtml(t.brief)}</div>` : ''}
+    </div>
+    <div>
+      <div class="wf-status-pill">${escapeHtml(t.status.replace('_', ' '))}</div>
+      <div class="wf-actions">
+        ${t.status === 'submitted' ? `<button class="btn primary sm wf-approve" data-task-id="${t.id}">Approve</button><button class="btn danger sm wf-reject" data-task-id="${t.id}">Reject</button>` : ''}
+        <button class="btn ghost sm wf-delete" data-task-id="${t.id}">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// VIDEO STUDIO
+// ============================================================
+async function renderVideoStudio(){
+  const ch = APP.currentChannel; const p = APP.currentProject;
+  if (!ch || !p) return;
+
+  const isProMode = APP.profile.studio_mode === 'pro';
+  const stages = ['outline', 'script', 'voice', 'workflow', 'export'];
+  const currentStage = p.current_stage || 'idea';
+  const currentStageIdx = stages.indexOf(currentStage);
+  const activeTabIdx = stages.indexOf(APP.currentTab);
+
+  // Build chips (DNA preview)
+  const nicheName = ch.active_niche_profile?.name || 'No niche';
+  const toneName = ch.default_tone_template?.name || 'No tone';
+
+  // Build timeline
+  let timelineHtml = '<div class="timeline">';
+  ['idea', ...stages].forEach((stg, i) => {
+    if (i > 0) {
+      const connectorDone = i <= currentStageIdx + 1;
+      timelineHtml += `<div class="timeline-connector ${connectorDone ? 'done' : ''}"></div>`;
+    }
+    const allStages = ['idea', ...stages];
+    const stgIdx = allStages.indexOf(stg);
+    const isDone = stgIdx < currentStageIdx + 1;
+    const isCurrent = stg === APP.currentTab || (APP.currentTab === 'outline' && stg === 'outline');
+    const isClickable = isProMode || stgIdx <= currentStageIdx + 1;
+    const cls = (isDone ? 'done ' : '') + (isCurrent ? 'current ' : '') + (!isClickable ? 'disabled' : '');
+    const num = stgIdx === 0 ? '💡' : stgIdx;
+    timelineHtml += `<button class="timeline-step ${cls}" data-stage="${stg}" ${!isClickable ? 'disabled' : ''}>
+      <div class="timeline-dot">${isDone ? '✓' : num}</div>
+      <div class="timeline-label">${stg}</div>
+    </button>`;
+  });
+  timelineHtml += '</div>';
+
+  // Build sidebar (Pro mode only)
+  let sidebarHtml = '';
+  if (isProMode) {
+    sidebarHtml = `<aside class="studio-sidebar">
+      <nav class="studio-nav">
+        <button class="studio-nav-item ${APP.currentTab === 'outline' ? 'on' : ''}" data-tab="outline"><span class="studio-nav-icon">📋</span>Outline</button>
+        <button class="studio-nav-item ${APP.currentTab === 'script' ? 'on' : ''}" data-tab="script"><span class="studio-nav-icon">📝</span>Script</button>
+        <button class="studio-nav-item ${APP.currentTab === 'voice' ? 'on' : ''}" data-tab="voice"><span class="studio-nav-icon">🎙</span>Voice</button>
+        <button class="studio-nav-item ${APP.currentTab === 'workflow' ? 'on' : ''}" data-tab="workflow"><span class="studio-nav-icon">🗂</span>Workflow</button>
+        <button class="studio-nav-item ${APP.currentTab === 'export' ? 'on' : ''}" data-tab="export"><span class="studio-nav-icon">📦</span>Export</button>
+      </nav>
+    </aside>`;
+  }
+
+  $('view-container').innerHTML = `
+    <div class="studio-header">
+      <div class="studio-title-row">
+        <input type="text" class="studio-title-input" id="studio-title-input" value="${escapeHtml(p.title || 'Untitled')}" />
+        <div class="studio-mode-toggle">
+          <span>${isProMode ? 'Pro' : 'Beginner'}</span>
+          <div class="toggle-switch ${isProMode ? 'on' : ''}" id="studio-mode-toggle"></div>
+        </div>
+      </div>
+      <div class="studio-chips">
+        <span class="dna-chip">💡 ${escapeHtml(nicheName)}</span>
+        <span class="dna-chip">🎭 ${escapeHtml(toneName)}</span>
+        <span class="dna-chip" style="background:var(--color-surface-2);color:var(--color-text-muted)">${escapeHtml(FORMAT_LABELS[p.format] || p.format || '—')}</span>
+      </div>
+    </div>
+    ${timelineHtml}
+    ${isProMode ? `<div class="studio-layout">${sidebarHtml}<div class="studio-content" id="studio-content"></div></div>` : `<div id="studio-content"></div>`}`;
+
+  // Wire title save
+  $('studio-title-input').addEventListener('blur', saveProjectTitle);
+  $('studio-title-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
+
+  // Wire mode toggle
+  $('studio-mode-toggle').addEventListener('click', toggleStudioMode);
+
+  // Wire timeline + sidebar
+  document.querySelectorAll('.timeline-step:not(.disabled), .studio-nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const stage = el.dataset.stage || el.dataset.tab;
+      if (!stage || stage === 'idea') return;
+      APP.currentTab = stage;
+      renderVideoStudio();
+    });
+  });
+
+  // Render the panel based on currentTab
+  renderStudioPanel();
+}
+
+async function saveProjectTitle(){
+  const newTitle = $('studio-title-input').value.trim();
+  if (!newTitle || newTitle === APP.currentProject.title) return;
+  const { error } = await APP.sb.from('projects').update({ title: newTitle }).eq('id', APP.currentProject.id);
+  if (error) { toast('Error saving title: ' + error.message, 'error'); return; }
+  APP.currentProject.title = newTitle;
+  toast('Title saved', 'success');
+  renderBreadcrumb([
+    { label: APP.currentChannel.name, href: `#/channels/${APP.currentChannel.id}` },
+    { label: newTitle, current: true }
+  ]);
+}
+
+async function toggleStudioMode(){
+  const newMode = APP.profile.studio_mode === 'pro' ? 'beginner' : 'pro';
+  const { error } = await APP.sb.from('user_profiles').update({ studio_mode: newMode }).eq('id', APP.user.id);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  APP.profile.studio_mode = newMode;
+  toast(`Switched to ${newMode === 'pro' ? 'Pro' : 'Beginner'} mode`, 'success');
+  renderVideoStudio();
+}
+
+function renderStudioPanel(){
+  const tab = APP.currentTab;
+  if (tab === 'outline') return renderOutlinePanel();
+  if (tab === 'script') return renderScriptPanel();
+  if (tab === 'voice') return renderVoicePanel();
+  if (tab === 'workflow') return renderProjectWorkflowPanel();
+  if (tab === 'export') return renderExportPanel();
+  renderOutlinePanel();
+}
+
+// ============================================================
+// OUTLINE PANEL
+// ============================================================
+function renderOutlinePanel(){
+  const p = APP.currentProject;
+  const hasOutline = !!p.outline;
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">📋 Outline</div>
+    <div class="panel-desc">Generate a structured outline for your video. We'll use it as the foundation for the full script.</div>
+    <div class="ai-action-bar">
+      <button class="btn primary" id="gen-outline-btn">${hasOutline ? '🔄 Regenerate outline' : '✨ Generate outline with AI'}</button>
+      ${hasOutline ? '<button class="btn" id="continue-script-btn">Continue to Script →</button>' : ''}
+    </div>
+    <div class="out-box" id="outline-box">${hasOutline ? escapeHtml(p.outline) : 'Click "Generate outline" to start.'}</div>
+  </div>`;
+  $('gen-outline-btn').addEventListener('click', generateOutline);
+  if ($('continue-script-btn')) $('continue-script-btn').addEventListener('click', () => { APP.currentTab = 'script'; renderVideoStudio(); });
+}
+
+async function generateOutline(){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const toneDesc = ch.default_tone_template?.description || '';
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  showLoader('Generating outline with AI...');
+  try {
+    const system = `You are an expert YouTube content strategist. Create video outlines that maximize retention and CTR.`;
+    const prompt = `Create a detailed outline for this YouTube video.
+
+Channel niche: ${nicheName}
+Target audience: ${audience}
+Tone: ${toneName} — ${toneDesc}
+Format: ${FORMAT_LABELS[p.format] || p.format}
+Video title: ${p.title}
+${p.psychological_angle ? `Psychological angle: ${p.psychological_angle}` : ''}
+Output language: ${langName}
+
+Structure the outline with:
+1. Hook (first 35 seconds) - exact text suggestion
+2. Promise/setup (35-90 seconds)
+3. Main sections with timestamps
+4. Cliffhangers between sections
+5. Outro and CTA
+
+Be specific. Use the tone described above. Target 15-22 minutes total length.`;
+
+    const result = await AI.invoke('generate_outline', { prompt, system }, { projectId: p.id });
+    const outlineText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    const { error } = await APP.sb.from('projects')
+      .update({ outline: outlineText, stage: 'outline', current_stage: 'outline' })
+      .eq('id', p.id);
+    if (error) throw error;
+
+    APP.currentProject.outline = outlineText;
+    APP.currentProject.current_stage = 'outline';
+    APP.currentProject.stage = 'outline';
+    hideLoader();
+    toast('Outline generated ✓', 'success');
+    renderVideoStudio();
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// SCRIPT PANEL
+// ============================================================
+function renderScriptPanel(){
+  const p = APP.currentProject;
+  const hasScript = !!p.script;
+
+  let sectionsHtml = '';
+  if (hasScript) {
+    const sections = parseScriptSections(p.script);
+    sectionsHtml = '<div style="margin-top:14px">';
+    sections.forEach((sec, idx) => {
+      const isVocal = sec.title.toLowerCase().includes('hook') || sec.title.toLowerCase().includes('intro') || sec.title.toLowerCase().includes('main') || sec.title.toLowerCase().includes('close') || sec.title.toLowerCase().includes('script');
+      sectionsHtml += `<div class="script-section ${isVocal ? 'vocal' : ''}">
+        <div class="script-section-header" data-idx="${idx}">
+          <span>${escapeHtml(sec.title)}</span>
+          <span>▼</span>
+        </div>
+        <div class="script-section-body" id="script-body-${idx}">${escapeHtml(sec.body)}</div>
+      </div>`;
+    });
+    sectionsHtml += '</div>';
+  }
+
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">📝 Script</div>
+    <div class="panel-desc">Generate the full 9-section production script. Vocal parts are highlighted.</div>
+    ${!p.outline ? '<div style="background:var(--color-warning-soft);color:#854F0B;padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px">⚠️ Generate an outline first for best results.</div>' : ''}
+    <div class="ai-action-bar">
+      <button class="btn primary" id="gen-script-btn" ${!p.outline ? 'disabled' : ''}>${hasScript ? '🔄 Regenerate script' : '✨ Generate full script with AI'}</button>
+      ${hasScript ? '<button class="btn" id="copy-script-btn">📋 Copy all</button>' : ''}
+      ${hasScript ? '<button class="btn" id="continue-voice-btn">Continue to Voice →</button>' : ''}
+    </div>
+    ${sectionsHtml || '<div class="out-box">Generate the script to start.</div>'}
+  </div>`;
+
+  if ($('gen-script-btn')) $('gen-script-btn').addEventListener('click', generateScript);
+  if ($('copy-script-btn')) $('copy-script-btn').addEventListener('click', () => { navigator.clipboard.writeText(p.script); toast('Script copied', 'success'); });
+  if ($('continue-voice-btn')) $('continue-voice-btn').addEventListener('click', () => { APP.currentTab = 'voice'; renderVideoStudio(); });
+
+  document.querySelectorAll('.script-section-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const idx = h.dataset.idx;
+      $(`script-body-${idx}`).classList.toggle('on');
+    });
+  });
+}
+
+function parseScriptSections(text){
+  // Try to parse "## Section Name" or "# 1. Section Name" patterns
+  const lines = text.split('\n');
+  const sections = [];
+  let currentTitle = 'Script';
+  let currentBody = [];
+  lines.forEach(line => {
+    const headerMatch = line.match(/^#{1,3}\s+(.+)$/);
+    if (headerMatch) {
+      if (currentBody.length > 0 || sections.length > 0) {
+        sections.push({ title: currentTitle, body: currentBody.join('\n').trim() });
+      }
+      currentTitle = headerMatch[1].trim();
+      currentBody = [];
+    } else {
+      currentBody.push(line);
+    }
+  });
+  if (currentBody.length > 0) sections.push({ title: currentTitle, body: currentBody.join('\n').trim() });
+  if (sections.length === 0) return [{ title: 'Full Script', body: text }];
+  return sections;
+}
+
+async function generateScript(){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const toneDesc = ch.default_tone_template?.description || '';
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  showLoader('Generating full script (may take 30-60 seconds)...');
+  try {
+    const system = `You are an expert YouTube scriptwriter. Generate complete production-ready scripts with all sections.`;
+    const prompt = `Create the complete production script for this YouTube video.
+
+Channel niche: ${nicheName}
+Target audience: ${audience}
+Tone: ${toneName} — ${toneDesc}
+Format: ${FORMAT_LABELS[p.format] || p.format}
+Title: ${p.title}
+Output language: ${langName}
+
+OUTLINE TO FOLLOW:
+${p.outline}
+
+Generate the FULL script with these 9 sections, using markdown headers (## Section name):
+
+## 1. FILE HEADER
+Working title, runtime estimate, vibe summary.
+
+## 2. SEO METADATA
+YouTube title (60 chars max), description (300+ words optimized), 15-20 tags, 5-8 chapter timestamps.
+
+## 3. THUMBNAIL BRIEF
+Detailed prompt for designer or AI image generator.
+
+## 4. HOOK (0:00-0:35)
+Exact spoken lines, punchy, irresistible.
+
+## 5. INTRO (0:35-2:00)
+Setup, promise, social proof if relevant.
+
+## 6. MAIN BODY (with timestamps)
+Full vocal script with section markers and cliffhangers.
+
+## 7. OUTRO + CTA
+Closing lines, subscribe/like prompts, next video tease.
+
+## 8. B-ROLL SUGGESTIONS
+Visual cues per section with timestamps.
+
+## 9. KLING/VEO PROMPTS
+5-8 prompts for AI video generation tools.
+
+Be specific. Write in the ${toneName} tone. Target 18-22 minutes total runtime.`;
+
+    const result = await AI.invoke('generate_script', { prompt, system }, { projectId: p.id });
+    const scriptText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    const { error } = await APP.sb.from('projects')
+      .update({ script: scriptText, stage: 'script', current_stage: 'script' })
+      .eq('id', p.id);
+    if (error) throw error;
+
+    APP.currentProject.script = scriptText;
+    APP.currentProject.current_stage = 'script';
+    APP.currentProject.stage = 'script';
+    hideLoader();
+    toast('Script generated ✓', 'success');
+    renderVideoStudio();
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// VOICE PANEL
+// ============================================================
+async function renderVoicePanel(){
+  const p = APP.currentProject;
+  // Load user voices
+  const { data: voices } = await APP.sb.from('voice_presets').select('*').order('created_at', { ascending: false });
+
+  let voiceOptions = '<option value="">— No voice saved yet —</option>';
+  (voices || []).forEach(v => {
+    voiceOptions += `<option value="${v.external_voice_id}">${escapeHtml(v.display_name)}</option>`;
+  });
+
+  // Extract vocal parts from script
+  let vocalText = '';
+  if (p.script) {
+    const sections = parseScriptSections(p.script);
+    const vocalSections = sections.filter(s => {
+      const t = s.title.toLowerCase();
+      return t.includes('hook') || t.includes('intro') || t.includes('main') || t.includes('outro') || t.includes('close');
+    });
+    vocalText = vocalSections.map(s => s.body).join('\n\n');
+  }
+
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">🎙 Voice</div>
+    <div class="panel-desc">Generate the voiceover for your script. Powered by ElevenLabs.</div>
+    <div class="fld">
+      <label>Choose voice</label>
+      <select id="voice-select">${voiceOptions}</select>
+      <div class="fld-hint">Need a voice? Get a Voice ID from <a href="https://elevenlabs.io/voice-library" target="_blank" style="color:var(--color-accent)">ElevenLabs Voice Library</a></div>
+    </div>
+    <div class="fld">
+      <label>Add new voice (Voice ID)</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="new-voice-id" placeholder="e.g. EXAVITQu4vr4xnSDxMaL" style="flex:1" />
+        <input type="text" id="new-voice-name" placeholder="Display name" style="flex:1" />
+        <button class="btn" id="save-voice-btn">+ Save</button>
+      </div>
+    </div>
+    <div class="fld">
+      <label>Text to synthesize</label>
+      <textarea id="voice-text" style="min-height:200px">${escapeHtml(vocalText)}</textarea>
+      <div class="fld-hint">Vocal parts auto-extracted from your script. Edit freely.</div>
+    </div>
+    <div class="ai-action-bar">
+      <button class="btn primary" id="gen-voice-btn">✨ Generate voiceover</button>
+    </div>
+    <div id="voice-result"></div>
+  </div>`;
+
+  $('save-voice-btn').addEventListener('click', saveNewVoice);
+  $('gen-voice-btn').addEventListener('click', generateVoice);
+}
+
+async function saveNewVoice(){
+  const voiceId = $('new-voice-id').value.trim(); const name = $('new-voice-name').value.trim();
+  if (!voiceId || !name) { toast('Both voice ID and display name required', 'error'); return; }
+  const { error } = await APP.sb.from('voice_presets').insert({
+    user_id: APP.user.id,
+    display_name: name,
+    provider: 'elevenlabs',
+    external_voice_id: voiceId,
+    is_favorite: false,
+  });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Voice saved ✓', 'success');
+  renderVoicePanel();
+}
+
+async function generateVoice(){
+  const voiceId = $('voice-select').value;
+  const text = $('voice-text').value.trim();
+  if (!voiceId) { toast('Pick a voice first', 'error'); return; }
+  if (!text) { toast('Text required', 'error'); return; }
+  if (text.length > 5000) { toast('Text too long (max 5000 chars)', 'error'); return; }
+
+  showLoader('Generating voiceover...');
+  try {
+    const blob = await AI.invoke('generate_voice', { text, voice_id: voiceId, model_id: 'eleven_turbo_v2_5' }, { projectId: APP.currentProject.id });
+    const url = URL.createObjectURL(blob);
+    $('voice-result').innerHTML = `<div style="margin-top:14px;padding:16px;background:var(--color-success-soft);border-radius:var(--radius-md)">
+      <div style="font-size:13px;font-weight:600;color:var(--color-success);margin-bottom:10px">✓ Voiceover generated</div>
+      <audio controls style="width:100%" src="${url}"></audio>
+      <a href="${url}" download="voiceover-${APP.currentProject.id}.mp3" class="btn primary" style="margin-top:10px">⬇ Download MP3</a>
+    </div>`;
+
+    // Update project stage
+    await APP.sb.from('projects').update({ current_stage: 'voice' }).eq('id', APP.currentProject.id);
+    APP.currentProject.current_stage = 'voice';
+    hideLoader();
+    toast('Voiceover ready ✓', 'success');
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// PROJECT WORKFLOW PANEL (per-video tasks)
+// ============================================================
+async function renderProjectWorkflowPanel(){
+  const p = APP.currentProject;
+  const { data: tasks } = await APP.sb.from('workflow_tasks')
+    .select('*').eq('project_id', p.id).order('created_at', { ascending: false });
+
+  let tasksHtml = '';
+  if (!tasks || tasks.length === 0) {
+    tasksHtml = `<div style="text-align:center;padding:30px 20px;color:var(--color-text-muted);font-size:13px">No tasks yet. Assign your first freelancer below.</div>`;
+  } else {
+    tasksHtml = '<div class="wf-tasks">';
+    tasks.forEach(t => { tasksHtml += renderWorkflowTaskCard(t, null, null, t.deadline && new Date(t.deadline) < new Date() && t.status !== 'approved' ? 'overdue' : ''); });
+    tasksHtml += '</div>';
+  }
+
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">🗂 Workflow</div>
+    <div class="panel-desc">Assign tasks for this video. Freelancers get magic links to work on their part.</div>
+    <div class="ai-action-bar">
+      <button class="btn primary" id="add-task-btn">+ Assign new task</button>
+    </div>
+    ${tasksHtml}
+  </div>`;
+
+  $('add-task-btn').addEventListener('click', () => {
+    $('task-role').value = 'voice_actor'; $('task-name').value = ''; $('task-email').value = '';
+    $('task-deadline').value = ''; $('task-brief').value = '';
+    show('task-modal');
+  });
+
+  document.querySelectorAll('.wf-approve').forEach(b => b.addEventListener('click', () => updateTaskStatus(b.dataset.taskId, 'approved')));
+  document.querySelectorAll('.wf-reject').forEach(b => b.addEventListener('click', () => updateTaskStatus(b.dataset.taskId, 'rejected')));
+  document.querySelectorAll('.wf-delete').forEach(b => b.addEventListener('click', () => deleteTask(b.dataset.taskId)));
+}
+
+async function updateTaskStatus(taskId, status){
+  const { error } = await APP.sb.from('workflow_tasks').update({
+    status, approved_at: status === 'approved' ? new Date().toISOString() : null
+  }).eq('id', taskId);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast(`Task ${status}`, 'success');
+  renderProjectWorkflowPanel();
+}
+
+async function deleteTask(taskId){
+  confirmModal('Delete task?', 'This permanently removes the task and any freelancer access.', 'Delete', async () => {
+    const { error } = await APP.sb.from('workflow_tasks').delete().eq('id', taskId);
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    toast('Task deleted', 'success');
+    renderProjectWorkflowPanel();
+  });
+}
+
+$('task-cancel').addEventListener('click', () => hide('task-modal'));
+$('task-modal').addEventListener('click', e => { if (e.target.id === 'task-modal') hide('task-modal'); });
+
+$('task-save').addEventListener('click', async () => {
+  const role = $('task-role').value; const name = $('task-name').value.trim();
+  const email = $('task-email').value.trim(); const deadline = $('task-deadline').value || null;
+  const brief = $('task-brief').value.trim() || null;
+  if (!email) { toast('Email required', 'error'); return; }
+  showLoader('Creating task & sending invite...');
+  try {
+    // 1. Create the task
+    const { data: task, error: taskErr } = await APP.sb.from('workflow_tasks').insert({
+      project_id: APP.currentProject.id,
+      owner_id: APP.user.id,
+      role: role,
+      assignee_email: email,
+      assignee_name: name || null,
+      status: 'pending',
+      deadline: deadline,
+      brief: brief,
+    }).select().single();
+    if (taskErr) throw taskErr;
+
+    // 2. Add freelancer to library if not already
+    await APP.sb.from('freelancers').upsert({
+      user_id: APP.user.id, full_name: name || email, email: email, role: role,
+    }, { onConflict: 'user_id,email,role' });
+
+    // 3. Send magic link invite (if invite-freelancer function deployed)
+    try {
+      const session = (await APP.sb.auth.getSession()).data.session;
+      await fetch(SUPA_URL + '/functions/v1/invite-freelancer', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: task.id, email: email }),
+      });
+    } catch(e) { console.warn('Invite send failed:', e); }
+
+    hideLoader(); hide('task-modal');
+    toast(`Task assigned to ${email}`, 'success');
+    renderProjectWorkflowPanel();
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+});
+
+// ============================================================
+// EXPORT PANEL
+// ============================================================
+function renderExportPanel(){
+  const p = APP.currentProject;
+  const hasContent = p.outline || p.script;
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">📦 Export</div>
+    <div class="panel-desc">Download the complete production package.</div>
+    ${!hasContent ? '<div class="out-box">Generate outline and script first.</div>' : `
+      <div class="ai-action-bar">
+        <button class="btn primary" id="export-md-btn">⬇ Download as Markdown</button>
+        <button class="btn" id="copy-all-btn">📋 Copy everything</button>
+      </div>
+      <div class="out-box" id="export-preview">${escapeHtml(buildExportContent(p))}</div>
+    `}
+  </div>`;
+  if ($('export-md-btn')) $('export-md-btn').addEventListener('click', exportMarkdown);
+  if ($('copy-all-btn')) $('copy-all-btn').addEventListener('click', () => { navigator.clipboard.writeText(buildExportContent(p)); toast('Copied', 'success'); });
+}
+
+function buildExportContent(p){
+  const ch = APP.currentChannel;
+  return `# ${p.title}
+
+Channel: ${ch.name}
+Format: ${FORMAT_LABELS[p.format] || p.format}
+Stage: ${p.current_stage || p.stage}
+
+---
+
+## OUTLINE
+
+${p.outline || '(not generated)'}
+
+---
+
+## FULL SCRIPT
+
+${p.script || '(not generated)'}
+`;
+}
+
+function exportMarkdown(){
+  const p = APP.currentProject;
+  const content = buildExportContent(p);
+  const blob = new Blob([content], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${p.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Downloaded', 'success');
+}
+
+// ============================================================
+// CHANNEL WIZARD (unchanged from M3)
 // ============================================================
 function openWizard(mode, channelId){
   APP.wizard = {
-    mode: mode || 'create',
-    pivotChannelId: channelId || null,
+    mode: mode || 'create', pivotChannelId: channelId || null,
     step: 1, name: '', handle: '', emoji: '🎬',
     topic: '', language: 'en', ages: [], audienceExtra: '', tone: '',
   };
-
-  // If pivot mode, pre-fill from current channel
   if (mode === 'pivot' && channelId) {
     const ch = APP.channels.find(c => c.id === channelId);
     if (ch) {
-      APP.wizard.name = ch.name;
-      APP.wizard.handle = ch.handle || '';
-      APP.wizard.emoji = ch.emoji || '🎬';
+      APP.wizard.name = ch.name; APP.wizard.handle = ch.handle || ''; APP.wizard.emoji = ch.emoji || '🎬';
       APP.wizard.topic = ch.active_niche_profile?.name || '';
       APP.wizard.language = ch.active_niche_profile?.language || 'en';
-      APP.wizard.audienceExtra = '';
-      // Try to extract ages from target_audience
       const audience = ch.active_niche_profile?.target_audience || '';
       const ageMatches = audience.match(/Ages ([^.]+)/);
-      if (ageMatches) {
-        APP.wizard.ages = ageMatches[1].split(',').map(a => a.trim());
-      }
-      // Try to match tone
+      if (ageMatches) APP.wizard.ages = ageMatches[1].split(',').map(a => a.trim());
       const toneName = ch.default_tone_template?.name || '';
-      for (const [k, v] of Object.entries(TONE_PRESETS)) {
-        if (v.name === toneName) { APP.wizard.tone = k; break; }
-      }
+      for (const [k, v] of Object.entries(TONE_PRESETS)) if (v.name === toneName) { APP.wizard.tone = k; break; }
     }
   }
-
-  // Apply state to UI
-  $('w-name').value = APP.wizard.name;
-  $('w-handle').value = APP.wizard.handle;
-  $('w-topic').value = APP.wizard.topic;
-  $('w-language').value = APP.wizard.language;
+  $('w-name').value = APP.wizard.name; $('w-handle').value = APP.wizard.handle;
+  $('w-topic').value = APP.wizard.topic; $('w-language').value = APP.wizard.language;
   $('w-audience-extra').value = APP.wizard.audienceExtra;
-
-  document.querySelectorAll('.emoji-btn').forEach(b => {
-    if (b.dataset.emoji === APP.wizard.emoji) b.classList.add('on');
-    else b.classList.remove('on');
-  });
-  document.querySelectorAll('#w-age-pills .age-pill').forEach(b => {
-    if (APP.wizard.ages.includes(b.dataset.age)) b.classList.add('on');
-    else b.classList.remove('on');
-  });
-  document.querySelectorAll('.tone-card').forEach(b => {
-    if (b.dataset.tone === APP.wizard.tone) b.classList.add('on');
-    else b.classList.remove('on');
-  });
-
-  // Adapt titles + finish label
+  document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(b => { if (b.dataset.emoji === APP.wizard.emoji) b.classList.add('on'); else b.classList.remove('on'); });
+  document.querySelectorAll('#w-age-pills .age-pill').forEach(b => { if (APP.wizard.ages.includes(b.dataset.age)) b.classList.add('on'); else b.classList.remove('on'); });
+  document.querySelectorAll('#w-tone-grid .tone-card').forEach(b => { if (b.dataset.tone === APP.wizard.tone) b.classList.add('on'); else b.classList.remove('on'); });
   if (mode === 'pivot') {
-    $('w-title-1').textContent = 'Reposition: identity';
-    $('w-title-2').textContent = 'Reposition: new topic';
-    $('w-finish-label').textContent = 'Apply reposition';
+    $('w-title-1').textContent = 'Reposition: identity'; $('w-title-2').textContent = 'Reposition: new topic'; $('w-finish-label').textContent = 'Apply reposition';
   } else {
-    $('w-title-1').textContent = "What's your channel called?";
-    $('w-title-2').textContent = "What's your channel about?";
-    $('w-finish-label').textContent = 'Create my channel';
+    $('w-title-1').textContent = "What's your channel called?"; $('w-title-2').textContent = "What's your channel about?"; $('w-finish-label').textContent = 'Create my channel';
   }
-
   goToStep(1);
-  hide('app-shell');
-  show('wizard');
+  hide('app-shell'); show('wizard');
 }
 
-function closeWizard(){
-  hide('wizard');
-  show('app-shell');
-  handleRoute();
-}
+function closeWizard(){ hide('wizard'); show('app-shell'); handleRoute(); }
 
 function goToStep(step){
   APP.wizard.step = step;
   [1,2,3,4].forEach(s => {
-    if (s === step) $('wizard-step-' + s).classList.remove('hidden');
-    else $('wizard-step-' + s).classList.add('hidden');
-    const bar = document.querySelector(`.wizard-bar[data-step="${s}"]`);
-    if (s <= step) bar.classList.add('on'); else bar.classList.remove('on');
+    if (s === step) $('wizard-step-' + s).classList.remove('hidden'); else $('wizard-step-' + s).classList.add('hidden');
+    const bar = document.querySelector(`#wizard .wizard-bar[data-step="${s}"]`);
+    if (bar) { if (s <= step) bar.classList.add('on'); else bar.classList.remove('on'); }
   });
   $('wizard-step-label').textContent = `Step ${step} of 4`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    APP.wizard.emoji = btn.dataset.emoji;
-  });
+  btn.addEventListener('click', () => { document.querySelectorAll('#w-emoji-picker .emoji-btn').forEach(b => b.classList.remove('on')); btn.classList.add('on'); APP.wizard.emoji = btn.dataset.emoji; });
 });
-
 $('w-cancel-1').addEventListener('click', closeWizard);
 $('w-next-1').addEventListener('click', () => {
-  const name = $('w-name').value.trim();
-  if (!name) { toast('Channel name is required', 'error'); $('w-name').focus(); return; }
-  APP.wizard.name = name;
-  APP.wizard.handle = $('w-handle').value.trim();
-  goToStep(2);
+  const name = $('w-name').value.trim(); if (!name) { toast('Channel name is required', 'error'); $('w-name').focus(); return; }
+  APP.wizard.name = name; APP.wizard.handle = $('w-handle').value.trim(); goToStep(2);
 });
-
-document.querySelectorAll('.starter-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    $('w-topic').value = chip.dataset.starter;
-    $('w-topic').focus();
-  });
-});
-
+document.querySelectorAll('#wizard .starter-chip').forEach(chip => chip.addEventListener('click', () => { $('w-topic').value = chip.dataset.starter; $('w-topic').focus(); }));
 $('w-back-2').addEventListener('click', () => goToStep(1));
 $('w-next-2').addEventListener('click', () => {
   const topic = $('w-topic').value.trim();
-  if (!topic) { toast('Topic description is required', 'error'); $('w-topic').focus(); return; }
-  if (topic.length < 10) { toast('Please describe in a bit more detail', 'error'); $('w-topic').focus(); return; }
-  APP.wizard.topic = topic;
-  goToStep(3);
+  if (!topic) { toast('Topic description required', 'error'); $('w-topic').focus(); return; }
+  if (topic.length < 10) { toast('Describe in more detail', 'error'); $('w-topic').focus(); return; }
+  APP.wizard.topic = topic; goToStep(3);
 });
-
-document.querySelectorAll('.age-pill').forEach(pill => {
+document.querySelectorAll('#w-age-pills .age-pill').forEach(pill => {
   pill.addEventListener('click', () => {
-    pill.classList.toggle('on');
-    const age = pill.dataset.age;
-    if (pill.classList.contains('on')) {
-      if (!APP.wizard.ages.includes(age)) APP.wizard.ages.push(age);
-    } else {
-      APP.wizard.ages = APP.wizard.ages.filter(a => a !== age);
-    }
+    pill.classList.toggle('on'); const age = pill.dataset.age;
+    if (pill.classList.contains('on')) { if (!APP.wizard.ages.includes(age)) APP.wizard.ages.push(age); }
+    else APP.wizard.ages = APP.wizard.ages.filter(a => a !== age);
   });
 });
-
 $('w-back-3').addEventListener('click', () => goToStep(2));
-$('w-next-3').addEventListener('click', () => {
-  APP.wizard.language = $('w-language').value;
-  APP.wizard.audienceExtra = $('w-audience-extra').value.trim();
-  goToStep(4);
+$('w-next-3').addEventListener('click', () => { APP.wizard.language = $('w-language').value; APP.wizard.audienceExtra = $('w-audience-extra').value.trim(); goToStep(4); });
+document.querySelectorAll('#w-tone-grid .tone-card').forEach(card => {
+  card.addEventListener('click', () => { document.querySelectorAll('#w-tone-grid .tone-card').forEach(c => c.classList.remove('on')); card.classList.add('on'); APP.wizard.tone = card.dataset.tone; });
 });
-
-document.querySelectorAll('.tone-card').forEach(card => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.tone-card').forEach(c => c.classList.remove('on'));
-    card.classList.add('on');
-    APP.wizard.tone = card.dataset.tone;
-  });
-});
-
 $('w-back-4').addEventListener('click', () => goToStep(3));
 $('w-finish').addEventListener('click', finishWizard);
 
 async function finishWizard(){
   const w = APP.wizard;
   if (!w.tone) { toast('Pick a tone', 'error'); return; }
-
-  showLoader();
+  showLoader(w.mode === 'pivot' ? 'Applying reposition...' : 'Creating channel...');
   try {
-    const audienceText = [
-      w.ages.length ? `Ages ${w.ages.join(', ')}` : null,
-      w.audienceExtra || null,
-    ].filter(Boolean).join('. ');
-
-    // Create new niche_profile (always — even in pivot, we want history)
-    const { data: niche, error: nicheErr } = await APP.sb
-      .from('niche_profiles')
-      .insert({
-        user_id: APP.user.id,
-        name: w.topic.slice(0, 80),
-        sub_niche: null,
-        language: w.language,
-        target_audience: audienceText || null,
-        preferred_format: null,
-      })
-      .select().single();
+    const audienceText = [w.ages.length ? `Ages ${w.ages.join(', ')}` : null, w.audienceExtra || null].filter(Boolean).join('. ');
+    const { data: niche, error: nicheErr } = await APP.sb.from('niche_profiles').insert({
+      user_id: APP.user.id, name: w.topic.slice(0, 80), sub_niche: null,
+      language: w.language, target_audience: audienceText || null, preferred_format: null,
+    }).select().single();
     if (nicheErr) throw nicheErr;
-
-    // Create new tone_template
     const tonePreset = TONE_PRESETS[w.tone];
-    const { data: tone, error: toneErr } = await APP.sb
-      .from('tone_templates')
-      .insert({
-        user_id: APP.user.id,
-        name: tonePreset.name,
-        description: tonePreset.description,
-        language: w.language,
-      })
-      .select().single();
+    const { data: tone, error: toneErr } = await APP.sb.from('tone_templates').insert({
+      user_id: APP.user.id, name: tonePreset.name, description: tonePreset.description, language: w.language,
+    }).select().single();
     if (toneErr) throw toneErr;
-
     if (w.mode === 'pivot' && w.pivotChannelId) {
-      // Close previous history entry
-      await APP.sb.from('channel_niche_history')
-        .update({ active_to: new Date().toISOString() })
-        .eq('channel_id', w.pivotChannelId)
-        .is('active_to', null);
-
-      // Update channel
-      const { data: channel, error: chErr } = await APP.sb
-        .from('channels')
-        .update({
-          name: w.name,
-          handle: w.handle || null,
-          emoji: w.emoji,
-          active_niche_profile_id: niche.id,
-          default_tone_template_id: tone.id,
-        })
-        .eq('id', w.pivotChannelId)
-        .select().single();
+      await APP.sb.from('channel_niche_history').update({ active_to: new Date().toISOString() }).eq('channel_id', w.pivotChannelId).is('active_to', null);
+      const { data: channel, error: chErr } = await APP.sb.from('channels').update({
+        name: w.name, handle: w.handle || null, emoji: w.emoji,
+        active_niche_profile_id: niche.id, default_tone_template_id: tone.id,
+      }).eq('id', w.pivotChannelId).select().single();
       if (chErr) throw chErr;
-
-      // Add new history entry
       await APP.sb.from('channel_niche_history').insert({
-        channel_id: channel.id,
-        user_id: APP.user.id,
-        niche_profile_id: niche.id,
-        niche_snapshot_name: niche.name,
-        active_from: new Date().toISOString(),
+        channel_id: channel.id, user_id: APP.user.id, niche_profile_id: niche.id,
+        niche_snapshot_name: niche.name, active_from: new Date().toISOString(),
         pivot_reason: 'Channel repositioned via settings',
       });
-
-      hideLoader();
-      await loadChannels();
-      closeWizard();
+      hideLoader(); await loadChannels(); closeWizard();
       toast(`🔄 Channel "${w.name}" repositioned!`, 'success');
       navigate(`/channels/${channel.id}/settings`);
     } else {
-      // Create new channel
-      const { data: channel, error: chErr } = await APP.sb
-        .from('channels')
-        .insert({
-          user_id: APP.user.id,
-          name: w.name,
-          handle: w.handle || null,
-          emoji: w.emoji,
-          brand_color: '#EC4899',
-          status: 'active',
-          active_niche_profile_id: niche.id,
-          default_tone_template_id: tone.id,
-        })
-        .select().single();
+      const { data: channel, error: chErr } = await APP.sb.from('channels').insert({
+        user_id: APP.user.id, name: w.name, handle: w.handle || null, emoji: w.emoji,
+        brand_color: '#EC4899', status: 'active',
+        active_niche_profile_id: niche.id, default_tone_template_id: tone.id,
+      }).select().single();
       if (chErr) throw chErr;
-
       await APP.sb.from('channel_niche_history').insert({
-        channel_id: channel.id,
-        user_id: APP.user.id,
-        niche_profile_id: niche.id,
-        niche_snapshot_name: niche.name,
-        active_from: new Date().toISOString(),
+        channel_id: channel.id, user_id: APP.user.id, niche_profile_id: niche.id,
+        niche_snapshot_name: niche.name, active_from: new Date().toISOString(),
         pivot_reason: 'Initial channel setup',
       });
-
-      hideLoader();
-      await loadChannels();
-      closeWizard();
+      hideLoader(); await loadChannels(); closeWizard();
       toast(`🎉 Channel "${w.name}" is ready!`, 'success');
       navigate(`/channels/${channel.id}`);
     }
   } catch (e) {
-    hideLoader();
-    console.error('Wizard finish error:', e);
-    toast('Error: ' + e.message, 'error');
+    hideLoader(); console.error(e); toast('Error: ' + e.message, 'error');
   }
 }
+
+// ============================================================
+// VIDEO WIZARD
+// ============================================================
+function openVideoWizard(channelId){
+  APP.vwizard = { step: 1, title: '', angle: '', format: 'listicle', channelId };
+  $('vw-title').value = ''; $('vw-angle').value = '';
+  document.querySelectorAll('#vw-format-grid .format-card').forEach(c => { if (c.dataset.format === 'listicle') c.classList.add('on'); else c.classList.remove('on'); });
+  vwGoToStep(1);
+  hide('app-shell'); show('video-wizard');
+}
+
+function closeVideoWizard(){ hide('video-wizard'); show('app-shell'); navigate(`/channels/${APP.vwizard.channelId}`); }
+
+function vwGoToStep(step){
+  APP.vwizard.step = step;
+  [1,2,3].forEach(s => {
+    if (s === step) $('vw-step-' + s).classList.remove('hidden'); else $('vw-step-' + s).classList.add('hidden');
+    const bar = document.querySelector(`#video-wizard .wizard-bar[data-step="${s}"]`);
+    if (bar) { if (s <= step) bar.classList.add('on'); else bar.classList.remove('on'); }
+  });
+  $('vw-step-label').textContent = `Step ${step} of 3`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+$('vw-cancel-1').addEventListener('click', closeVideoWizard);
+$('vw-next-1').addEventListener('click', () => {
+  const title = $('vw-title').value.trim();
+  if (!title) { toast('Video title required', 'error'); $('vw-title').focus(); return; }
+  APP.vwizard.title = title; APP.vwizard.angle = $('vw-angle').value.trim();
+  vwGoToStep(2);
+});
+document.querySelectorAll('#vw-format-grid .format-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('#vw-format-grid .format-card').forEach(c => c.classList.remove('on'));
+    card.classList.add('on'); APP.vwizard.format = card.dataset.format;
+  });
+});
+$('vw-back-2').addEventListener('click', () => vwGoToStep(1));
+$('vw-next-2').addEventListener('click', () => {
+  // Populate review
+  const ch = APP.channels.find(c => c.id === APP.vwizard.channelId);
+  $('vw-review-title').textContent = APP.vwizard.title;
+  $('vw-review-format').textContent = FORMAT_LABELS[APP.vwizard.format];
+  $('vw-review-niche').textContent = '💡 ' + (ch?.active_niche_profile?.name || 'No niche');
+  $('vw-review-tone').textContent = '🎭 ' + (ch?.default_tone_template?.name || 'No tone');
+  vwGoToStep(3);
+});
+$('vw-back-3').addEventListener('click', () => vwGoToStep(2));
+$('vw-finish').addEventListener('click', async () => {
+  showLoader('Creating video...');
+  try {
+    const { data: project, error } = await APP.sb.from('projects').insert({
+      user_id: APP.user.id, channel_id: APP.vwizard.channelId,
+      title: APP.vwizard.title, format: APP.vwizard.format,
+      psychological_angle: APP.vwizard.angle || null,
+      stage: 'idea', current_stage: 'idea',
+    }).select().single();
+    if (error) throw error;
+    hideLoader(); hide('video-wizard'); show('app-shell');
+    toast('🎬 Video created!', 'success');
+    navigate(`/channels/${APP.vwizard.channelId}/videos/${project.id}`);
+  } catch (e) {
+    hideLoader(); toast('Error: ' + e.message, 'error');
+  }
+});
 
 // ============================================================
 // START
