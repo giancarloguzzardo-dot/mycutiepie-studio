@@ -1527,7 +1527,7 @@ function renderIdeaPanel(){
         </div>
       </div>
       ${gateData.metrics ? `<div class="pulse-metrics">${
-        Object.entries(gateData.metrics).map(([key, val]: any) => {
+        Object.entries(gateData.metrics).map(([key, val]) => {
           const v = val || {};
           return `<div class="pulse-metric">
             <div class="pulse-metric-label">${escapeHtml(key.replace(/_/g, ' '))}</div>
