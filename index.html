@@ -673,6 +673,65 @@ body{
 .voice-section-audio{width:100%;margin-bottom:10px;border-radius:var(--radius-sm)}
 .voice-section-actions{display:flex;gap:8px;flex-wrap:wrap}
 
+/* ============================================================
+   COMPETITOR ANALYSIS
+   ============================================================ */
+.comp-past-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.comp-past-item{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--color-bg-elevated);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);padding:14px 16px;gap:14px;
+  transition:all var(--t-fast);
+}
+.comp-past-item:hover{border-color:var(--color-accent);transform:translateY(-1px)}
+.comp-past-name{font-size:14px;font-weight:600;color:var(--color-text);letter-spacing:-.01em}
+.comp-past-meta{font-size:11px;color:var(--color-text-muted);margin-top:3px;font-family:var(--font-mono)}
+
+.comp-result{margin-top:18px}
+.comp-header{
+  padding:24px 26px;background:var(--color-bg-elevated);
+  border:1px solid var(--color-border);border-radius:var(--radius-lg);
+  margin-bottom:16px;
+}
+
+.comp-performers{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.comp-performer{
+  background:var(--color-surface-2);border-radius:var(--radius-sm);
+  padding:12px 14px;border-left:3px solid var(--color-success);
+}
+.comp-performer-title{font-size:13px;font-weight:600;color:var(--color-text);line-height:1.3;letter-spacing:-.005em}
+.comp-performer-views{font-size:11px;color:var(--color-text-muted);font-family:var(--font-mono);margin-top:3px}
+.comp-performer-why{font-size:12px;color:var(--color-text-muted);margin-top:6px;line-height:1.5}
+
+.comp-ideas{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.comp-idea{
+  background:var(--color-bg-elevated);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);padding:18px 20px;
+  transition:all var(--t-fast);
+}
+.comp-idea:hover{border-color:var(--color-accent-border);box-shadow:var(--shadow-sm)}
+.comp-idea-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.comp-idea-num{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--color-accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:600;flex-shrink:0;
+  font-family:var(--font-mono);
+}
+.comp-idea-title{
+  flex:1;font-size:15px;font-weight:600;color:var(--color-text);
+  letter-spacing:-.01em;line-height:1.3;
+}
+.comp-idea-score{
+  background:var(--color-success);color:#fff;
+  padding:5px 12px;border-radius:99px;
+  font-size:13px;font-weight:600;font-family:var(--font-mono);
+}
+.comp-idea-rationale{font-size:13px;color:var(--color-text-muted);line-height:1.55;margin-bottom:8px}
+.comp-idea-meta{font-size:12px;color:var(--color-text);line-height:1.5;margin-bottom:5px;padding:6px 10px;background:var(--color-surface-2);border-radius:var(--radius-sm)}
+.comp-idea-meta strong{color:var(--color-accent);font-weight:600}
+.comp-idea-actions{margin-top:12px;display:flex;gap:8px}
+
 /* CUTIEPULSE */
 .pulse-hero{background:linear-gradient(135deg,var(--color-pink-soft),var(--color-purple-soft));border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px}
 .pulse-hero-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--color-pink-dark);margin-bottom:6px}
@@ -1309,6 +1368,9 @@ function parseHash(){
   if (parts[0] === 'channels' && parts[1] && parts[2] === 'workflow') {
     return { name: 'channel-workflow', channelId: parts[1] };
   }
+  if (parts[0] === 'channels' && parts[1] && parts[2] === 'competitor-analysis') {
+    return { name: 'competitor-analysis', channelId: parts[1] };
+  }
   if (parts[0] === 'channels' && parts[1] && parts[2] === 'videos' && parts[3] === 'new') {
     return { name: 'video-new', channelId: parts[1] };
   }
@@ -1366,6 +1428,14 @@ async function handleRoute(){
       renderBreadcrumb([
         { label: channel.name, href: `#/channels/${channel.id}` },
         { label: 'Workflow', current: true }
+      ]);
+      return;
+    }
+    if (route.name === 'competitor-analysis') {
+      await renderCompetitorAnalysis();
+      renderBreadcrumb([
+        { label: channel.name, href: `#/channels/${channel.id}` },
+        { label: 'Competitor Analysis', current: true }
       ]);
       return;
     }
@@ -1644,6 +1714,7 @@ async function renderChannelWorkspace(){
         </div>
       </div>
       <div class="workspace-actions">
+        <a href="#/channels/${ch.id}/competitor-analysis" class="btn">🔍 Competitor Analysis</a>
         <a href="#/channels/${ch.id}/workflow" class="btn">🗂 Workflow</a>
         <a href="#/channels/${ch.id}/settings" class="btn">⚙️ Settings</a>
       </div>
@@ -1808,6 +1879,275 @@ function renderWorkflowTaskCard(t, videoTitle, projectId, overdueClass){
       </div>
     </div>
   </div>`;
+}
+
+// ============================================================
+// VIEW: COMPETITOR CHANNEL ANALYSIS
+// ============================================================
+async function renderCompetitorAnalysis(){
+  const ch = APP.currentChannel;
+  if (!ch) return;
+
+  // Load past analyses for this channel
+  const { data: pastAnalyses } = await APP.sb.from('competitor_channel_analyses')
+    .select('*').eq('channel_id', ch.id).order('created_at', { ascending: false }).limit(10);
+
+  let pastHtml = '';
+  if (pastAnalyses && pastAnalyses.length > 0) {
+    pastHtml = `<div class="section-title" style="margin-top:32px"><span>📜 Past analyses (${pastAnalyses.length})</span></div>
+      <div class="comp-past-list">
+        ${pastAnalyses.map(a => `<div class="comp-past-item" data-analysis-id="${a.id}">
+          <div class="comp-past-info">
+            <div class="comp-past-name">${escapeHtml(a.competitor_name || a.competitor_handle)}</div>
+            <div class="comp-past-meta">${a.competitor_subscriber_count ? a.competitor_subscriber_count.toLocaleString() + ' subs · ' : ''}${new Date(a.created_at).toLocaleDateString()} · ${a.ideas_count || 0} ideas</div>
+          </div>
+          <button class="btn sm" data-view-analysis="${a.id}">View →</button>
+        </div>`).join('')}
+      </div>`;
+  }
+
+  $('view-container').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-label">🔍 Competitor Intelligence</div>
+      <div class="welcome-title">Analyze a <em>competitor channel</em></div>
+      <div class="welcome-sub">Paste a YouTube channel URL or handle. Our AI fetches their last 30 videos, identifies winning patterns, content gaps, and generates 5 video ideas tailored to YOUR channel's DNA.</div>
+    </div>
+
+    <div class="panel">
+      <div class="fld">
+        <label>Competitor channel</label>
+        <input type="text" id="comp-handle-input" placeholder="@grahamstephan  or  youtube.com/@grahamstephan  or  channel ID" />
+        <div class="fld-hint">Use the @handle (preferred) or the full YouTube URL. The handle is the part after @ in their channel URL.</div>
+      </div>
+
+      <div class="ai-action-bar" style="margin-top:14px">
+        <button class="btn primary" id="run-comp-analysis-btn">✨ Analyze channel (~$0.18)</button>
+      </div>
+
+      <div id="comp-analysis-result"></div>
+    </div>
+
+    ${pastHtml}
+  `;
+
+  $('run-comp-analysis-btn').addEventListener('click', runCompetitorAnalysis);
+
+  // Wire past analyses view
+  document.querySelectorAll('[data-view-analysis]').forEach(btn => {
+    btn.addEventListener('click', () => viewCompetitorAnalysis(btn.dataset.viewAnalysis, pastAnalyses));
+  });
+}
+
+function normalizeYouTubeHandle(input){
+  let h = input.trim();
+  // Extract from URL
+  const urlMatch = h.match(/youtube\.com\/(@[\w.-]+)/i);
+  if (urlMatch) h = urlMatch[1];
+  // Extract from /c/ or /user/ legacy
+  const legacyMatch = h.match(/youtube\.com\/(?:c|user)\/([\w.-]+)/i);
+  if (legacyMatch) return legacyMatch[1];
+  // Ensure starts with @
+  if (!h.startsWith('@') && !h.startsWith('UC')) h = '@' + h;
+  return h;
+}
+
+async function runCompetitorAnalysis(){
+  const ch = APP.currentChannel;
+  const rawInput = $('comp-handle-input').value.trim();
+  if (!rawInput) { toast('Enter a channel handle or URL', 'error'); return; }
+
+  const handle = normalizeYouTubeHandle(rawInput);
+
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const lang = ch.active_niche_profile?.language || 'en';
+
+  showLoader(`Fetching ${handle} channel data + analyzing patterns...`);
+  try {
+    const system = `You are a YouTube competitive intelligence analyst. You analyze competitor channels and identify winning content patterns + opportunities.
+
+Given:
+- Competitor channel data (last ~30 videos with view counts, titles, dates)
+- User's own channel DNA (niche, audience, tone, language)
+
+Produce a STRICT JSON response (no preamble, no markdown):
+{
+  "competitor_name": "<channel name>",
+  "competitor_subscriber_count": <number or null>,
+  "summary": "<2-sentence overall assessment of this competitor>",
+  "top_performers": [
+    {"title": "<title>", "views": <number>, "why_worked": "<analysis>"},
+    ... (top 3)
+  ],
+  "title_patterns": ["<pattern1>", "<pattern2>", "<pattern3>"],
+  "content_gaps": ["<gap1>", "<gap2>", "<gap3>"],
+  "frequency_pattern": "<describe how often they post>",
+  "video_ideas_for_user": [
+    {
+      "idea_title": "<concrete video title for user's channel>",
+      "rationale": "<why this works for their niche+competitor pattern>",
+      "estimated_score": <70-95 integer>,
+      "borrowed_pattern": "<what we borrow from competitor>",
+      "differentiator": "<how user beats competitor with this>"
+    },
+    ... (5 ideas)
+  ]
+}
+
+The 5 ideas MUST be specific to USER's niche, not generic. Use competitor's winning DNA but reframe for user.`;
+
+    const prompt = `Analyze this competitor channel for a user creating content in this niche:
+
+USER CHANNEL:
+- Niche: ${nicheName}
+- Audience: ${audience}
+- Tone: ${toneName}
+- Language: ${lang}
+
+COMPETITOR HANDLE: ${handle}
+
+Use YouTube data to analyze their last 30 videos. Identify patterns, gaps, and generate 5 video ideas for the user's channel.`;
+
+    const result = await AI.invoke('analyze_competitor_channel', {
+      prompt, system,
+      topic_query: handle,        // YouTube router uses this to fetch channel
+      channel_handle: handle,
+    }, { projectId: null });
+
+    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    let analysis;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch (e) {
+      throw new Error('AI returned malformed JSON. Try again.');
+    }
+
+    // Save analysis
+    const { data: saved } = await APP.sb.from('competitor_channel_analyses').insert({
+      user_id: APP.user.id,
+      channel_id: ch.id,
+      competitor_handle: handle,
+      competitor_name: analysis.competitor_name || handle,
+      competitor_subscriber_count: analysis.competitor_subscriber_count || null,
+      analysis_data: analysis,
+      raw_response: rawText,
+      top_pattern_summary: (analysis.title_patterns || [])[0] || null,
+      ideas_count: (analysis.video_ideas_for_user || []).length,
+    }).select().single();
+
+    hideLoader();
+    renderCompetitorResult(analysis, saved?.id);
+    toast('Competitor analyzed ✓', 'success');
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+function renderCompetitorResult(analysis, analysisId){
+  const html = `
+    <div class="comp-result">
+      <div class="comp-header">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-subtle);margin-bottom:6px">Competitor analysis</div>
+          <div style="font-size:24px;font-weight:600;letter-spacing:-.015em;font-family:var(--font-serif);font-style:italic">${escapeHtml(analysis.competitor_name || 'Unknown')}</div>
+          ${analysis.competitor_subscriber_count ? `<div style="font-size:13px;color:var(--color-text-muted);margin-top:4px">${analysis.competitor_subscriber_count.toLocaleString()} subscribers</div>` : ''}
+        </div>
+      </div>
+
+      <div class="pulse-section">
+        <div class="pulse-section-title">Overall Summary</div>
+        <div class="pulse-section-body">${escapeHtml(analysis.summary || '')}</div>
+      </div>
+
+      ${analysis.top_performers ? `<div class="pulse-section">
+        <div class="pulse-section-title">🏆 Top performers</div>
+        <div class="comp-performers">
+          ${analysis.top_performers.map(t => `<div class="comp-performer">
+            <div class="comp-performer-title">${escapeHtml(t.title)}</div>
+            ${t.views ? `<div class="comp-performer-views">${Number(t.views).toLocaleString()} views</div>` : ''}
+            <div class="comp-performer-why">${escapeHtml(t.why_worked || '')}</div>
+          </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${analysis.title_patterns ? `<div class="pulse-section">
+        <div class="pulse-section-title">📈 Winning title patterns</div>
+        <div class="pulse-section-body">${formatList(analysis.title_patterns)}</div>
+      </div>` : ''}
+
+      ${analysis.content_gaps ? `<div class="pulse-section">
+        <div class="pulse-section-title">💡 Content gaps (opportunities)</div>
+        <div class="pulse-section-body">${formatList(analysis.content_gaps)}</div>
+      </div>` : ''}
+
+      ${analysis.frequency_pattern ? `<div class="pulse-section">
+        <div class="pulse-section-title">📅 Publishing cadence</div>
+        <div class="pulse-section-body">${escapeHtml(analysis.frequency_pattern)}</div>
+      </div>` : ''}
+
+      ${analysis.video_ideas_for_user ? `<div class="section-title" style="margin-top:32px"><span>🚀 5 Video Ideas for Your Channel</span></div>
+        <div class="comp-ideas">
+          ${analysis.video_ideas_for_user.map((idea, idx) => `<div class="comp-idea">
+            <div class="comp-idea-header">
+              <div class="comp-idea-num">${idx + 1}</div>
+              <div class="comp-idea-title">${escapeHtml(idea.idea_title)}</div>
+              <div class="comp-idea-score">${idea.estimated_score || '?'}</div>
+            </div>
+            <div class="comp-idea-rationale">${escapeHtml(idea.rationale || '')}</div>
+            ${idea.borrowed_pattern ? `<div class="comp-idea-meta"><strong>Borrowed:</strong> ${escapeHtml(idea.borrowed_pattern)}</div>` : ''}
+            ${idea.differentiator ? `<div class="comp-idea-meta"><strong>Your edge:</strong> ${escapeHtml(idea.differentiator)}</div>` : ''}
+            <div class="comp-idea-actions">
+              <button class="btn primary sm" data-create-from-idea="${escapeHtml(JSON.stringify({title: idea.idea_title, brief: (idea.rationale || '') + '\n\nBorrowed pattern: ' + (idea.borrowed_pattern || '') + '\nYour edge: ' + (idea.differentiator || '')}))}">+ Create video from this idea</button>
+            </div>
+          </div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  $('comp-analysis-result').innerHTML = html;
+
+  // Wire create video from idea
+  document.querySelectorAll('[data-create-from-idea]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ideaData = JSON.parse(btn.dataset.createFromIdea);
+      createVideoFromCompetitorIdea(ideaData);
+    });
+  });
+}
+
+async function createVideoFromCompetitorIdea(idea){
+  const ch = APP.currentChannel;
+  showLoader('Creating new video project...');
+  try {
+    const { data: project, error } = await APP.sb.from('projects').insert({
+      user_id: APP.user.id,
+      channel_id: ch.id,
+      title: idea.title,
+      format: 'deep_dive',  // default; user can change in wizard
+      current_stage: 'idea',
+      idea_brief: JSON.stringify({ input_brief: idea.brief, from_competitor_analysis: true }),
+    }).select().single();
+    if (error) throw error;
+    hideLoader();
+    toast('Video created ✓ — opening studio', 'success');
+    navigate(`/channels/${ch.id}/videos/${project.id}`);
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function viewCompetitorAnalysis(analysisId, analyses){
+  const analysis = analyses.find(a => a.id === analysisId);
+  if (!analysis) return;
+  renderCompetitorResult(analysis.analysis_data, analysisId);
+  // Scroll to it
+  setTimeout(() => $('comp-analysis-result').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
 // ============================================================
@@ -2899,18 +3239,24 @@ async function renderVoicePanel(){
       const clip = (clips || []).find(c => c.section_index === s.originalIdx);
       const status = clip?.status || 'pending';
       const audioUrl = clip?.audio_url || '';
-      const charCount = s.body.length;
-      const duration = clip?.duration_sec || estimateAudioDuration(s.body);
-      const cost = clip?.cost_estimate || estimateVoiceCost(s.body);
-      const preview = s.body.slice(0, 140) + (s.body.length > 140 ? '...' : '');
+
+      // Compute CLEAN text + annotation count for accurate preview
+      const { cleanText, annotations } = extractAnnotations(s.body);
+      const charCount = cleanText.length;
+      const duration = clip?.duration_sec || estimateAudioDuration(cleanText);
+      const cost = clip?.cost_estimate || estimateVoiceCost(cleanText);
+      const preview = cleanText.slice(0, 140) + (cleanText.length > 140 ? '...' : '');
+      const annotationBadge = annotations.length > 0
+        ? `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--color-accent-soft);color:var(--color-accent);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;margin-left:8px">🎬 ${annotations.length} workflow task${annotations.length > 1 ? 's' : ''}</span>`
+        : '';
 
       sectionsHtml += `<div class="voice-section ${status}">
         <div class="voice-section-header">
           <div class="voice-section-num">${displayIdx + 1}</div>
           <div class="voice-section-info">
-            <div class="voice-section-title">${escapeHtml(cleanSectionTitle(s.title))}</div>
+            <div class="voice-section-title">${escapeHtml(cleanSectionTitle(s.title))}${annotationBadge}</div>
             <div class="voice-section-meta">
-              <span>${charCount.toLocaleString()} chars</span>
+              <span>${charCount.toLocaleString()} chars (clean)</span>
               <span>·</span>
               <span>~${formatDuration(duration)}</span>
               <span>·</span>
@@ -3029,6 +3375,97 @@ async function saveNewVoice(){
   renderVoicePanel();
 }
 
+// ============================================================
+// SCRIPT ANNOTATION PARSER
+// Extract scenic directions and clean text for voice generation
+// ============================================================
+function extractAnnotations(text) {
+  // Patterns to identify and extract:
+  // **[Camera: ...]**, **[Shot: ...]**, **[B-roll: ...]**, **[Music: ...]**, **[SFX: ...]**
+  // **[1:30-2:15 | LAYER NAME]** (timestamp + section markers)
+  // [VISUAL: ...], [CUT TO: ...], etc.
+  const annotations = [];
+  let cleanText = text;
+
+  // Pattern 1: **[Camera/Shot/B-roll/Music/SFX/Visual: text]**
+  const directorialPattern = /\*\*\[(Camera|Shot|B-roll|B roll|Music|SFX|Visual|Lighting|Cut to|CUT TO|VISUAL|CAMERA|MUSIC|SFX|LIGHTING)[:\s]([^\]]+)\]\*\*/gi;
+  let match;
+  while ((match = directorialPattern.exec(text)) !== null) {
+    annotations.push({
+      type: 'production',
+      category: match[1].toLowerCase().replace(/\s+/g, '_'),
+      text: match[2].trim(),
+      fullMatch: match[0],
+    });
+  }
+  cleanText = cleanText.replace(directorialPattern, '');
+
+  // Pattern 2: **[0:35-1:30 | SECTION NAME]** — timestamp markers
+  const timestampPattern = /\*\*\[(\d+:\d+(?:-\d+:\d+)?)\s*\|\s*([^\]]+)\]\*\*/gi;
+  while ((match = timestampPattern.exec(text)) !== null) {
+    annotations.push({
+      type: 'editing',
+      category: 'timestamp_marker',
+      timestamp: match[1].trim(),
+      text: match[2].trim(),
+      fullMatch: match[0],
+    });
+  }
+  cleanText = cleanText.replace(timestampPattern, '');
+
+  // Pattern 3: [VISUAL: ...] without ** wrapping
+  const bareBracketPattern = /\[(VISUAL|CUT TO|FADE|TRANSITION|MONTAGE|GRAPHIC|TEXT OVERLAY|LOWER THIRD)[:\s]([^\]]+)\]/gi;
+  while ((match = bareBracketPattern.exec(text)) !== null) {
+    annotations.push({
+      type: 'editing',
+      category: match[1].toLowerCase().replace(/\s+/g, '_'),
+      text: match[2].trim(),
+      fullMatch: match[0],
+    });
+  }
+  cleanText = cleanText.replace(bareBracketPattern, '');
+
+  // Cleanup: collapse multiple spaces/newlines from removals
+  cleanText = cleanText
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+
+  return { cleanText, annotations };
+}
+
+async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annotations) {
+  if (!annotations || annotations.length === 0) return 0;
+
+  // Check if tasks already exist for this section to avoid duplicates
+  const sectionTag = `[${sectionTitle}]`;
+  const { data: existing } = await APP.sb.from('project_workflow_tasks')
+    .select('id, title')
+    .eq('project_id', projectId)
+    .ilike('title', `%${sectionTag}%`);
+
+  if (existing && existing.length > 0) return 0; // Already created
+
+  const tasks = annotations.map(ann => {
+    const taskTitle = `${sectionTag} ${ann.category.replace(/_/g, ' ')}: ${ann.text.slice(0, 80)}`;
+    return {
+      user_id: APP.user.id,
+      project_id: projectId,
+      title: taskTitle,
+      category: ann.type === 'production' ? 'production' : 'editing',
+      status: 'todo',
+      notes: ann.fullMatch,
+    };
+  });
+
+  const { error } = await APP.sb.from('project_workflow_tasks').insert(tasks);
+  if (error) {
+    console.warn('Failed to create workflow tasks:', error);
+    return 0;
+  }
+  return tasks.length;
+}
+
 async function generateVoiceForSection(sectionIndex){
   const p = APP.currentProject;
   const voiceSelect = $('voice-select');
@@ -3041,9 +3478,19 @@ async function generateVoiceForSection(sectionIndex){
   const section = allSections[sectionIndex];
   if (!section) { toast('Section not found', 'error'); return; }
 
-  const text = section.body;
-  if (!text || text.length < 10) { toast('Section too short to generate', 'error'); return; }
-  if (text.length > 5000) { toast('Section too long (max 5000 chars)', 'error'); return; }
+  // STRIP ANNOTATIONS — extract scenic directions, clean voice text
+  const { cleanText, annotations } = extractAnnotations(section.body);
+
+  if (!cleanText || cleanText.length < 10) { toast('Section too short to generate (after cleaning annotations)', 'error'); return; }
+  if (cleanText.length > 5000) { toast('Section too long (max 5000 chars)', 'error'); return; }
+
+  // CREATE WORKFLOW TASKS from annotations (silently, in background)
+  if (annotations.length > 0) {
+    const created = await createWorkflowTasksFromAnnotations(p.id, section.title, annotations);
+    if (created > 0) {
+      console.log(`Created ${created} workflow tasks from ${section.title}`);
+    }
+  }
 
   // Mark as generating in DB
   await APP.sb.from('project_voice_clips').upsert({
@@ -3051,18 +3498,18 @@ async function generateVoiceForSection(sectionIndex){
     project_id: p.id,
     section_index: sectionIndex,
     section_title: section.title,
-    section_body: text,
+    section_body: cleanText,  // store CLEAN text, not original
     status: 'generating',
     voice_id: voiceId,
     voice_name: voiceName,
-    char_count: text.length,
-    cost_estimate: estimateVoiceCost(text),
+    char_count: cleanText.length,
+    cost_estimate: estimateVoiceCost(cleanText),
   }, { onConflict: 'project_id,section_index' });
 
-  showLoader(`Generating voice for "${section.title}"...`);
+  showLoader(`Generating voice for "${section.title}"... ${annotations.length > 0 ? `(+ ${annotations.length} workflow tasks created)` : ''}`);
   try {
     const blob = await AI.invoke('generate_voice', {
-      text, voice_id: voiceId, model_id: 'eleven_turbo_v2_5'
+      text: cleanText, voice_id: voiceId, model_id: 'eleven_turbo_v2_5'
     }, { projectId: p.id });
 
     // Upload to Storage
