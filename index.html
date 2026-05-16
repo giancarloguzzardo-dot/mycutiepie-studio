@@ -1398,7 +1398,7 @@ async function handleRoute(){
     return;
   }
 
-  if (route.name.startsWith('channel-') || route.name === 'video-new' || route.name === 'video-studio') {
+  if (route.name.startsWith('channel-') || route.name === 'video-new' || route.name === 'video-studio' || route.name === 'competitor-analysis') {
     let channel = APP.channels.find(c => c.id === route.channelId);
     if (!channel) {
       const { data, error } = await APP.sb
