@@ -2780,17 +2780,60 @@ Be specific. Write in the ${toneName} tone. Target 18-22 minutes total runtime.`
 // ============================================================
 
 // Filter: which section titles should NOT have voice generated
+// BLACKLIST: skip these
 const NON_VOCAL_SECTION_KEYWORDS = [
   'thumbnail', 'seo', 'metadata', 'title options', 'titles',
   'b-roll', 'b roll', 'broll', 'stock footage',
   'description', 'tags', 'hashtags',
   'cta notes', 'production notes', 'notes',
-  'visual', 'graphics', 'overlay'
+  'visual', 'graphics', 'overlay',
+  'file header', 'header', 'working title',
+  'youtube title', 'youtube',
+  'chapter', 'timestamp', 'timestamps',
+  'runtime', 'summary',
+  'production script', 'complete production',
+  'vibe summary', 'angle', 'psychological',
 ];
 
-function isVocalSection(title){
-  const t = (title || '').toLowerCase();
-  return !NON_VOCAL_SECTION_KEYWORDS.some(kw => t.includes(kw));
+// WHITELIST: always voice these
+const VOCAL_WHITELIST_KEYWORDS = [
+  'hook', 'intro', 'body', 'main', 'act', 'part',
+  'outro', 'close', 'conclusion', 'cta', 'call to action',
+  'section', 'point', 'step', 'reason', 'mistake',
+  'principle', 'layer', 'tip', 'lesson'
+];
+
+function isVocalSection(title, body){
+  const t = (title || '').toLowerCase().trim();
+
+  // Hard rule 1: skip empty/tiny bodies
+  if (!body || body.length < 50) return false;
+
+  // Hard rule 2: skip if title contains a blacklist keyword
+  if (NON_VOCAL_SECTION_KEYWORDS.some(kw => t.includes(kw))) return false;
+
+  // Hard rule 3: body looks like metadata (lots of ** ** markers vs prose)
+  const specialMarkers = (body.match(/\*\*[^*]+:\*\*/g) || []).length;
+  const periods = (body.match(/[.!?]/g) || []).length;
+  if (specialMarkers > 3 && specialMarkers > periods / 2) return false;
+
+  // Hard rule 4: body is mostly bullets/list (>50% lines)
+  const lines = body.split('\n').filter(l => l.trim());
+  if (lines.length > 3) {
+    const listLines = lines.filter(l => /^(\s*[-*•]|\s*\d+[\.)])/.test(l)).length;
+    if (listLines / lines.length > 0.5) return false;
+  }
+
+  // Soft: whitelist match
+  if (VOCAL_WHITELIST_KEYWORDS.some(kw => t.includes(kw))) return true;
+
+  // Default: substantial prose only
+  return body.length > 200 && periods >= 2;
+}
+
+function cleanSectionTitle(title){
+  // Remove leading numeric prefix "1. " or "1) " — we add our own counter
+  return (title || '').replace(/^[\d]+[\.)\s]+/, '').trim();
 }
 
 function estimateAudioDuration(text){
@@ -2833,7 +2876,7 @@ async function renderVoicePanel(){
     const allSections = parseScriptSections(p.script);
     vocalSections = allSections
       .map((s, idx) => ({ ...s, originalIdx: idx }))
-      .filter(s => isVocalSection(s.title));
+      .filter(s => isVocalSection(s.title, s.body));
   }
 
   const hasScript = vocalSections.length > 0;
@@ -2865,7 +2908,7 @@ async function renderVoicePanel(){
         <div class="voice-section-header">
           <div class="voice-section-num">${displayIdx + 1}</div>
           <div class="voice-section-info">
-            <div class="voice-section-title">${escapeHtml(s.title)}</div>
+            <div class="voice-section-title">${escapeHtml(cleanSectionTitle(s.title))}</div>
             <div class="voice-section-meta">
               <span>${charCount.toLocaleString()} chars</span>
               <span>·</span>
