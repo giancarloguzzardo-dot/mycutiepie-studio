@@ -15,91 +15,87 @@
    ============================================================ */
 
 :root {
-  /* LIGHT THEME (default fallback) */
-  --color-bg: #FAFAF7;
+  /* LIGHT THEME — Apple-inspired warm white */
+  --color-bg: #FBFBFA;
   --color-bg-elevated: #FFFFFF;
   --color-surface: #FFFFFF;
-  --color-surface-2: #F4F3EE;
-  --color-surface-3: #ECEAE3;
-  --color-border: #E5E3DC;
-  --color-border-strong: #C9C5BA;
-  --color-border-subtle: #EFEDE6;
-  --color-text: #1A1814;
-  --color-text-muted: #6B6759;
-  --color-text-subtle: #9B9686;
-  --color-accent: #6E54FF;
-  --color-accent-hover: #5A40E8;
-  --color-accent-soft: #EFEBFF;
-  --color-accent-border: #D6CCFF;
-  --color-pink: #FF6B9D;
-  --color-pink-soft: #FFE4EE;
-  --color-pink-dark: #B83767;
+  --color-surface-2: #F5F5F4;
+  --color-surface-3: #ECECEA;
+  --color-border: #E5E5E4;
+  --color-border-strong: #C7C7C5;
+  --color-border-subtle: #EFEFEC;
+  --color-text: #1D1D1F;
+  --color-text-muted: #6E6E73;
+  --color-text-subtle: #A1A1A6;
+  --color-accent: #0A84FF;
+  --color-accent-hover: #0066D6;
+  --color-accent-soft: #E5F0FF;
+  --color-accent-border: #B8DAFF;
+  --color-pink: #FF375F;
+  --color-pink-soft: #FFE5EB;
+  --color-pink-dark: #B8003C;
   --color-purple-soft: #F0EBFF;
-  --color-success: #0BA572;
-  --color-success-soft: #D6F5E8;
-  --color-warning: #D97706;
-  --color-warning-soft: #FEF1D8;
-  --color-danger: #DC2626;
-  --color-danger-soft: #FEE2E2;
+  --color-success: #30A14E;
+  --color-success-soft: #DCF5E3;
+  --color-warning: #C77700;
+  --color-warning-soft: #FFF4D6;
+  --color-danger: #D70015;
+  --color-danger-soft: #FFE5E5;
 
-  /* Radii */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-xl: 24px;
 
-  /* Shadows — refined for light */
-  --shadow-xs: 0 1px 2px rgba(26,24,20,.04);
-  --shadow-sm: 0 2px 6px rgba(26,24,20,.06);
-  --shadow-md: 0 8px 24px rgba(26,24,20,.08);
-  --shadow-lg: 0 16px 48px rgba(26,24,20,.10);
-  --shadow-glow-accent: 0 0 0 4px rgba(110,84,255,.12);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.08);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.10);
+  --shadow-glow-accent: 0 0 0 4px rgba(10,132,255,.15);
 
-  /* Type */
-  --font-sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
   --font-serif: 'Instrument Serif', 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Transitions */
   --t-fast: 120ms cubic-bezier(.4,0,.2,1);
   --t-med: 200ms cubic-bezier(.4,0,.2,1);
   --t-slow: 360ms cubic-bezier(.16,1,.3,1);
 }
 
-/* DARK THEME (default) */
+/* DARK THEME — Apple macOS Sonoma inspired */
 [data-theme="dark"] {
-  --color-bg: #0A0908;
-  --color-bg-elevated: #131210;
-  --color-surface: #181613;
-  --color-surface-2: #1F1D19;
-  --color-surface-3: #28251F;
-  --color-border: #2B2823;
-  --color-border-strong: #3F3B33;
-  --color-border-subtle: #1F1D19;
-  --color-text: #F5F1E8;
-  --color-text-muted: #A8A294;
-  --color-text-subtle: #6D6759;
-  --color-accent: #8A6FFF;
-  --color-accent-hover: #9B82FF;
-  --color-accent-soft: #1F1A3F;
-  --color-accent-border: #3A2E78;
-  --color-pink: #FF7AAA;
-  --color-pink-soft: #3D1F2C;
-  --color-pink-dark: #FF94BC;
-  --color-purple-soft: #1F1A3F;
-  --color-success: #2EE89C;
-  --color-success-soft: #0F2E22;
-  --color-warning: #FFB547;
-  --color-warning-soft: #3D2912;
-  --color-danger: #FF6B6B;
-  --color-danger-soft: #3D1818;
+  --color-bg: #1C1C1E;
+  --color-bg-elevated: #2C2C2E;
+  --color-surface: #2C2C2E;
+  --color-surface-2: #3A3A3C;
+  --color-surface-3: #48484A;
+  --color-border: #38383A;
+  --color-border-strong: #545458;
+  --color-border-subtle: #2C2C2E;
+  --color-text: #F5F5F7;
+  --color-text-muted: #98989E;
+  --color-text-subtle: #636366;
+  --color-accent: #0A84FF;
+  --color-accent-hover: #409CFF;
+  --color-accent-soft: #1F3A5C;
+  --color-accent-border: #2B4F73;
+  --color-pink: #FF375F;
+  --color-pink-soft: #3D1825;
+  --color-pink-dark: #FF6680;
+  --color-purple-soft: #2B2154;
+  --color-success: #30D158;
+  --color-success-soft: #14331F;
+  --color-warning: #FF9F0A;
+  --color-warning-soft: #3D2A0F;
+  --color-danger: #FF453A;
+  --color-danger-soft: #3D1B17;
 
   --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
-  --shadow-sm: 0 2px 6px rgba(0,0,0,.4);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.4);
   --shadow-md: 0 8px 24px rgba(0,0,0,.5);
   --shadow-lg: 0 24px 64px rgba(0,0,0,.6);
-  --shadow-glow-accent: 0 0 0 4px rgba(138,111,255,.18);
+  --shadow-glow-accent: 0 0 0 4px rgba(10,132,255,.25);
 }
 
 /* ============================================================
@@ -128,17 +124,12 @@ body{
 ::-webkit-scrollbar-thumb:hover{background:var(--color-text-subtle)}
 
 /* ============================================================
-   BACKGROUND ATMOSPHERE (dark mode magic)
+   BACKGROUND — Apple clean
    ============================================================ */
-[data-theme="dark"] body{
-  background-image:
-    radial-gradient(circle at 15% 8%, rgba(138,111,255,.06) 0%, transparent 35%),
-    radial-gradient(circle at 85% 92%, rgba(255,122,170,.04) 0%, transparent 40%);
-  background-attachment:fixed;
-}
+/* No radial gradients — pure clean surface */
 
 /* ============================================================
-   AUTH SCREEN — Premium hero
+   AUTH SCREEN — Apple-like sobriety
    ============================================================ */
 #auth-screen{
   min-height:100vh;
@@ -146,59 +137,43 @@ body{
   align-items:center;
   justify-content:center;
   padding:24px;
-  position:relative;
-  overflow:hidden;
+  background:var(--color-bg);
 }
 #auth-screen.on{display:flex}
-#auth-screen::before{
-  content:'';
-  position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(138,111,255,.18) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(255,122,170,.12) 0%, transparent 50%);
-  pointer-events:none;
-}
-[data-theme="light"] #auth-screen::before{
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(110,84,255,.10) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(255,107,157,.06) 0%, transparent 50%);
-}
 
 .auth-card{
-  position:relative;z-index:1;
   background:var(--color-bg-elevated);
   border:1px solid var(--color-border);
   border-radius:var(--radius-xl);
-  padding:44px 36px;
+  padding:48px 40px;
   width:440px;max-width:100%;
-  box-shadow:var(--shadow-lg);
-  backdrop-filter:blur(20px);
+  box-shadow:var(--shadow-md);
 }
-.auth-brand{text-align:center;margin-bottom:32px}
+.auth-brand{text-align:center;margin-bottom:36px}
 .auth-logo{
-  font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;
-  color:var(--color-text-subtle);margin-bottom:8px;
+  font-size:10px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--color-text-subtle);margin-bottom:10px;
 }
 .auth-title{
   font-family:var(--font-serif);
-  font-size:46px;
+  font-size:42px;
   font-weight:400;
-  letter-spacing:-.02em;
-  line-height:1;
+  letter-spacing:-.015em;
+  line-height:1.05;
   color:var(--color-text);
   font-style:italic;
 }
 .auth-title em{
   font-style:normal;
   font-family:var(--font-sans);
-  font-weight:600;
-  font-size:30px;
+  font-weight:500;
+  font-size:24px;
   display:block;
-  margin-top:6px;
-  letter-spacing:-.02em;
+  margin-top:8px;
+  letter-spacing:-.01em;
   color:var(--color-text-muted);
 }
-.auth-sub{font-size:13px;color:var(--color-text-muted);margin-top:14px;line-height:1.55}
+.auth-sub{font-size:13px;color:var(--color-text-muted);margin-top:16px;line-height:1.55}
 .auth-tabs{display:flex;background:var(--color-surface-2);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);padding:3px;margin-bottom:24px}
 .auth-tab{flex:1;padding:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--color-text-muted);font-family:inherit;border-radius:6px;transition:all var(--t-fast)}
 .auth-tab.on{background:var(--color-bg-elevated);color:var(--color-text);box-shadow:var(--shadow-xs)}
@@ -272,34 +247,31 @@ body{
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
 /* ============================================================
-   TOPBAR — Minimal, premium
+   TOPBAR — Apple clean
    ============================================================ */
 .topbar{
-  background:rgba(10,9,8,.7);
+  background:var(--color-bg-elevated);
   border-bottom:1px solid var(--color-border);
   padding:14px 28px;
   display:flex;align-items:center;justify-content:space-between;gap:16px;
-  backdrop-filter:blur(16px) saturate(180%);
   position:sticky;top:0;z-index:50;
 }
-[data-theme="light"] .topbar{background:rgba(250,250,247,.7)}
 
 .brand{
   display:flex;align-items:center;gap:10px;
-  font-weight:700;font-size:15px;letter-spacing:-.015em;
+  font-weight:600;font-size:15px;letter-spacing:-.015em;
   cursor:pointer;text-decoration:none;color:var(--color-text);
   transition:opacity var(--t-fast);
 }
 .brand:hover{opacity:.7}
 .brand-mark{
   width:30px;height:30px;
-  background:linear-gradient(135deg,var(--color-accent) 0%,var(--color-pink) 100%);
+  background:var(--color-accent);
   border-radius:8px;
   display:flex;align-items:center;justify-content:center;
   color:#fff;font-family:var(--font-serif);font-style:italic;font-size:18px;font-weight:400;
-  box-shadow:0 4px 14px rgba(138,111,255,.35);
+  box-shadow:0 2px 8px rgba(10,132,255,.25);
 }
-[data-theme="light"] .brand-mark{box-shadow:0 4px 14px rgba(110,84,255,.25)}
 .brand-wordmark{font-family:var(--font-sans);font-weight:600;font-size:15px}
 .brand-wordmark em{font-style:normal;color:var(--color-accent);font-weight:600}
 
@@ -406,32 +378,25 @@ body{
 .channel-status.ready{background:var(--color-success-soft);color:var(--color-success);border-color:var(--color-success)}
 
 .cta-banner{
-  background:linear-gradient(135deg,var(--color-accent-soft) 0%,var(--color-pink-soft) 100%);
+  background:var(--color-accent-soft);
   border:1px solid var(--color-accent-border);
   border-radius:var(--radius-md);
   padding:22px 24px;
   display:flex;align-items:center;gap:18px;
-  position:relative;overflow:hidden;
 }
-.cta-banner::after{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at top right, var(--color-accent-soft) 0%, transparent 60%);
-  opacity:.5;pointer-events:none;
-}
-.cta-emoji{font-size:38px;flex-shrink:0;position:relative;z-index:1}
-.cta-content{flex:1;min-width:0;position:relative;z-index:1}
+.cta-emoji{font-size:36px;flex-shrink:0}
+.cta-content{flex:1;min-width:0}
 .cta-title{font-weight:600;font-size:15px;color:var(--color-text);margin-bottom:4px;letter-spacing:-.01em}
 .cta-desc{font-size:12px;color:var(--color-text-muted);line-height:1.5}
 .cta-btn{
-  position:relative;z-index:1;
   background:var(--color-accent);color:#fff;border:none;
   padding:11px 20px;border-radius:var(--radius-sm);
   font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
   display:inline-flex;align-items:center;gap:6px;font-family:inherit;
   transition:all var(--t-fast);text-decoration:none;
-  box-shadow:var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,.15);
+  box-shadow:0 2px 8px rgba(10,132,255,.25);
 }
-.cta-btn:hover{background:var(--color-accent-hover);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.cta-btn:hover{background:var(--color-accent-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(10,132,255,.35)}
 
 .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
 .quick-action{
@@ -625,6 +590,88 @@ body{
 .wf-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end}
 .wf-actions .btn{font-size:11px;padding:5px 10px}
 .wf-brief-box{background:var(--color-surface);border-radius:var(--radius-sm);padding:10px;margin-top:8px;font-size:12px;color:var(--color-text);line-height:1.5}
+
+/* ============================================================
+   VOICE PANEL — Section by section
+   ============================================================ */
+.voice-controls{display:flex;gap:12px;align-items:flex-end;margin-bottom:14px}
+.add-voice-form{
+  background:var(--color-surface-2);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:16px;margin-bottom:18px;
+}
+
+.voice-summary{
+  display:flex;align-items:center;gap:20px;
+  background:var(--color-bg-elevated);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:16px 20px;margin-bottom:20px;
+}
+.voice-summary-stat{flex:0 0 auto}
+.voice-summary-label{
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--color-text-subtle);margin-bottom:3px;
+}
+.voice-summary-value{font-size:15px;font-weight:600;color:var(--color-text);letter-spacing:-.01em}
+.voice-summary .btn{margin-left:auto}
+
+.voice-empty{
+  text-align:center;padding:48px 24px;
+  background:var(--color-bg-elevated);
+  border:1.5px dashed var(--color-border-strong);
+  border-radius:var(--radius-lg);
+}
+.voice-empty-icon{font-size:42px;margin-bottom:16px;opacity:.5}
+.voice-empty-title{font-family:var(--font-serif);font-size:24px;font-weight:400;letter-spacing:-.015em;margin-bottom:8px}
+.voice-empty-desc{font-size:13px;color:var(--color-text-muted);max-width:380px;margin:0 auto;line-height:1.6}
+
+.voice-sections{display:flex;flex-direction:column;gap:12px}
+.voice-section{
+  background:var(--color-bg-elevated);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:16px 18px;
+  transition:all var(--t-fast);
+}
+.voice-section:hover{border-color:var(--color-border-strong)}
+.voice-section.ready{border-color:var(--color-success);background:var(--color-success-soft)}
+.voice-section.generating{border-color:var(--color-accent);background:var(--color-accent-soft)}
+.voice-section.error{border-color:var(--color-danger);background:var(--color-danger-soft)}
+
+.voice-section-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.voice-section-num{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--color-surface-2);color:var(--color-text-muted);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;flex-shrink:0;
+  font-family:var(--font-mono);
+}
+.voice-section.ready .voice-section-num{background:var(--color-success);color:#fff}
+.voice-section-info{flex:1;min-width:0}
+.voice-section-title{font-size:14px;font-weight:600;color:var(--color-text);letter-spacing:-.01em;margin-bottom:3px}
+.voice-section-meta{
+  display:flex;gap:6px;font-size:11px;color:var(--color-text-muted);
+  font-family:var(--font-mono);
+}
+.voice-section-status{
+  font-size:11px;font-weight:600;padding:5px 12px;border-radius:99px;
+  background:var(--color-surface-2);color:var(--color-text-muted);
+  border:1px solid var(--color-border);white-space:nowrap;
+}
+.voice-section-status.ready{background:var(--color-success);color:#fff;border-color:var(--color-success)}
+.voice-section-status.generating{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+.voice-section-status.error{background:var(--color-danger);color:#fff;border-color:var(--color-danger)}
+
+.voice-section-preview{
+  font-size:12px;color:var(--color-text-muted);line-height:1.5;
+  background:var(--color-surface);border-radius:var(--radius-sm);
+  padding:10px 12px;margin-bottom:10px;
+  border:1px solid var(--color-border-subtle);
+}
+.voice-section-audio{width:100%;margin-bottom:10px;border-radius:var(--radius-sm)}
+.voice-section-actions{display:flex;gap:8px;flex-wrap:wrap}
 
 /* CUTIEPULSE */
 .pulse-hero{background:linear-gradient(135deg,var(--color-pink-soft),var(--color-purple-soft));border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px}
@@ -2728,60 +2775,204 @@ Be specific. Write in the ${toneName} tone. Target 18-22 minutes total runtime.`
 // ============================================================
 // VOICE PANEL
 // ============================================================
+// ============================================================
+// VOICE PANEL — Section-by-section voice generation
+// ============================================================
+
+// Filter: which section titles should NOT have voice generated
+const NON_VOCAL_SECTION_KEYWORDS = [
+  'thumbnail', 'seo', 'metadata', 'title options', 'titles',
+  'b-roll', 'b roll', 'broll', 'stock footage',
+  'description', 'tags', 'hashtags',
+  'cta notes', 'production notes', 'notes',
+  'visual', 'graphics', 'overlay'
+];
+
+function isVocalSection(title){
+  const t = (title || '').toLowerCase();
+  return !NON_VOCAL_SECTION_KEYWORDS.some(kw => t.includes(kw));
+}
+
+function estimateAudioDuration(text){
+  // Avg: 150 words/min = 2.5 words/sec; avg word = 5 chars
+  const chars = text.length;
+  const wordsApprox = chars / 5;
+  const seconds = Math.ceil(wordsApprox / 2.5);
+  return seconds;
+}
+
+function estimateVoiceCost(text){
+  // ElevenLabs Turbo v2.5 = $0.05 / 1000 chars
+  return (text.length / 1000) * 0.05;
+}
+
+function formatDuration(seconds){
+  if (!seconds || seconds < 1) return '—';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}:${String(s).padStart(2,'0')}` : `${s}s`;
+}
+
 async function renderVoicePanel(){
   const p = APP.currentProject;
-  // Load user voices
-  const { data: voices } = await APP.sb.from('voice_presets').select('*').order('created_at', { ascending: false });
 
+  // Load saved voices
+  const { data: voices } = await APP.sb.from('voice_presets').select('*').order('created_at', { ascending: false });
   let voiceOptions = '<option value="">— No voice saved yet —</option>';
   (voices || []).forEach(v => {
-    voiceOptions += `<option value="${v.external_voice_id}">${escapeHtml(v.display_name)}</option>`;
+    voiceOptions += `<option value="${v.external_voice_id}" data-name="${escapeHtml(v.display_name)}">${escapeHtml(v.display_name)}</option>`;
   });
 
-  // Extract vocal parts from script
-  let vocalText = '';
+  // Load existing voice clips for this project
+  const { data: clips } = await APP.sb.from('project_voice_clips')
+    .select('*').eq('project_id', p.id).order('section_index', { ascending: true });
+
+  // Parse script sections
+  let vocalSections = [];
   if (p.script) {
-    const sections = parseScriptSections(p.script);
-    const vocalSections = sections.filter(s => {
-      const t = s.title.toLowerCase();
-      return t.includes('hook') || t.includes('intro') || t.includes('main') || t.includes('outro') || t.includes('close');
+    const allSections = parseScriptSections(p.script);
+    vocalSections = allSections
+      .map((s, idx) => ({ ...s, originalIdx: idx }))
+      .filter(s => isVocalSection(s.title));
+  }
+
+  const hasScript = vocalSections.length > 0;
+  const totalChars = vocalSections.reduce((sum, s) => sum + s.body.length, 0);
+  const totalCost = estimateVoiceCost(totalChars.toString().repeat(1)); // total cost across all
+  const totalDuration = vocalSections.reduce((sum, s) => sum + estimateAudioDuration(s.body), 0);
+  const generatedCount = (clips || []).filter(c => c.status === 'ready').length;
+
+  // Build sections list HTML
+  let sectionsHtml = '';
+  if (!hasScript) {
+    sectionsHtml = `<div class="voice-empty">
+      <div class="voice-empty-icon">🎙</div>
+      <div class="voice-empty-title">Generate the script first</div>
+      <div class="voice-empty-desc">Voice generation works section-by-section from your finalized script. Go back to Script panel and generate the full script first.</div>
+    </div>`;
+  } else {
+    sectionsHtml = '<div class="voice-sections">';
+    vocalSections.forEach((s, displayIdx) => {
+      const clip = (clips || []).find(c => c.section_index === s.originalIdx);
+      const status = clip?.status || 'pending';
+      const audioUrl = clip?.audio_url || '';
+      const charCount = s.body.length;
+      const duration = clip?.duration_sec || estimateAudioDuration(s.body);
+      const cost = clip?.cost_estimate || estimateVoiceCost(s.body);
+      const preview = s.body.slice(0, 140) + (s.body.length > 140 ? '...' : '');
+
+      sectionsHtml += `<div class="voice-section ${status}">
+        <div class="voice-section-header">
+          <div class="voice-section-num">${displayIdx + 1}</div>
+          <div class="voice-section-info">
+            <div class="voice-section-title">${escapeHtml(s.title)}</div>
+            <div class="voice-section-meta">
+              <span>${charCount.toLocaleString()} chars</span>
+              <span>·</span>
+              <span>~${formatDuration(duration)}</span>
+              <span>·</span>
+              <span>~$${cost.toFixed(3)}</span>
+            </div>
+          </div>
+          <div class="voice-section-status ${status}">${
+            status === 'ready' ? '✓ Ready' :
+            status === 'generating' ? '⏳ Generating' :
+            status === 'error' ? '✕ Error' :
+            'Pending'
+          }</div>
+        </div>
+        <div class="voice-section-preview">${escapeHtml(preview)}</div>
+        ${status === 'ready' && audioUrl ? `
+          <audio controls class="voice-section-audio" src="${audioUrl}"></audio>
+          <div class="voice-section-actions">
+            <a href="${audioUrl}" download="${escapeHtml(s.title.replace(/[^a-z0-9]/gi,'_'))}.mp3" class="btn sm">⬇ Download</a>
+            <button class="btn sm" data-regen-section="${s.originalIdx}">🔄 Re-generate</button>
+          </div>
+        ` : `
+          <div class="voice-section-actions">
+            <button class="btn primary sm" data-gen-section="${s.originalIdx}" ${status === 'generating' ? 'disabled' : ''}>
+              🎙 Generate voice
+            </button>
+          </div>
+        `}
+      </div>`;
     });
-    vocalText = vocalSections.map(s => s.body).join('\n\n');
+    sectionsHtml += '</div>';
   }
 
   $('studio-content').innerHTML = `<div class="panel">
     <div class="panel-title">🎙 Voice</div>
-    <div class="panel-desc">Generate the voiceover for your script. Powered by ElevenLabs.</div>
-    <div class="fld">
-      <label>Choose voice</label>
-      <select id="voice-select">${voiceOptions}</select>
-      <div class="fld-hint">Need a voice? Get a Voice ID from <a href="https://elevenlabs.io/voice-library" target="_blank" style="color:var(--color-accent)">ElevenLabs Voice Library</a></div>
+    <div class="panel-desc">Generate voiceover section by section. Each clip is downloadable individually. Section titles like "Thumbnail brief", "SEO", "B-roll" are automatically excluded.</div>
+
+    <div class="voice-controls">
+      <div class="fld" style="margin-bottom:0;flex:1">
+        <label>Choose voice</label>
+        <select id="voice-select">${voiceOptions}</select>
+      </div>
+      <button class="btn" id="add-voice-toggle-btn">+ Add new voice</button>
     </div>
-    <div class="fld">
-      <label>Add new voice (Voice ID)</label>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="new-voice-id" placeholder="e.g. EXAVITQu4vr4xnSDxMaL" style="flex:1" />
-        <input type="text" id="new-voice-name" placeholder="Display name" style="flex:1" />
-        <button class="btn" id="save-voice-btn">+ Save</button>
+
+    <div id="add-voice-form" class="add-voice-form" style="display:none">
+      <div class="fld">
+        <label>Voice ID (from ElevenLabs Voice Library)</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="new-voice-id" placeholder="e.g. EXAVITQu4vr4xnSDxMaL" style="flex:1" />
+          <input type="text" id="new-voice-name" placeholder="Display name" style="flex:1" />
+          <button class="btn" id="save-voice-btn">+ Save</button>
+        </div>
+        <div class="fld-hint">Get a voice ID from <a href="https://elevenlabs.io/voice-library" target="_blank" style="color:var(--color-accent)">ElevenLabs Voice Library</a></div>
       </div>
     </div>
-    <div class="fld">
-      <label>Text to synthesize</label>
-      <textarea id="voice-text" style="min-height:200px">${escapeHtml(vocalText)}</textarea>
-      <div class="fld-hint">Vocal parts auto-extracted from your script. Edit freely.</div>
-    </div>
-    <div class="ai-action-bar">
-      <button class="btn primary" id="gen-voice-btn">✨ Generate voiceover</button>
-    </div>
-    <div id="voice-result"></div>
+
+    ${hasScript ? `<div class="voice-summary">
+      <div class="voice-summary-stat">
+        <div class="voice-summary-label">Sections</div>
+        <div class="voice-summary-value">${generatedCount} / ${vocalSections.length}</div>
+      </div>
+      <div class="voice-summary-stat">
+        <div class="voice-summary-label">Total duration</div>
+        <div class="voice-summary-value">~${formatDuration(totalDuration)}</div>
+      </div>
+      <div class="voice-summary-stat">
+        <div class="voice-summary-label">Estimated cost</div>
+        <div class="voice-summary-value">~$${estimateVoiceCost(vocalSections.map(s=>s.body).join('')).toFixed(2)}</div>
+      </div>
+      <button class="btn primary" id="gen-all-btn" ${generatedCount === vocalSections.length ? 'disabled' : ''}>
+        ${generatedCount === 0 ? '🎙 Generate all' : `🎙 Generate remaining (${vocalSections.length - generatedCount})`}
+      </button>
+    </div>` : ''}
+
+    ${sectionsHtml}
   </div>`;
 
-  $('save-voice-btn').addEventListener('click', saveNewVoice);
-  $('gen-voice-btn').addEventListener('click', generateVoice);
+  // Wire add voice form toggle
+  $('add-voice-toggle-btn').addEventListener('click', () => {
+    const form = $('add-voice-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  });
+  $('save-voice-btn')?.addEventListener('click', saveNewVoice);
+
+  // Wire generate buttons per section
+  document.querySelectorAll('[data-gen-section]').forEach(btn => {
+    btn.addEventListener('click', () => generateVoiceForSection(parseInt(btn.dataset.genSection)));
+  });
+  document.querySelectorAll('[data-regen-section]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('Re-generate this voice clip? The current one will be replaced.')) {
+        generateVoiceForSection(parseInt(btn.dataset.regenSection));
+      }
+    });
+  });
+
+  // Wire generate all
+  if ($('gen-all-btn')) {
+    $('gen-all-btn').addEventListener('click', () => generateAllVoices(vocalSections, clips || []));
+  }
 }
 
 async function saveNewVoice(){
-  const voiceId = $('new-voice-id').value.trim(); const name = $('new-voice-name').value.trim();
+  const voiceId = $('new-voice-id').value.trim();
+  const name = $('new-voice-name').value.trim();
   if (!voiceId || !name) { toast('Both voice ID and display name required', 'error'); return; }
   const { error } = await APP.sb.from('voice_presets').insert({
     user_id: APP.user.id,
@@ -2795,32 +2986,100 @@ async function saveNewVoice(){
   renderVoicePanel();
 }
 
-async function generateVoice(){
-  const voiceId = $('voice-select').value;
-  const text = $('voice-text').value.trim();
+async function generateVoiceForSection(sectionIndex){
+  const p = APP.currentProject;
+  const voiceSelect = $('voice-select');
+  const voiceId = voiceSelect.value;
+  const voiceName = voiceSelect.selectedOptions[0]?.dataset?.name || 'Unknown';
   if (!voiceId) { toast('Pick a voice first', 'error'); return; }
-  if (!text) { toast('Text required', 'error'); return; }
-  if (text.length > 5000) { toast('Text too long (max 5000 chars)', 'error'); return; }
 
-  showLoader('Generating voiceover...');
+  // Re-parse to get current section
+  const allSections = parseScriptSections(p.script || '');
+  const section = allSections[sectionIndex];
+  if (!section) { toast('Section not found', 'error'); return; }
+
+  const text = section.body;
+  if (!text || text.length < 10) { toast('Section too short to generate', 'error'); return; }
+  if (text.length > 5000) { toast('Section too long (max 5000 chars)', 'error'); return; }
+
+  // Mark as generating in DB
+  await APP.sb.from('project_voice_clips').upsert({
+    user_id: APP.user.id,
+    project_id: p.id,
+    section_index: sectionIndex,
+    section_title: section.title,
+    section_body: text,
+    status: 'generating',
+    voice_id: voiceId,
+    voice_name: voiceName,
+    char_count: text.length,
+    cost_estimate: estimateVoiceCost(text),
+  }, { onConflict: 'project_id,section_index' });
+
+  showLoader(`Generating voice for "${section.title}"...`);
   try {
-    const blob = await AI.invoke('generate_voice', { text, voice_id: voiceId, model_id: 'eleven_turbo_v2_5' }, { projectId: APP.currentProject.id });
-    const url = URL.createObjectURL(blob);
-    $('voice-result').innerHTML = `<div style="margin-top:14px;padding:16px;background:var(--color-success-soft);border-radius:var(--radius-md)">
-      <div style="font-size:13px;font-weight:600;color:var(--color-success);margin-bottom:10px">✓ Voiceover generated</div>
-      <audio controls style="width:100%" src="${url}"></audio>
-      <a href="${url}" download="voiceover-${APP.currentProject.id}.mp3" class="btn primary" style="margin-top:10px">⬇ Download MP3</a>
-    </div>`;
+    const blob = await AI.invoke('generate_voice', {
+      text, voice_id: voiceId, model_id: 'eleven_turbo_v2_5'
+    }, { projectId: p.id });
+
+    // Upload to Storage
+    const audioPath = `voices/${APP.user.id}/${p.id}/section_${sectionIndex}_${Date.now()}.mp3`;
+    const { error: upErr } = await APP.sb.storage.from('media').upload(audioPath, blob, {
+      contentType: 'audio/mpeg',
+      upsert: true,
+    });
+    if (upErr) throw upErr;
+
+    const { data: urlData } = APP.sb.storage.from('media').getPublicUrl(audioPath);
+    const audioUrl = urlData.publicUrl;
+
+    // Update clip in DB
+    const { error: updErr } = await APP.sb.from('project_voice_clips').update({
+      audio_url: audioUrl,
+      audio_path: audioPath,
+      duration_sec: estimateAudioDuration(text),
+      status: 'ready',
+      error_message: null,
+    }).eq('project_id', p.id).eq('section_index', sectionIndex);
+    if (updErr) throw updErr;
 
     // Update project stage
-    await APP.sb.from('projects').update({ current_stage: 'voice' }).eq('id', APP.currentProject.id).select().single();
+    await APP.sb.from('projects').update({ current_stage: 'voice' }).eq('id', p.id).select().single();
     APP.currentProject.current_stage = 'voice';
+
     hideLoader();
-    toast('Voiceover ready ✓', 'success');
+    toast(`"${section.title}" voiced ✓`, 'success');
+    renderVoicePanel();
   } catch (e) {
     hideLoader();
+    await APP.sb.from('project_voice_clips').update({
+      status: 'error',
+      error_message: String(e.message || e),
+    }).eq('project_id', p.id).eq('section_index', sectionIndex);
     toast('Error: ' + e.message, 'error');
+    renderVoicePanel();
   }
+}
+
+async function generateAllVoices(vocalSections, existingClips){
+  const voiceSelect = $('voice-select');
+  if (!voiceSelect.value) { toast('Pick a voice first', 'error'); return; }
+
+  const toGenerate = vocalSections.filter(s => {
+    const clip = existingClips.find(c => c.section_index === s.originalIdx);
+    return !clip || clip.status !== 'ready';
+  });
+
+  if (toGenerate.length === 0) { toast('All sections already generated', 'success'); return; }
+
+  if (!confirm(`Generate voice for ${toGenerate.length} sections sequentially? Estimated cost: ~$${estimateVoiceCost(toGenerate.map(s=>s.body).join('')).toFixed(2)}`)) return;
+
+  for (let i = 0; i < toGenerate.length; i++) {
+    const s = toGenerate[i];
+    showLoader(`Generating ${i+1}/${toGenerate.length}: "${s.title}"...`);
+    await generateVoiceForSection(s.originalIdx);
+  }
+  toast(`Generated ${toGenerate.length} voice clips ✓`, 'success');
 }
 
 // ============================================================
