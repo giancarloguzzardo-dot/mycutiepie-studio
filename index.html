@@ -3472,13 +3472,15 @@ async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annot
   const tasks = annotations
     .map(ann => {
       const role = roleMap[ann.category] || 'video_editor';
-      const briefText = `${sectionTag} ${ann.category.replace(/_/g, ' ')}: ${ann.text.slice(0, 200)}`;
+      const briefText = `${sectionTag} ${ann.category.replace(/_/g, ' ')}: ${ann.text.slice(0, 200)} (auto from script annotation)`;
       // Dedupe
       if (existingBriefs.has(briefText)) return null;
       return {
         owner_id: APP.user.id,
         project_id: projectId,
         role: role,
+        assignee_email: APP.user.email,        // required NOT NULL — owner as placeholder
+        assignee_name: '📝 Auto-generated note',
         status: 'pending',
         brief: briefText,
       };
