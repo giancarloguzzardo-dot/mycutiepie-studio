@@ -3437,28 +3437,57 @@ function extractAnnotations(text) {
 async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annotations) {
   if (!annotations || annotations.length === 0) return 0;
 
-  // Check if tasks already exist for this section to avoid duplicates
+  // Map annotation category → workflow_role enum value
+  // Valid values: 'reviewer', 'thumbnail_designer', 'video_editor', 'voice_actor'
+  const roleMap = {
+    camera: 'video_editor',
+    shot: 'video_editor',
+    lighting: 'video_editor',
+    b_roll: 'video_editor',
+    'b-roll': 'video_editor',
+    broll: 'video_editor',
+    stock_footage: 'video_editor',
+    music: 'video_editor',
+    sfx: 'video_editor',
+    visual: 'video_editor',
+    cut_to: 'video_editor',
+    fade: 'video_editor',
+    transition: 'video_editor',
+    montage: 'video_editor',
+    graphic: 'video_editor',
+    text_overlay: 'video_editor',
+    lower_third: 'video_editor',
+    timestamp_marker: 'video_editor',
+  };
+
   const sectionTag = `[${sectionTitle}]`;
-  const { data: existing } = await APP.sb.from('project_workflow_tasks')
-    .select('id, title')
-    .eq('project_id', projectId)
-    .ilike('title', `%${sectionTag}%`);
 
-  if (existing && existing.length > 0) return 0; // Already created
+  // Check existing to avoid duplicates (match on brief content)
+  const { data: existing } = await APP.sb.from('workflow_tasks')
+    .select('id, brief')
+    .eq('project_id', projectId);
 
-  const tasks = annotations.map(ann => {
-    const taskTitle = `${sectionTag} ${ann.category.replace(/_/g, ' ')}: ${ann.text.slice(0, 80)}`;
-    return {
-      user_id: APP.user.id,
-      project_id: projectId,
-      title: taskTitle,
-      category: ann.type === 'production' ? 'production' : 'editing',
-      status: 'todo',
-      notes: ann.fullMatch,
-    };
-  });
+  const existingBriefs = new Set((existing || []).map(t => t.brief));
 
-  const { error } = await APP.sb.from('project_workflow_tasks').insert(tasks);
+  const tasks = annotations
+    .map(ann => {
+      const role = roleMap[ann.category] || 'video_editor';
+      const briefText = `${sectionTag} ${ann.category.replace(/_/g, ' ')}: ${ann.text.slice(0, 200)}`;
+      // Dedupe
+      if (existingBriefs.has(briefText)) return null;
+      return {
+        owner_id: APP.user.id,
+        project_id: projectId,
+        role: role,
+        status: 'pending',
+        brief: briefText,
+      };
+    })
+    .filter(Boolean);
+
+  if (tasks.length === 0) return 0;
+
+  const { error } = await APP.sb.from('workflow_tasks').insert(tasks);
   if (error) {
     console.warn('Failed to create workflow tasks:', error);
     return 0;
@@ -3527,7 +3556,7 @@ async function generateVoiceForSection(sectionIndex){
     const { error: updErr } = await APP.sb.from('project_voice_clips').update({
       audio_url: audioUrl,
       audio_path: audioPath,
-      duration_sec: estimateAudioDuration(text),
+      duration_sec: estimateAudioDuration(cleanText),
       status: 'ready',
       error_message: null,
     }).eq('project_id', p.id).eq('section_index', sectionIndex);
