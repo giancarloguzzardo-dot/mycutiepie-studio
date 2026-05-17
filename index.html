@@ -732,6 +732,130 @@ body{
 .comp-idea-meta strong{color:var(--color-accent);font-weight:600}
 .comp-idea-actions{margin-top:12px;display:flex;gap:8px}
 
+/* ============================================================
+   REPURPOSE PANEL
+   ============================================================ */
+.repurpose-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:18px}
+.repurpose-card{
+  background:var(--color-bg-elevated);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);padding:18px;
+  transition:all var(--t-fast);
+}
+.repurpose-card:hover{border-color:var(--color-accent-border);box-shadow:var(--shadow-sm)}
+.repurpose-card.has-content{border-left:3px solid var(--color-success)}
+.repurpose-card-header{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.repurpose-card-icon{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;color:#fff;
+}
+.repurpose-card-info{flex:1;min-width:0}
+.repurpose-card-title{font-size:15px;font-weight:600;color:var(--color-text);letter-spacing:-.01em;line-height:1.2}
+.repurpose-card-meta{font-size:11px;color:var(--color-text-muted);margin-top:3px;font-family:var(--font-mono)}
+.repurpose-card-badge{
+  background:var(--color-success);color:#fff;
+  padding:4px 10px;border-radius:99px;
+  font-size:10px;font-weight:600;letter-spacing:.05em;
+}
+.repurpose-card-preview{
+  background:var(--color-surface-2);border-radius:var(--radius-sm);
+  padding:10px 12px;font-size:12px;line-height:1.5;color:var(--color-text-muted);
+  margin-bottom:12px;max-height:80px;overflow:hidden;
+  font-family:var(--font-mono);
+}
+.repurpose-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Modal for full view */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;animation:fadeIn .2s ease-out;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-panel{
+  background:var(--color-bg-elevated);border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);max-width:720px;width:100%;
+  max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);
+}
+.modal-header{
+  padding:18px 22px;border-bottom:1px solid var(--color-border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.modal-body{padding:22px;overflow-y:auto}
+.rp-field{margin-bottom:18px}
+.rp-field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-subtle);margin-bottom:6px}
+.rp-field-value{font-size:13px;line-height:1.6;color:var(--color-text)}
+.rp-pre{
+  background:var(--color-surface-2);border-radius:var(--radius-sm);
+  padding:14px 16px;white-space:pre-wrap;font-family:var(--font-mono);font-size:12px;
+  max-height:400px;overflow-y:auto;
+}
+.rp-hashtag{
+  display:inline-block;background:var(--color-accent-soft);color:var(--color-accent);
+  padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;
+  margin-right:4px;margin-bottom:4px;
+}
+
+/* ============================================================
+   ANALYTICS PANEL
+   ============================================================ */
+.analytics-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;margin:18px 0 28px;
+}
+.analytics-tile{
+  background:var(--color-bg-elevated);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);padding:16px 18px;
+}
+.analytics-tile-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-subtle);margin-bottom:8px}
+.analytics-tile-value{font-size:26px;font-weight:600;color:var(--color-text);letter-spacing:-.02em;font-family:var(--font-mono);line-height:1}
+.analytics-tile-value.good{color:var(--color-success)}
+.analytics-tile-value.mid{color:var(--color-warning)}
+.analytics-tile-value.low{color:var(--color-danger)}
+.analytics-tile-sub{font-size:11px;color:var(--color-text-muted);margin-top:6px;font-family:var(--font-mono)}
+
+.analytics-section{margin-top:28px}
+.analytics-section-title{font-size:13px;font-weight:600;color:var(--color-text);margin-bottom:12px;letter-spacing:-.005em}
+
+.analytics-scores-row{display:flex;gap:24px;flex-wrap:wrap}
+.analytics-score-item{flex:1;min-width:200px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:12px 14px}
+.analytics-score-label{font-size:11px;color:var(--color-text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+.analytics-score-trend{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.score-pill{
+  display:inline-block;padding:4px 10px;border-radius:99px;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);color:#fff;
+}
+.score-pill.good{background:var(--color-success)}
+.score-pill.mid{background:var(--color-warning)}
+.score-pill.low{background:var(--color-danger)}
+.score-arrow{color:var(--color-text-subtle);font-size:12px}
+
+.cap-cost-list{display:flex;flex-direction:column;gap:8px}
+.cap-cost-row{display:grid;grid-template-columns:200px 1fr 80px;gap:14px;align-items:center}
+.cap-cost-name{font-size:12px;color:var(--color-text);text-transform:capitalize}
+.cap-cost-bar{background:var(--color-surface-2);height:6px;border-radius:99px;overflow:hidden}
+.cap-cost-fill{background:var(--color-accent);height:100%;border-radius:99px;transition:width var(--t-med)}
+.cap-cost-value{font-size:12px;font-family:var(--font-mono);color:var(--color-text-muted);text-align:right}
+
+/* ============================================================
+   CHANNEL ANALYTICS (workspace)
+   ============================================================ */
+.channel-analytics{margin-top:20px}
+.channel-stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:10px;margin-bottom:24px;
+}
+.video-perf-list{display:flex;flex-direction:column;gap:8px}
+.video-perf-row{
+  display:grid;grid-template-columns:1fr 80px 80px 80px;gap:14px;align-items:center;
+  background:var(--color-bg-elevated);border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);padding:12px 16px;
+  transition:all var(--t-fast);
+}
+.video-perf-row:hover{border-color:var(--color-accent-border)}
+.video-perf-title{font-size:13px;color:var(--color-text);font-weight:500}
+.video-perf-meta{font-size:11px;font-family:var(--font-mono);color:var(--color-text-muted);text-align:right}
+
 /* CUTIEPULSE */
 .pulse-hero{background:linear-gradient(135deg,var(--color-pink-soft),var(--color-purple-soft));border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px}
 .pulse-hero-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--color-pink-dark);margin-bottom:6px}
@@ -1371,6 +1495,9 @@ function parseHash(){
   if (parts[0] === 'channels' && parts[1] && parts[2] === 'competitor-analysis') {
     return { name: 'competitor-analysis', channelId: parts[1] };
   }
+  if (parts[0] === 'channels' && parts[1] && parts[2] === 'analytics') {
+    return { name: 'channel-analytics', channelId: parts[1] };
+  }
   if (parts[0] === 'channels' && parts[1] && parts[2] === 'videos' && parts[3] === 'new') {
     return { name: 'video-new', channelId: parts[1] };
   }
@@ -1398,7 +1525,7 @@ async function handleRoute(){
     return;
   }
 
-  if (route.name.startsWith('channel-') || route.name === 'video-new' || route.name === 'video-studio' || route.name === 'competitor-analysis') {
+  if (route.name.startsWith('channel-') || route.name === 'video-new' || route.name === 'video-studio' || route.name === 'competitor-analysis' || route.name === 'channel-analytics') {
     let channel = APP.channels.find(c => c.id === route.channelId);
     if (!channel) {
       const { data, error } = await APP.sb
@@ -1436,6 +1563,14 @@ async function handleRoute(){
       renderBreadcrumb([
         { label: channel.name, href: `#/channels/${channel.id}` },
         { label: 'Competitor Analysis', current: true }
+      ]);
+      return;
+    }
+    if (route.name === 'channel-analytics') {
+      await renderChannelAnalytics();
+      renderBreadcrumb([
+        { label: channel.name, href: `#/channels/${channel.id}` },
+        { label: 'Analytics', current: true }
       ]);
       return;
     }
@@ -1714,6 +1849,7 @@ async function renderChannelWorkspace(){
         </div>
       </div>
       <div class="workspace-actions">
+        <a href="#/channels/${ch.id}/analytics" class="btn">📊 Analytics</a>
         <a href="#/channels/${ch.id}/competitor-analysis" class="btn">🔍 Competitor Analysis</a>
         <a href="#/channels/${ch.id}/workflow" class="btn">🗂 Workflow</a>
         <a href="#/channels/${ch.id}/settings" class="btn">⚙️ Settings</a>
@@ -2151,6 +2287,130 @@ async function viewCompetitorAnalysis(analysisId, analyses){
 }
 
 // ============================================================
+// VIEW: CHANNEL ANALYTICS — overview across all videos in channel
+// ============================================================
+async function renderChannelAnalytics(){
+  const ch = APP.currentChannel;
+  if (!ch) return;
+
+  // Load all projects in this channel
+  const { data: projects } = await APP.sb.from('projects')
+    .select('id, title, current_stage, idea_gate_score, total_cost_usd, time_started_at, time_published_at, published_youtube_url, created_at, updated_at')
+    .eq('channel_id', ch.id)
+    .order('created_at', { ascending: false });
+
+  // Load aggregate invocations for the channel
+  const projectIds = (projects || []).map(p => p.id);
+
+  let totalCost = 0;
+  let totalInvocations = 0;
+  let avgIdeaScore = 0;
+  let scoresCount = 0;
+  let totalDays = 0;
+  let publishedCount = 0;
+  let inProgressCount = 0;
+
+  if (projectIds.length > 0) {
+    const { data: invocations } = await APP.sb.from('ai_invocations')
+      .select('cost_estimate')
+      .in('project_id', projectIds);
+    totalCost = (invocations || []).reduce((sum, i) => sum + (parseFloat(i.cost_estimate) || 0), 0);
+    totalInvocations = invocations?.length || 0;
+
+    const { data: voices } = await APP.sb.from('project_voice_clips')
+      .select('cost_estimate')
+      .in('project_id', projectIds);
+    totalCost += (voices || []).reduce((sum, v) => sum + (parseFloat(v.cost_estimate) || 0), 0);
+  }
+
+  (projects || []).forEach(p => {
+    if (p.idea_gate_score) { avgIdeaScore += p.idea_gate_score; scoresCount++; }
+    if (p.published_youtube_url) publishedCount++;
+    else inProgressCount++;
+    if (p.time_started_at && p.time_published_at) {
+      totalDays += (new Date(p.time_published_at) - new Date(p.time_started_at)) / 86400000;
+    }
+  });
+  avgIdeaScore = scoresCount > 0 ? Math.round(avgIdeaScore / scoresCount) : 0;
+  const avgDays = publishedCount > 0 ? Math.round((totalDays / publishedCount) * 10) / 10 : null;
+  const avgCostPerVideo = (projects || []).length > 0 ? totalCost / projects.length : 0;
+
+  // Sort videos by idea_gate_score for top performers (internal)
+  const topVideos = [...(projects || [])]
+    .filter(p => p.idea_gate_score)
+    .sort((a, b) => b.idea_gate_score - a.idea_gate_score)
+    .slice(0, 5);
+
+  $('view-container').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-label">📊 Channel Analytics</div>
+      <div class="welcome-title">${escapeHtml(ch.name)} — <em>performance overview</em></div>
+      <div class="welcome-sub">Production metrics across all videos in this channel. Live YouTube metrics (views, CTR, retention) require OAuth setup — coming in Sprint 6b.</div>
+    </div>
+
+    <div class="channel-analytics">
+      <div class="channel-stats-grid">
+        <div class="analytics-tile">
+          <div class="analytics-tile-label">Total videos</div>
+          <div class="analytics-tile-value">${(projects || []).length}</div>
+          <div class="analytics-tile-sub">${publishedCount} published · ${inProgressCount} in progress</div>
+        </div>
+
+        <div class="analytics-tile">
+          <div class="analytics-tile-label">Total spend</div>
+          <div class="analytics-tile-value">$${totalCost.toFixed(2)}</div>
+          <div class="analytics-tile-sub">${totalInvocations} AI invocations</div>
+        </div>
+
+        <div class="analytics-tile">
+          <div class="analytics-tile-label">Avg cost/video</div>
+          <div class="analytics-tile-value">$${avgCostPerVideo.toFixed(2)}</div>
+          <div class="analytics-tile-sub">Across all videos</div>
+        </div>
+
+        <div class="analytics-tile">
+          <div class="analytics-tile-label">Avg Idea Score</div>
+          <div class="analytics-tile-value ${avgIdeaScore >= 75 ? 'good' : avgIdeaScore >= 60 ? 'mid' : avgIdeaScore > 0 ? 'low' : ''}">${avgIdeaScore || '—'}</div>
+          <div class="analytics-tile-sub">${scoresCount} scored ideas</div>
+        </div>
+
+        <div class="analytics-tile">
+          <div class="analytics-tile-label">Avg time-to-publish</div>
+          <div class="analytics-tile-value">${avgDays !== null ? avgDays + 'd' : '—'}</div>
+          <div class="analytics-tile-sub">${publishedCount} published videos</div>
+        </div>
+      </div>
+
+      ${topVideos.length > 0 ? `
+        <div class="analytics-section">
+          <div class="analytics-section-title">🏆 Top videos by Idea Gate score</div>
+          <div class="video-perf-list">
+            ${topVideos.map(v => `<div class="video-perf-row" style="cursor:pointer" onclick="location.hash='#/channels/${ch.id}/videos/${v.id}'">
+              <div class="video-perf-title">${escapeHtml(v.title)}</div>
+              <div class="video-perf-meta"><span class="score-pill ${v.idea_gate_score >= 75 ? 'good' : v.idea_gate_score >= 60 ? 'mid' : 'low'}">${v.idea_gate_score}</span></div>
+              <div class="video-perf-meta">$${(parseFloat(v.total_cost_usd) || 0).toFixed(2)}</div>
+              <div class="video-perf-meta">${v.published_youtube_url ? '📍 Live' : v.current_stage || 'draft'}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      ${(projects || []).length === 0 ? `<div class="out-box" style="text-align:center;padding:40px">
+        No videos yet in this channel. <a href="#/channels/${ch.id}" style="color:var(--color-accent)">Create your first video →</a>
+      </div>` : ''}
+
+      <div class="analytics-section">
+        <div class="analytics-section-title">🔗 Coming in Sprint 6b — Live YouTube Analytics</div>
+        <div class="out-box" style="font-size:13px;line-height:1.6;color:var(--color-text-muted)">
+          Connect your YouTube account to pull live metrics: views, CTR, watch time, retention, subscribers gained per video.
+          We'll cross-reference these with your internal cost data to compute true ROI per video.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
 // VIDEO STUDIO
 // ============================================================
 async function renderVideoStudio(){
@@ -2198,7 +2458,9 @@ async function renderVideoStudio(){
         <button class="studio-nav-item ${APP.currentTab === 'script' ? 'on' : ''}" data-tab="script"><span class="studio-nav-icon">📝</span>Script</button>
         <button class="studio-nav-item ${APP.currentTab === 'voice' ? 'on' : ''}" data-tab="voice"><span class="studio-nav-icon">🎙</span>Voice</button>
         <button class="studio-nav-item ${APP.currentTab === 'prepublish' ? 'on' : ''}" data-tab="prepublish"><span class="studio-nav-icon">🎯</span>Pre-publish</button>
+        <button class="studio-nav-item ${APP.currentTab === 'repurpose' ? 'on' : ''}" data-tab="repurpose"><span class="studio-nav-icon">🔁</span>Repurpose</button>
         <button class="studio-nav-item ${APP.currentTab === 'workflow' ? 'on' : ''}" data-tab="workflow"><span class="studio-nav-icon">🗂</span>Workflow</button>
+        <button class="studio-nav-item ${APP.currentTab === 'analytics' ? 'on' : ''}" data-tab="analytics"><span class="studio-nav-icon">📊</span>Analytics</button>
         <button class="studio-nav-item ${APP.currentTab === 'export' ? 'on' : ''}" data-tab="export"><span class="studio-nav-icon">📦</span>Export</button>
       </nav>
     </aside>`;
@@ -2275,7 +2537,9 @@ function renderStudioPanel(){
   if (tab === 'script') return renderScriptPanel();
   if (tab === 'voice') return renderVoicePanel();
   if (tab === 'prepublish') return renderPrePublishPanel();
+  if (tab === 'repurpose') return renderRepurposePanel();
   if (tab === 'workflow') return renderProjectWorkflowPanel();
+  if (tab === 'analytics') return renderProjectAnalyticsPanel();
   if (tab === 'export') return renderExportPanel();
   renderIdeaPanel();
 }
@@ -3759,6 +4023,446 @@ function exportMarkdown(){
   a.click();
   URL.revokeObjectURL(url);
   toast('Downloaded', 'success');
+}
+
+// ============================================================
+// REPURPOSE PANEL — Multi-platform content adaptation
+// ============================================================
+
+const PLATFORM_CONFIG = {
+  youtube_shorts: {
+    label: 'YouTube Shorts',
+    icon: '📱',
+    capability: 'adapt_to_shorts',
+    duration: '60sec',
+    color: '#FF0000',
+    description: 'Punchy 60-second vertical with 3-second hook',
+  },
+  tiktok: {
+    label: 'TikTok',
+    icon: '🎵',
+    capability: 'adapt_to_tiktok',
+    duration: '60sec',
+    color: '#000000',
+    description: 'Native short-form with informal voice',
+  },
+  instagram_reels: {
+    label: 'Instagram Reels',
+    icon: '📸',
+    capability: 'adapt_to_instagram_reels',
+    duration: '60-90sec',
+    color: '#E1306C',
+    description: 'Visual-first with captions and hashtags',
+  },
+  newsletter: {
+    label: 'Newsletter / Blog',
+    icon: '✉️',
+    capability: 'adapt_to_newsletter',
+    duration: 'long-form',
+    color: '#0A84FF',
+    description: 'Long-form written with headers and call-outs',
+  },
+};
+
+async function renderRepurposePanel(){
+  const p = APP.currentProject;
+  const hasScript = !!(p.script && p.script.trim().length > 100);
+
+  // Load existing repurpose outputs
+  const { data: outputs } = await APP.sb.from('video_repurpose_outputs')
+    .select('*')
+    .eq('source_project_id', p.id)
+    .order('generated_at', { ascending: false });
+
+  const outputsByPlatform = {};
+  (outputs || []).forEach(o => {
+    outputsByPlatform[o.output_platform] = o;
+  });
+
+  let html = `<div class="panel">
+    <div class="panel-title">🔁 Repurpose</div>
+    <div class="panel-desc">Adapt this video to other platforms. Each format keeps the same insight, restructured for the platform's native rhythm.</div>`;
+
+  if (!hasScript) {
+    html += `<div class="out-box" style="margin-top:14px">Generate the script first. Repurpose works from your full YouTube script.</div>`;
+  } else {
+    html += `<div class="repurpose-grid">`;
+    Object.entries(PLATFORM_CONFIG).forEach(([platformKey, config]) => {
+      const existing = outputsByPlatform[platformKey];
+      const meta = existing?.metadata || {};
+      html += `<div class="repurpose-card ${existing ? 'has-content' : ''}" data-platform="${platformKey}">
+        <div class="repurpose-card-header">
+          <div class="repurpose-card-icon" style="background:${config.color}">${config.icon}</div>
+          <div class="repurpose-card-info">
+            <div class="repurpose-card-title">${config.label}</div>
+            <div class="repurpose-card-meta">${config.duration} · ${escapeHtml(config.description)}</div>
+          </div>
+          ${existing ? '<div class="repurpose-card-badge">✓ Generated</div>' : ''}
+        </div>
+        ${existing ? `
+          <div class="repurpose-card-preview">${escapeHtml((existing.content || '').slice(0, 220))}${existing.content && existing.content.length > 220 ? '...' : ''}</div>
+          <div class="repurpose-card-actions">
+            <button class="btn sm" data-view-platform="${platformKey}">👁 View full</button>
+            <button class="btn sm" data-copy-platform="${platformKey}">📋 Copy</button>
+            <button class="btn ghost sm" data-regen-platform="${platformKey}">🔄 Re-generate</button>
+          </div>
+        ` : `
+          <div class="repurpose-card-actions">
+            <button class="btn primary sm" data-gen-platform="${platformKey}">✨ Generate (~$0.05)</button>
+          </div>
+        `}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>
+    <div id="repurpose-detail-modal"></div>`;
+  $('studio-content').innerHTML = html;
+
+  // Wire actions
+  document.querySelectorAll('[data-gen-platform]').forEach(btn => {
+    btn.addEventListener('click', () => generateRepurposeOutput(btn.dataset.genPlatform));
+  });
+  document.querySelectorAll('[data-regen-platform]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('Re-generate this adaptation? The current one will be replaced.')) {
+        generateRepurposeOutput(btn.dataset.regenPlatform);
+      }
+    });
+  });
+  document.querySelectorAll('[data-view-platform]').forEach(btn => {
+    btn.addEventListener('click', () => viewRepurposeDetail(btn.dataset.viewPlatform, outputsByPlatform));
+  });
+  document.querySelectorAll('[data-copy-platform]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const out = outputsByPlatform[btn.dataset.copyPlatform];
+      const meta = out?.metadata || {};
+      const fullText = formatRepurposeForCopy(out, meta);
+      navigator.clipboard.writeText(fullText);
+      toast('Copied to clipboard ✓', 'success');
+    });
+  });
+}
+
+function formatRepurposeForCopy(output, meta){
+  const lines = [];
+  if (meta.title) lines.push(`TITLE: ${meta.title}\n`);
+  if (output.content) lines.push(output.content);
+  if (meta.caption) lines.push(`\n\nCAPTION:\n${meta.caption}`);
+  if (meta.hashtags && meta.hashtags.length) lines.push(`\n\n${meta.hashtags.map(h => h.startsWith('#') ? h : '#' + h).join(' ')}`);
+  return lines.join('');
+}
+
+async function generateRepurposeOutput(platformKey){
+  const config = PLATFORM_CONFIG[platformKey];
+  if (!config) return;
+  const p = APP.currentProject;
+  const ch = APP.currentChannel;
+
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const lang = ch.active_niche_profile?.language || 'en';
+
+  const system = `You are a multi-platform content adaptation expert. Convert a YouTube long-form script into a platform-native ${config.label} version.
+
+Rules:
+- Keep the core insight/value, change the rhythm and structure
+- Match the platform's native voice (Shorts/TikTok: punchy, casual; Reels: visual-first; Newsletter: thoughtful, scannable)
+- ${platformKey === 'newsletter' ? 'Long-form with H2 headers, callout boxes, and a final TL;DR' : 'Hook in first 3 seconds, payoff fast, end with a loop or CTA'}
+
+Output STRICT JSON (no preamble, no markdown):
+{
+  "title": "<platform-appropriate title or headline>",
+  "script": "<the adapted script / body text>",
+  "caption": "<short caption for the post, if applicable>",
+  "hashtags": ["tag1", "tag2", ...],
+  "duration_seconds": <estimated duration in seconds, or null for newsletter>,
+  "notes": "<one-line note about the strategic choice you made>"
+}`;
+
+  const prompt = `Adapt this YouTube script to ${config.label}:
+
+CHANNEL DNA:
+- Niche: ${nicheName}
+- Audience: ${audience}
+- Tone: ${toneName}
+- Language: ${lang}
+
+ORIGINAL VIDEO:
+- Title: ${p.title}
+- Format: ${p.format}
+
+SCRIPT:
+${(p.script || '').slice(0, 8000)}
+
+Generate the ${config.label} adaptation now.`;
+
+  showLoader(`Adapting to ${config.label}...`);
+  try {
+    const result = await AI.invoke(config.capability, {
+      prompt, system,
+    }, { projectId: p.id });
+
+    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+    let parsed;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch (e) {
+      throw new Error('AI returned malformed JSON. Try again.');
+    }
+
+    // Save using legacy schema (source_project_id, output_platform, output_type, content, metadata)
+    await APP.sb.from('video_repurpose_outputs').upsert({
+      user_id: APP.user.id,
+      source_project_id: p.id,
+      output_platform: platformKey,
+      output_type: platformKey === 'newsletter' ? 'newsletter' : 'short_video_script',
+      content: parsed.script || '',
+      metadata: {
+        title: parsed.title || '',
+        caption: parsed.caption || '',
+        hashtags: parsed.hashtags || [],
+        duration_seconds: parsed.duration_seconds || null,
+        notes: parsed.notes || '',
+        cost_estimate: 0.05,
+      },
+      status: 'draft',
+      generated_at: new Date().toISOString(),
+    }, { onConflict: 'source_project_id,output_platform,output_type' });
+
+    hideLoader();
+    toast(`${config.label} generated ✓`, 'success');
+    renderRepurposePanel();
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+function viewRepurposeDetail(platformKey, outputsByPlatform){
+  const config = PLATFORM_CONFIG[platformKey];
+  const output = outputsByPlatform[platformKey];
+  if (!output) return;
+  const meta = output.metadata || {};
+
+  const html = `<div class="modal-overlay" id="repurpose-modal-overlay">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="repurpose-card-icon" style="background:${config.color}">${config.icon}</div>
+          <div>
+            <div style="font-size:16px;font-weight:600">${config.label}</div>
+            <div style="font-size:11px;color:var(--color-text-muted)">${config.duration}</div>
+          </div>
+        </div>
+        <button class="btn ghost sm" id="close-repurpose-modal">✕ Close</button>
+      </div>
+      <div class="modal-body">
+        ${meta.title ? `<div class="rp-field"><div class="rp-field-label">Title / Headline</div><div class="rp-field-value">${escapeHtml(meta.title)}</div></div>` : ''}
+        ${output.content ? `<div class="rp-field"><div class="rp-field-label">${platformKey === 'newsletter' ? 'Body' : 'Script'}</div><pre class="rp-field-value rp-pre">${escapeHtml(output.content)}</pre></div>` : ''}
+        ${meta.caption ? `<div class="rp-field"><div class="rp-field-label">Caption</div><div class="rp-field-value">${escapeHtml(meta.caption)}</div></div>` : ''}
+        ${meta.hashtags && meta.hashtags.length ? `<div class="rp-field"><div class="rp-field-label">Hashtags</div><div class="rp-field-value">${meta.hashtags.map(h => '<span class="rp-hashtag">' + escapeHtml(h.startsWith('#') ? h : '#' + h) + '</span>').join(' ')}</div></div>` : ''}
+        ${meta.duration_seconds ? `<div class="rp-field"><div class="rp-field-label">Estimated duration</div><div class="rp-field-value">${meta.duration_seconds}s</div></div>` : ''}
+        ${meta.notes ? `<div class="rp-field"><div class="rp-field-label">Strategic note</div><div class="rp-field-value" style="font-style:italic;color:var(--color-text-muted)">${escapeHtml(meta.notes)}</div></div>` : ''}
+      </div>
+    </div>
+  </div>`;
+
+  $('repurpose-detail-modal').innerHTML = html;
+  $('close-repurpose-modal').addEventListener('click', () => { $('repurpose-detail-modal').innerHTML = ''; });
+  $('repurpose-modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'repurpose-modal-overlay') $('repurpose-detail-modal').innerHTML = '';
+  });
+}
+
+// ============================================================
+// PROJECT ANALYTICS PANEL — Per-video insights
+// ============================================================
+
+async function renderProjectAnalyticsPanel(){
+  const p = APP.currentProject;
+
+  // Load invocations for cost breakdown
+  const { data: invocations } = await APP.sb.from('ai_invocations')
+    .select('capability, cost_estimate, created_at, latency_ms')
+    .eq('project_id', p.id)
+    .order('created_at', { ascending: false });
+
+  // Load voice clips for voice cost
+  const { data: voiceClips } = await APP.sb.from('project_voice_clips')
+    .select('cost_estimate, char_count, duration_sec, status')
+    .eq('project_id', p.id);
+
+  // Load workflow tasks for production tracking
+  const { data: tasks } = await APP.sb.from('workflow_tasks')
+    .select('id, status, role, created_at, submitted_at, approved_at')
+    .eq('project_id', p.id);
+
+  // Load CutiePulse analyses
+  const { data: cutiepulse } = await APP.sb.from('cutiepulse_analyses')
+    .select('analysis_type, score, created_at')
+    .eq('project_id', p.id)
+    .order('created_at', { ascending: false });
+
+  // Aggregate metrics
+  const totalAICost = (invocations || []).reduce((sum, i) => sum + (parseFloat(i.cost_estimate) || 0), 0);
+  const totalVoiceCost = (voiceClips || []).reduce((sum, c) => sum + (parseFloat(c.cost_estimate) || 0), 0);
+  const totalCost = totalAICost + totalVoiceCost;
+
+  const totalVoiceDuration = (voiceClips || []).reduce((sum, c) => sum + (c.duration_sec || 0), 0);
+  const voiceReady = (voiceClips || []).filter(c => c.status === 'ready').length;
+  const voiceTotal = (voiceClips || []).length;
+
+  const tasksByStatus = (tasks || []).reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
+  const tasksTotal = (tasks || []).length;
+
+  // Time tracking
+  let timeStarted = p.time_started_at || p.created_at;
+  let timePublished = p.time_published_at;
+  let productionDays = null;
+  if (timeStarted && timePublished) {
+    productionDays = Math.round((new Date(timePublished) - new Date(timeStarted)) / 86400000 * 10) / 10;
+  } else if (timeStarted) {
+    productionDays = Math.round((Date.now() - new Date(timeStarted)) / 86400000 * 10) / 10;
+  }
+
+  // Score history (Idea Gate evolution)
+  const ideaScores = (cutiepulse || []).filter(c => c.analysis_type === 'idea_gate').map(c => c.score).reverse();
+  const titleScores = (cutiepulse || []).filter(c => c.analysis_type === 'title_scoring').slice(0, 1).map(c => c.score);
+  const thumbnailScores = (cutiepulse || []).filter(c => c.analysis_type === 'thumbnail_critique').slice(0, 1).map(c => c.score);
+
+  // Capability breakdown
+  const capCostMap = {};
+  (invocations || []).forEach(i => {
+    capCostMap[i.capability] = (capCostMap[i.capability] || 0) + (parseFloat(i.cost_estimate) || 0);
+  });
+  const capBreakdown = Object.entries(capCostMap).sort((a, b) => b[1] - a[1]);
+
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">📊 Analytics</div>
+    <div class="panel-desc">Production metrics for this video. All data live from your invocations history.</div>
+
+    <div class="analytics-grid">
+      <div class="analytics-tile">
+        <div class="analytics-tile-label">Total cost</div>
+        <div class="analytics-tile-value">$${totalCost.toFixed(2)}</div>
+        <div class="analytics-tile-sub">AI: $${totalAICost.toFixed(2)} · Voice: $${totalVoiceCost.toFixed(2)}</div>
+      </div>
+
+      <div class="analytics-tile">
+        <div class="analytics-tile-label">Production time</div>
+        <div class="analytics-tile-value">${productionDays !== null ? productionDays + 'd' : '—'}</div>
+        <div class="analytics-tile-sub">${timePublished ? 'Published' : 'In progress'}</div>
+      </div>
+
+      <div class="analytics-tile">
+        <div class="analytics-tile-label">Idea Gate</div>
+        <div class="analytics-tile-value ${(p.idea_gate_score || 0) >= 75 ? 'good' : (p.idea_gate_score || 0) >= 60 ? 'mid' : 'low'}">${p.idea_gate_score || '—'}</div>
+        <div class="analytics-tile-sub">${ideaScores.length > 1 ? `${ideaScores.length} iterations` : 'Latest score'}</div>
+      </div>
+
+      <div class="analytics-tile">
+        <div class="analytics-tile-label">Voice progress</div>
+        <div class="analytics-tile-value">${voiceReady}/${voiceTotal || '0'}</div>
+        <div class="analytics-tile-sub">${totalVoiceDuration > 0 ? formatDuration(totalVoiceDuration) + ' generated' : 'No clips yet'}</div>
+      </div>
+
+      <div class="analytics-tile">
+        <div class="analytics-tile-label">Workflow tasks</div>
+        <div class="analytics-tile-value">${(tasksByStatus.approved || 0)}/${tasksTotal}</div>
+        <div class="analytics-tile-sub">${Object.entries(tasksByStatus).map(([s,c]) => `${c} ${s}`).join(' · ') || 'No tasks'}</div>
+      </div>
+
+      <div class="analytics-tile">
+        <div class="analytics-tile-label">AI invocations</div>
+        <div class="analytics-tile-value">${invocations?.length || 0}</div>
+        <div class="analytics-tile-sub">${invocations?.length ? 'Avg ' + Math.round((invocations.reduce((s,i) => s + (i.latency_ms || 0), 0) / invocations.length)) + 'ms' : '—'}</div>
+      </div>
+    </div>
+
+    ${ideaScores.length > 0 ? `
+    <div class="analytics-section">
+      <div class="analytics-section-title">📈 CutiePulse scores</div>
+      <div class="analytics-scores-row">
+        ${ideaScores.length > 0 ? `<div class="analytics-score-item">
+          <div class="analytics-score-label">Idea Gate</div>
+          <div class="analytics-score-trend">${ideaScores.map((s,i) => `<span class="score-pill ${s >= 75 ? 'good' : s >= 60 ? 'mid' : 'low'}">${s}</span>${i < ideaScores.length - 1 ? '<span class="score-arrow">→</span>' : ''}`).join('')}</div>
+        </div>` : ''}
+        ${titleScores.length > 0 ? `<div class="analytics-score-item">
+          <div class="analytics-score-label">Title</div>
+          <div class="analytics-score-trend"><span class="score-pill ${titleScores[0] >= 75 ? 'good' : titleScores[0] >= 60 ? 'mid' : 'low'}">${titleScores[0]}</span></div>
+        </div>` : ''}
+        ${thumbnailScores.length > 0 ? `<div class="analytics-score-item">
+          <div class="analytics-score-label">Thumbnail</div>
+          <div class="analytics-score-trend"><span class="score-pill ${thumbnailScores[0] >= 75 ? 'good' : thumbnailScores[0] >= 60 ? 'mid' : 'low'}">${thumbnailScores[0]}</span></div>
+        </div>` : ''}
+      </div>
+    </div>` : ''}
+
+    ${capBreakdown.length > 0 ? `
+    <div class="analytics-section">
+      <div class="analytics-section-title">💰 Cost breakdown by AI capability</div>
+      <div class="cap-cost-list">
+        ${capBreakdown.map(([cap, cost]) => `<div class="cap-cost-row">
+          <div class="cap-cost-name">${escapeHtml(cap.replace(/_/g, ' '))}</div>
+          <div class="cap-cost-bar"><div class="cap-cost-fill" style="width:${Math.min(100, (cost / totalAICost) * 100)}%"></div></div>
+          <div class="cap-cost-value">$${cost.toFixed(3)}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="analytics-section">
+      <div class="analytics-section-title">📍 Publish status</div>
+      ${p.published_youtube_url ? `<div class="out-box">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600">Published on YouTube</div>
+            <div style="font-size:12px;color:var(--color-text-muted);margin-top:3px">${escapeHtml(p.published_youtube_url)}</div>
+          </div>
+          <a href="${escapeHtml(p.published_youtube_url)}" target="_blank" class="btn sm">Open ↗</a>
+        </div>
+      </div>` : `
+        <div class="fld">
+          <label>YouTube URL (when published)</label>
+          <input type="text" id="publish-url-input" placeholder="https://www.youtube.com/watch?v=..." value="${escapeHtml(p.published_youtube_url || '')}" />
+          <div class="fld-hint">Mark this video as published to lock in time-to-produce metrics</div>
+        </div>
+        <button class="btn primary sm" id="mark-published-btn">📍 Mark as published</button>
+      `}
+    </div>
+  </div>`;
+
+  if ($('mark-published-btn')) {
+    $('mark-published-btn').addEventListener('click', markProjectPublished);
+  }
+}
+
+async function markProjectPublished(){
+  const url = $('publish-url-input').value.trim();
+  if (!url) { toast('Enter a YouTube URL first', 'error'); return; }
+  const p = APP.currentProject;
+
+  // Extract YouTube video ID
+  const idMatch = url.match(/(?:v=|youtu\.be\/|shorts\/)([\w-]{11})/);
+  const videoId = idMatch ? idMatch[1] : null;
+
+  // If we don't have time_started_at, use created_at as fallback
+  const updates = {
+    published_youtube_url: url,
+    published_youtube_video_id: videoId,
+    time_published_at: new Date().toISOString(),
+  };
+  if (!p.time_started_at) updates.time_started_at = p.created_at;
+
+  const { error } = await APP.sb.from('projects').update(updates).eq('id', p.id);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  Object.assign(APP.currentProject, updates);
+  toast('Marked as published ✓', 'success');
+  renderProjectAnalyticsPanel();
 }
 
 // ============================================================
