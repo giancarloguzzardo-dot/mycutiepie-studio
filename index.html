@@ -571,6 +571,17 @@ body{
 .ai-action-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 
 .out-box{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:18px;font-size:13px;line-height:1.7;color:var(--color-text);white-space:pre-wrap;min-height:120px;max-height:600px;overflow-y:auto;word-break:break-word;font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace}
+/* ===== EDITABLE OUTLINE ===== */
+.outline-edit{width:100%;box-sizing:border-box;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:18px;font-size:13px;line-height:1.7;color:var(--color-text);min-height:380px;max-height:640px;resize:vertical;font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace}
+.outline-edit:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-soft)}
+.outline-edit-bar{display:flex;align-items:center;gap:12px;margin-top:10px}
+.outline-edit-status{font-size:12px;color:var(--color-warning);font-weight:600}
+.outline-refine{margin-top:18px;padding-top:16px;border-top:1px solid var(--color-border-subtle)}
+.outline-refine-label{display:block;font-size:12px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px}
+.outline-refine-row{display:flex;gap:8px}
+.outline-refine-row input{flex:1;box-sizing:border-box;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--color-text);font-family:inherit}
+.outline-refine-row input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-soft)}
+.outline-stale-note{background:var(--color-warning-soft);color:#854F0B;padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px}
 
 .script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
 .script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
@@ -3729,17 +3740,103 @@ async function replaceThumbInScript(newBrief){
 function renderOutlinePanel(){
   const p = APP.currentProject;
   const hasOutline = !!p.outline;
+  const hasScript = !!p.script;
   $('studio-content').innerHTML = `<div class="panel">
     <div class="panel-title">📋 Outline</div>
-    <div class="panel-desc">Generate a structured outline for your video. We'll use it as the foundation for the full script.</div>
+    <div class="panel-desc">Generate a structured outline, then edit it freely or refine it with AI. This is the foundation for your script.</div>
     <div class="ai-action-bar">
-      <button class="btn primary" id="gen-outline-btn">${hasOutline ? '🔄 Regenerate outline' : '✨ Generate outline with AI'}</button>
+      <button class="btn primary" id="gen-outline-btn">${hasOutline ? '🔄 Regenerate (fresh)' : '✨ Generate outline with AI'}</button>
       ${hasOutline ? '<button class="btn" id="continue-script-btn">Continue to Script →</button>' : ''}
     </div>
-    <div class="out-box" id="outline-box">${hasOutline ? escapeHtml(p.outline) : 'Click "Generate outline" to start.'}</div>
+    ${hasOutline ? `
+      ${hasScript ? '<div class="outline-stale-note">⚠️ A script already exists for this video. If you change the outline, regenerate the script afterwards so it stays in sync.</div>' : ''}
+      <textarea class="outline-edit" id="outline-edit" spellcheck="false">${escapeHtml(p.outline)}</textarea>
+      <div class="outline-edit-bar">
+        <button class="btn primary" id="save-outline-btn" disabled>💾 Save changes</button>
+        <span class="outline-edit-status" id="outline-edit-status"></span>
+      </div>
+      <div class="outline-refine">
+        <label class="outline-refine-label">✨ Refine with AI — tell it what to change (it rewrites the whole outline, keeping the structure)</label>
+        <div class="outline-refine-row">
+          <input type="text" id="outline-refine-input" placeholder="e.g. make section 3 punchier · add a section about taxes · shorten the intro" />
+          <button class="btn" id="refine-outline-btn">Refine</button>
+        </div>
+      </div>
+    ` : '<div class="out-box" id="outline-box">Click "Generate outline" to start.</div>'}
   </div>`;
   $('gen-outline-btn').addEventListener('click', generateOutline);
   if ($('continue-script-btn')) $('continue-script-btn').addEventListener('click', () => { APP.currentTab = 'script'; renderVideoStudio(); });
+  if ($('outline-edit')){
+    const ta = $('outline-edit');
+    ta.addEventListener('input', () => {
+      const changed = ta.value !== (APP.currentProject.outline || '');
+      $('save-outline-btn').disabled = !changed;
+      $('outline-edit-status').textContent = changed ? 'Unsaved changes' : '';
+    });
+    $('save-outline-btn').addEventListener('click', saveOutline);
+    $('refine-outline-btn').addEventListener('click', refineOutline);
+    $('outline-refine-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); refineOutline(); } });
+  }
+}
+
+// Save manual edits to the outline. Does NOT touch current_stage,
+// so editing an outline never knocks the video back in the pipeline.
+async function saveOutline(){
+  const p = APP.currentProject;
+  const ta = $('outline-edit'); if (!ta) return;
+  const newText = ta.value.trim();
+  if (!newText){ toast('Outline cannot be empty', 'error'); return; }
+  showLoader('Saving outline...');
+  const { error } = await APP.sb.from('projects').update({ outline: newText }).eq('id', p.id);
+  hideLoader();
+  if (error){ toast('Error: ' + error.message, 'error'); return; }
+  APP.currentProject.outline = newText;
+  toast('Outline saved ✓', 'success');
+  renderVideoStudio();
+}
+
+// Ask the AI to revise the CURRENT (possibly edited) outline per a free-text
+// instruction. Result lands in the textarea unsaved — user reviews, then Saves.
+async function refineOutline(){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const ta = $('outline-edit'); if (!ta) return;
+  const instruction = $('outline-refine-input').value.trim();
+  if (!instruction){ toast('Tell the AI what to change first', 'error'); return; }
+  const current = ta.value.trim();
+  if (!current){ toast('Nothing to refine — generate an outline first', 'error'); return; }
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+
+  showLoader('Refining outline with AI...');
+  try {
+    const system = `You are an expert YouTube content strategist. You revise video outlines while preserving their overall structure and any "SECTION N:" headings the script generator relies on.`;
+    const prompt = `Here is the current video outline:
+
+---
+${current}
+---
+
+Revise it according to this instruction: "${instruction}"
+
+Rules:
+- Keep the same overall structure and formatting (markdown headers; keep "SECTION 1:", "SECTION 2:" style headings where they exist).
+- Change only what the instruction asks for; leave everything else intact.
+- Keep it in ${langName}, in a ${toneName} tone.
+- Output ONLY the full revised outline. No preamble, no explanation, no closing remarks.`;
+    const result = await AI.invoke('generate_outline', { prompt, system }, { projectId: p.id });
+    const revised = (result.content?.[0]?.text || result.text || '').trim();
+    hideLoader();
+    if (!revised){ toast('AI returned nothing — try again', 'error'); return; }
+    ta.value = revised;
+    $('save-outline-btn').disabled = false;
+    $('outline-edit-status').textContent = 'Refined — review and Save';
+    $('outline-refine-input').value = '';
+    toast('Outline refined — review it, then Save ✓', 'success');
+  } catch(e){
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
 }
 
 async function generateOutline(){
