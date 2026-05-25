@@ -582,6 +582,12 @@ body{
 .outline-refine-row input{flex:1;box-sizing:border-box;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--color-text);font-family:inherit}
 .outline-refine-row input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-soft)}
 .outline-stale-note{background:var(--color-warning-soft);color:#854F0B;padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px}
+/* ===== EXPORT PACKAGE ===== */
+.export-checklist{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.export-check{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--color-border)}
+.export-check.on{background:var(--color-accent-soft);color:var(--color-accent);border-color:transparent}
+.export-check.off{color:var(--color-text-subtle)}
+.export-note{margin-top:14px;font-size:12px;color:var(--color-text-muted);line-height:1.6}
 
 .script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
 .script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
@@ -4975,20 +4981,45 @@ $('task-save').addEventListener('click', async () => {
 // ============================================================
 // EXPORT PANEL
 // ============================================================
-function renderExportPanel(){
+async function renderExportPanel(){
   const p = APP.currentProject;
+  const ch = APP.currentChannel;
   const hasContent = p.outline || p.script;
+
+  // Gather what's available for the package
+  let visualSync = null;
+  try {
+    if (p.visual_sync) visualSync = typeof p.visual_sync === 'string' ? JSON.parse(p.visual_sync) : p.visual_sync;
+  } catch(_){}
+  if (!visualSync && APP._visualSyncCache && APP._visualSyncCache[p.id]) visualSync = APP._visualSyncCache[p.id];
+  const shotCount = visualSync && visualSync.shots ? visualSync.shots.length : 0;
+
+  let readyClips = [];
+  try {
+    const { data: clips } = await APP.sb.from('project_voice_clips')
+      .select('*').eq('project_id', p.id).eq('status', 'ready').order('section_index', { ascending: true });
+    readyClips = clips || [];
+  } catch(_){}
+
   $('studio-content').innerHTML = `<div class="panel">
     <div class="panel-title">📦 Export</div>
-    <div class="panel-desc">Download the complete production package.</div>
-    ${!hasContent ? '<div class="out-box">Generate outline and script first.</div>' : `
+    <div class="panel-desc">Download the complete production package — everything your editor needs, in one zip.</div>
+    ${!hasContent ? '<div class="out-box">Generate an outline and script first.</div>' : `
+      <div class="export-checklist">
+        <div class="export-check ${p.outline ? 'on' : 'off'}">${p.outline ? '✓' : '○'} Outline</div>
+        <div class="export-check ${p.script ? 'on' : 'off'}">${p.script ? '✓' : '○'} Full script</div>
+        <div class="export-check ${shotCount ? 'on' : 'off'}">${shotCount ? '✓' : '○'} Shot list${shotCount ? ` (${shotCount} cues)` : ' — not generated'}</div>
+        <div class="export-check ${readyClips.length ? 'on' : 'off'}">${readyClips.length ? '✓' : '○'} Voice${readyClips.length ? ` (${readyClips.length} MP3${readyClips.length === 1 ? '' : 's'})` : ' — none generated'}</div>
+      </div>
       <div class="ai-action-bar">
-        <button class="btn primary" id="export-md-btn">⬇ Download as Markdown</button>
+        <button class="btn primary" id="export-zip-btn">📦 Download production package (.zip)</button>
+        <button class="btn" id="export-md-btn">⬇ Script + outline (.md)</button>
         <button class="btn" id="copy-all-btn">📋 Copy everything</button>
       </div>
-      <div class="out-box" id="export-preview">${escapeHtml(buildExportContent(p))}</div>
+      <div class="export-note">The zip contains a README, your outline & script as text, the shot list (.txt + .csv), and every voice clip as an MP3 — plus a combined <strong>full-voiceover.mp3</strong>. Open it next to CapCut and you have everything in one place.</div>
     `}
   </div>`;
+  if ($('export-zip-btn')) $('export-zip-btn').addEventListener('click', () => downloadProductionZip(visualSync, readyClips));
   if ($('export-md-btn')) $('export-md-btn').addEventListener('click', exportMarkdown);
   if ($('copy-all-btn')) $('copy-all-btn').addEventListener('click', () => { navigator.clipboard.writeText(buildExportContent(p)); toast('Copied', 'success'); });
 }
@@ -5026,6 +5057,105 @@ function exportMarkdown(){
   a.click();
   URL.revokeObjectURL(url);
   toast('Downloaded', 'success');
+}
+
+// Load an external script once (used for JSZip on demand).
+function loadScriptOnce(src){
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[data-src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.setAttribute('data-src', src);
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load packager library'));
+    document.head.appendChild(s);
+  });
+}
+
+function shotListToCSV(payload){
+  const shots = (payload && payload.shots) || [];
+  const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const header = ['Timestamp','Section','Keyword','Search query','Visual note','Pexels URL'].map(esc).join(',');
+  const rows = shots.map(s => [
+    s.timestampLabel, s.section, s.keyword, s.search_query, s.visual_note,
+    'https://www.pexels.com/search/videos/' + encodeURIComponent(s.search_query || '') + '/'
+  ].map(esc).join(','));
+  return [header, ...rows].join('\r\n');
+}
+
+async function downloadProductionZip(visualSync, readyClips){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const safe = (p.title || 'video').replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'video';
+  showLoader('Loading packager...');
+  try {
+    await loadScriptOnce('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+    if (!window.JSZip) throw new Error('Packager not available');
+    const zip = new JSZip();
+    const root = zip.folder(safe);
+
+    // README index
+    const lines = [];
+    lines.push(`PRODUCTION PACKAGE — ${p.title || 'Untitled'}`);
+    lines.push(`Channel: ${ch ? ch.name : ''}`);
+    lines.push(`Format: ${FORMAT_LABELS[p.format] || p.format}`);
+    lines.push(`Generated: ${new Date().toLocaleString()}`);
+    lines.push('');
+    lines.push('CONTENTS:');
+    lines.push(p.outline ? '- outline.txt' : '- (no outline)');
+    lines.push(p.script ? '- script.txt' : '- (no script)');
+    if (visualSync && visualSync.shots && visualSync.shots.length) lines.push('- shot-list.txt / shot-list.csv');
+    if (readyClips.length) lines.push(`- voice/ (${readyClips.length} clips + full-voiceover.mp3)`);
+    lines.push('');
+    lines.push('Open the shot list next to CapCut and place each B-roll cue at its timestamp.');
+    root.file('README.txt', lines.join('\n'));
+
+    if (p.outline) root.file('outline.txt', p.outline);
+    if (p.script) root.file('script.txt', p.script);
+
+    if (visualSync && visualSync.shots && visualSync.shots.length){
+      root.file('shot-list.txt', visualSyncToText(visualSync));
+      root.file('shot-list.csv', shotListToCSV(visualSync));
+    }
+
+    // Voice clips (fetched from public storage URLs)
+    if (readyClips.length){
+      const voiceFolder = root.folder('voice');
+      const blobs = [];
+      for (let i = 0; i < readyClips.length; i++){
+        const clip = readyClips[i];
+        showLoader(`Packaging voice (${i + 1}/${readyClips.length})...`);
+        if (!clip.audio_url) continue;
+        try {
+          const resp = await fetch(clip.audio_url);
+          const blob = await resp.blob();
+          const n = String(i + 1).padStart(2, '0');
+          const t = (clip.section_title || ('section_' + clip.section_index))
+            .replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'section';
+          voiceFolder.file(`${n}_${t}.mp3`, blob);
+          blobs.push(blob);
+        } catch(e){ console.warn('Voice clip fetch failed:', clip.audio_url, e); }
+      }
+      // Combined full voiceover
+      if (blobs.length > 1){
+        try {
+          const combined = await concatenateAudioBlobs(blobs);
+          voiceFolder.file('full-voiceover.mp3', combined);
+        } catch(e){ console.warn('Combine failed:', e); }
+      }
+    }
+
+    showLoader('Building zip...');
+    const out = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(out);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${safe}_package.zip`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    hideLoader();
+    toast('Production package downloaded ✓', 'success');
+  } catch(e){
+    hideLoader();
+    toast('Export failed: ' + e.message, 'error');
+  }
 }
 
 // ============================================================
