@@ -5633,7 +5633,7 @@ async function renderProjectAnalyticsPanel(){
 
   // Load invocations for cost breakdown
   const { data: invocations } = await APP.sb.from('ai_invocations')
-    .select('capability, cost_estimate, created_at, latency_ms')
+    .select('*')
     .eq('project_id', p.id)
     .order('created_at', { ascending: false });
 
@@ -5649,7 +5649,7 @@ async function renderProjectAnalyticsPanel(){
 
   // Load CutiePulse analyses
   const { data: cutiepulse } = await APP.sb.from('cutiepulse_analyses')
-    .select('analysis_type, score, created_at')
+    .select('*')
     .eq('project_id', p.id)
     .order('created_at', { ascending: false });
 
@@ -5676,9 +5676,9 @@ async function renderProjectAnalyticsPanel(){
   }
 
   // Score history (Idea Gate evolution)
-  const ideaScores = (cutiepulse || []).filter(c => c.analysis_type === 'idea_gate').map(c => c.score).reverse();
-  const titleScores = (cutiepulse || []).filter(c => c.analysis_type === 'title_scoring').slice(0, 1).map(c => c.score);
-  const thumbnailScores = (cutiepulse || []).filter(c => c.analysis_type === 'thumbnail_critique').slice(0, 1).map(c => c.score);
+  const ideaScores = (cutiepulse || []).filter(c => c.analysis_type === 'idea_gate').map(c => c.overall_score).reverse();
+  const titleScores = (cutiepulse || []).filter(c => c.analysis_type === 'title_scoring').slice(0, 1).map(c => c.overall_score);
+  const thumbnailScores = (cutiepulse || []).filter(c => c.analysis_type === 'thumbnail_critique').slice(0, 1).map(c => c.overall_score);
 
   // Capability breakdown
   const capCostMap = {};
