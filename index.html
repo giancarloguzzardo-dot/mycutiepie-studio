@@ -3638,6 +3638,7 @@ async function renderVoicePanel(){
           <div class="voice-section-actions">
             <a href="${audioUrl}" download="${escapeHtml(s.title.replace(/[^a-z0-9]/gi,'_'))}.mp3" class="btn sm">⬇ Download</a>
             <button class="btn sm" data-regen-section="${s.originalIdx}">🔄 Re-generate</button>
+            <button class="btn sm danger" data-delete-section="${s.originalIdx}">🗑 Delete</button>
           </div>
         ` : `
           <div class="voice-section-actions">
@@ -3714,10 +3715,36 @@ async function renderVoicePanel(){
       }
     });
   });
+  document.querySelectorAll('[data-delete-section]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('Delete this voice clip? You can regenerate it later.')) {
+        deleteVoiceForSection(parseInt(btn.dataset.deleteSection));
+      }
+    });
+  });
 
   // Wire generate all
   if ($('gen-all-btn')) {
     $('gen-all-btn').addEventListener('click', () => generateAllVoices(vocalSections, clips || []));
+  }
+}
+
+async function deleteVoiceForSection(sectionIndex){
+  const p = APP.currentProject;
+  showLoader('Deleting voice clip...');
+  try {
+    // Remove the DB row for this section's clip
+    const { error } = await APP.sb.from('project_voice_clips')
+      .delete()
+      .eq('project_id', p.id)
+      .eq('section_index', sectionIndex);
+    if (error) throw error;
+    hideLoader();
+    toast('Voice clip deleted', 'success');
+    renderVoicePanel();
+  } catch (e) {
+    hideLoader();
+    toast('Error deleting: ' + e.message, 'error');
   }
 }
 
@@ -3869,8 +3896,17 @@ async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annot
 
   const tasks = annotations
     .map(ann => {
-      const role = roleMap[ann.category] || 'video_editor';
-      const briefText = `${sectionTag} ${ann.category.replace(/_/g, ' ')}: ${ann.text.slice(0, 200)} (auto from script annotation)`;
+      // New annotation structure has {type, text} but no `category`.
+      // Infer the role from keywords in the annotation text.
+      const annText = (ann.text || '').toString();
+      const lc = annText.toLowerCase();
+      let role = 'video_editor';
+      if (/voice|narrat|tone|pause|whisper|pace|delivery/.test(lc)) role = 'voice_actor';
+      else if (/thumbnail|cover/.test(lc)) role = 'thumbnail_designer';
+      else if (/review|check|approve/.test(lc)) role = 'reviewer';
+      else if (ann.type === 'production' || /camera|shot|cut|lighting|b-roll|broll|graphic|overlay|visual|footage/.test(lc)) role = 'video_editor';
+
+      const briefText = `${sectionTag} ${annText.slice(0, 200)} (auto from script annotation)`;
       // Dedupe
       if (existingBriefs.has(briefText)) return null;
       return {
