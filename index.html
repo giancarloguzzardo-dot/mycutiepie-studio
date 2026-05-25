@@ -3279,26 +3279,48 @@ function renderScriptPanel(){
 }
 
 function parseScriptSections(text){
-  // Try to parse "## Section Name" or "# 1. Section Name" patterns
+  // Parse markdown headers. Treat h2 (##) and h3 (###) as section boundaries.
+  // Special handling: if an h2 "MAIN BODY" contains h3 subsections (### SECTION 1...),
+  // the h3 subsections become the real vocal sections (not the empty MAIN BODY parent).
   const lines = text.split('\n');
   const sections = [];
   let currentTitle = 'Script';
   let currentBody = [];
+  let currentLevel = 0;
+
+  const pushCurrent = () => {
+    const bodyText = currentBody.join('\n').trim();
+    // Strip a leading "MAIN BODY" parent that has no real prose (just contains subsections)
+    if (currentBody.length > 0 || sections.length > 0) {
+      sections.push({ title: currentTitle, body: bodyText, level: currentLevel });
+    }
+  };
+
   lines.forEach(line => {
-    const headerMatch = line.match(/^#{1,3}\s+(.+)$/);
+    const headerMatch = line.match(/^(#{1,3})\s+(.+)$/);
     if (headerMatch) {
-      if (currentBody.length > 0 || sections.length > 0) {
-        sections.push({ title: currentTitle, body: currentBody.join('\n').trim() });
-      }
-      currentTitle = headerMatch[1].trim();
+      pushCurrent();
+      currentLevel = headerMatch[1].length;
+      currentTitle = headerMatch[2].trim();
       currentBody = [];
     } else {
       currentBody.push(line);
     }
   });
-  if (currentBody.length > 0) sections.push({ title: currentTitle, body: currentBody.join('\n').trim() });
+  if (currentBody.length > 0) pushCurrent();
+
   if (sections.length === 0) return [{ title: 'Full Script', body: text }];
-  return sections;
+
+  // Post-process: drop "container" sections that have almost no prose of their own
+  // (e.g. a "MAIN BODY" h2 whose content is entirely in h3 children).
+  // A container = very short body AND followed by deeper-level sections.
+  const cleaned = sections.filter((s, i) => {
+    const next = sections[i + 1];
+    const isContainer = s.body.length < 60 && next && next.level > s.level;
+    return !isContainer;
+  });
+
+  return cleaned.length > 0 ? cleaned : sections;
 }
 
 async function generateScript(){
@@ -3413,26 +3435,31 @@ function isVocalSection(title, body){
   // Hard rule 1: skip empty/tiny bodies
   if (!body || body.length < 50) return false;
 
-  // Hard rule 2: skip if title contains a blacklist keyword
-  if (NON_VOCAL_SECTION_KEYWORDS.some(kw => t.includes(kw))) return false;
+  // Hard rule 2: skip ONLY clear non-vocal metadata sections (exact-ish title match)
+  // These are structural sections that are never spoken aloud.
+  const STRICT_SKIP = [
+    'thumbnail', 'seo metadata', 'metadata', 'b-roll', 'b roll', 'broll',
+    'stock footage', 'tags', 'hashtags', 'file header', 'working title',
+    'chapter timestamps', 'kling', 'veo', 'ai video', 'visual cues',
+    'b-roll suggestions', 'production notes',
+  ];
+  if (STRICT_SKIP.some(kw => t.includes(kw))) return false;
 
-  // Hard rule 3: body looks like metadata (lots of ** ** markers vs prose)
-  const specialMarkers = (body.match(/\*\*[^*]+:\*\*/g) || []).length;
-  const periods = (body.match(/[.!?]/g) || []).length;
-  if (specialMarkers > 3 && specialMarkers > periods / 2) return false;
-
-  // Hard rule 4: body is mostly bullets/list (>50% lines)
-  const lines = body.split('\n').filter(l => l.trim());
-  if (lines.length > 3) {
-    const listLines = lines.filter(l => /^(\s*[-*•]|\s*\d+[\.)])/.test(l)).length;
-    if (listLines / lines.length > 0.5) return false;
+  // Hard rule 3: if title is clearly a vocal section, ALWAYS include (overrides everything below)
+  const VOCAL_TITLES = [
+    'hook', 'intro', 'setup', 'promise', 'body', 'main', 'act', 'part',
+    'outro', 'close', 'conclusion', 'cta', 'call to action',
+    'section', 'point', 'step', 'reason', 'mistake', 'move', 'moves',
+    'principle', 'layer', 'tip', 'lesson', 'architecture', 'velocity',
+  ];
+  if (VOCAL_TITLES.some(kw => t.includes(kw))) {
+    // Even vocal sections must have real prose, not just be a list of bullets
+    return body.length > 80;
   }
 
-  // Soft: whitelist match
-  if (VOCAL_WHITELIST_KEYWORDS.some(kw => t.includes(kw))) return true;
-
-  // Default: substantial prose only
-  return body.length > 200 && periods >= 2;
+  // Default for unknown titles: include if it has substantial prose
+  const periods = (body.match(/[.!?]/g) || []).length;
+  return body.length > 150 && periods >= 2;
 }
 
 function cleanSectionTitle(title){
@@ -3643,56 +3670,92 @@ async function saveNewVoice(){
 // SCRIPT ANNOTATION PARSER
 // Extract scenic directions and clean text for voice generation
 // ============================================================
+// Split long text into chunks at sentence boundaries, each under maxChars.
+// Used so long sections never hit the ElevenLabs per-request limit or time out.
+function splitTextIntoChunks(text, maxChars = 4500) {
+  if (text.length <= maxChars) return [text];
+
+  const chunks = [];
+  // Split into sentences (keep the punctuation). Falls back to paragraph/word if needed.
+  const sentences = text.match(/[^.!?]+[.!?]+[\s]*|[^.!?]+$/g) || [text];
+
+  let current = '';
+  for (const sentence of sentences) {
+    // If a single sentence is itself longer than maxChars, hard-split it by words.
+    if (sentence.length > maxChars) {
+      if (current) { chunks.push(current.trim()); current = ''; }
+      const words = sentence.split(/\s+/);
+      let wordChunk = '';
+      for (const w of words) {
+        if ((wordChunk + ' ' + w).length > maxChars) {
+          chunks.push(wordChunk.trim());
+          wordChunk = w;
+        } else {
+          wordChunk += (wordChunk ? ' ' : '') + w;
+        }
+      }
+      if (wordChunk) current = wordChunk;
+      continue;
+    }
+    if ((current + sentence).length > maxChars) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current += sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.filter(c => c.length > 0);
+}
+
+// Concatenate multiple MP3 Blobs into a single Blob.
+// MP3 frames are independently decodable, so naive concatenation plays back fine.
+async function concatenateAudioBlobs(blobs) {
+  if (blobs.length === 1) return blobs[0];
+  const buffers = await Promise.all(blobs.map(b => b.arrayBuffer()));
+  return new Blob(buffers, { type: 'audio/mpeg' });
+}
+
 function extractAnnotations(text) {
-  // Patterns to identify and extract:
-  // **[Camera: ...]**, **[Shot: ...]**, **[B-roll: ...]**, **[Music: ...]**, **[SFX: ...]**
-  // **[1:30-2:15 | LAYER NAME]** (timestamp + section markers)
-  // [VISUAL: ...], [CUT TO: ...], etc.
+  // Strategy: stage directions in scripts are almost always wrapped in brackets.
+  // Instead of whitelisting categories (fragile), we strip ALL bracketed notes,
+  // since spoken dialogue is never written inside [ ] or **[ ]**.
   const annotations = [];
   let cleanText = text;
 
-  // Pattern 1: **[Camera/Shot/B-roll/Music/SFX/Visual: text]**
-  const directorialPattern = /\*\*\[(Camera|Shot|B-roll|B roll|Music|SFX|Visual|Lighting|Cut to|CUT TO|VISUAL|CAMERA|MUSIC|SFX|LIGHTING)[:\s]([^\]]+)\]\*\*/gi;
+  // Pattern 1: **[ anything ]** — bold-wrapped stage directions (most common)
+  // Catches [Camera:...], [Brief pause...], [Direct stare...], [Lean in...], etc.
+  const boldBracketPattern = /\*\*\[([^\]]+)\]\*\*/g;
   let match;
-  while ((match = directorialPattern.exec(text)) !== null) {
-    annotations.push({
-      type: 'production',
-      category: match[1].toLowerCase().replace(/\s+/g, '_'),
-      text: match[2].trim(),
-      fullMatch: match[0],
-    });
+  while ((match = boldBracketPattern.exec(text)) !== null) {
+    annotations.push({ type: 'production', text: match[1].trim(), fullMatch: match[0] });
   }
-  cleanText = cleanText.replace(directorialPattern, '');
+  cleanText = cleanText.replace(boldBracketPattern, '');
 
-  // Pattern 2: **[0:35-1:30 | SECTION NAME]** — timestamp markers
-  const timestampPattern = /\*\*\[(\d+:\d+(?:-\d+:\d+)?)\s*\|\s*([^\]]+)\]\*\*/gi;
-  while ((match = timestampPattern.exec(text)) !== null) {
-    annotations.push({
-      type: 'editing',
-      category: 'timestamp_marker',
-      timestamp: match[1].trim(),
-      text: match[2].trim(),
-      fullMatch: match[0],
-    });
-  }
-  cleanText = cleanText.replace(timestampPattern, '');
-
-  // Pattern 3: [VISUAL: ...] without ** wrapping
-  const bareBracketPattern = /\[(VISUAL|CUT TO|FADE|TRANSITION|MONTAGE|GRAPHIC|TEXT OVERLAY|LOWER THIRD)[:\s]([^\]]+)\]/gi;
-  while ((match = bareBracketPattern.exec(text)) !== null) {
-    annotations.push({
-      type: 'editing',
-      category: match[1].toLowerCase().replace(/\s+/g, '_'),
-      text: match[2].trim(),
-      fullMatch: match[0],
-    });
+  // Pattern 2: plain [ anything ] — bare-bracket stage directions
+  // Catches [VISUAL:...], [1:30-2:15 | ...], [Pause], [music swells], etc.
+  const bareBracketPattern = /\[([^\]]+)\]/g;
+  while ((match = bareBracketPattern.exec(cleanText)) !== null) {
+    annotations.push({ type: 'editing', text: match[1].trim(), fullMatch: match[0] });
   }
   cleanText = cleanText.replace(bareBracketPattern, '');
 
-  // Cleanup: collapse multiple spaces/newlines from removals
+  // Pattern 3: bold timestamp/section markers WITHOUT brackets, e.g. **6:00 - 7:00 | TITLE**
+  const boldTimestampPattern = /\*\*\d+:\d+\s*[-–]\s*\d+:\d+[^\*]*\*\*/g;
+  cleanText = cleanText.replace(boldTimestampPattern, '');
+
+  // Pattern 4: standalone parenthetical stage directions on their own line
+  // e.g. "(pause)", "(beat)", "(whispering)" — only when short & directive
+  const parenDirective = /\((?:pause|beat|long pause|brief pause|silence|whisper[a-z]*|laughs?|sighs?|breathes?)[^)]*\)/gi;
+  cleanText = cleanText.replace(parenDirective, '');
+
+  // Cleanup: strip leftover markdown bold/italic markers used for emphasis on directions,
+  // collapse whitespace, remove empty lines left behind.
   cleanText = cleanText
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
+    .replace(/^\s*[-–—]\s*$/gm, '')   // dangling dashes on their own line
+    .replace(/\n\s*\n/g, '\n\n')
     .trim();
 
   return { cleanText, annotations };
@@ -3777,7 +3840,9 @@ async function generateVoiceForSection(sectionIndex){
   const { cleanText, annotations } = extractAnnotations(section.body);
 
   if (!cleanText || cleanText.length < 10) { toast('Section too short to generate (after cleaning annotations)', 'error'); return; }
-  if (cleanText.length > 5000) { toast('Section too long (max 5000 chars)', 'error'); return; }
+
+  // Split long sections into chunks so we never hit the ElevenLabs per-request limit.
+  const chunks = splitTextIntoChunks(cleanText, 4500);
 
   // CREATE WORKFLOW TASKS from annotations (silently, in background)
   if (annotations.length > 0) {
@@ -3801,15 +3866,24 @@ async function generateVoiceForSection(sectionIndex){
     cost_estimate: estimateVoiceCost(cleanText),
   }, { onConflict: 'project_id,section_index' });
 
-  showLoader(`Generating voice for "${section.title}"... ${annotations.length > 0 ? `(+ ${annotations.length} workflow tasks created)` : ''}`);
+  showLoader(`Generating voice for "${section.title}"...${chunks.length > 1 ? ` (${chunks.length} parts)` : ''} ${annotations.length > 0 ? `(+ ${annotations.length} workflow tasks)` : ''}`);
   try {
-    const blob = await AI.invoke('generate_voice', {
-      text: cleanText, voice_id: voiceId, model_id: 'eleven_turbo_v2_5'
-    }, { projectId: p.id });
+    // Generate each chunk, then concatenate into one MP3.
+    const blobs = [];
+    for (let i = 0; i < chunks.length; i++) {
+      if (chunks.length > 1) {
+        showLoader(`Generating voice for "${section.title}" — part ${i + 1}/${chunks.length}...`);
+      }
+      const blob = await AI.invoke('generate_voice', {
+        text: chunks[i], voice_id: voiceId, model_id: 'eleven_turbo_v2_5'
+      }, { projectId: p.id });
+      blobs.push(blob);
+    }
+    const finalBlob = await concatenateAudioBlobs(blobs);
 
     // Upload to Storage
     const audioPath = `voices/${APP.user.id}/${p.id}/section_${sectionIndex}_${Date.now()}.mp3`;
-    const { error: upErr } = await APP.sb.storage.from('media').upload(audioPath, blob, {
+    const { error: upErr } = await APP.sb.storage.from('media').upload(audioPath, finalBlob, {
       contentType: 'audio/mpeg',
       upsert: true,
     });
