@@ -588,6 +588,15 @@ body{
 .export-check.on{background:var(--color-accent-soft);color:var(--color-accent);border-color:transparent}
 .export-check.off{color:var(--color-text-subtle)}
 .export-note{margin-top:14px;font-size:12px;color:var(--color-text-muted);line-height:1.6}
+/* ===== REPURPOSE BATCH PICKER ===== */
+.repurpose-toolbar{background:var(--color-surface-2);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px}
+.repurpose-pick-label{font-size:12px;font-weight:600;color:var(--color-text-muted);margin-bottom:10px}
+.repurpose-pick-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.repurpose-pick{display:inline-flex;align-items:center;gap:7px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.12s;user-select:none}
+.repurpose-pick:hover{border-color:var(--color-accent)}
+.repurpose-pick input{accent-color:var(--color-accent);cursor:pointer;margin:0}
+.repurpose-pick.done{opacity:.55;cursor:default;color:var(--color-success)}
+.repurpose-pick.done:hover{border-color:var(--color-border)}
 
 .script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
 .script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
@@ -2614,10 +2623,10 @@ async function renderVideoStudio(){
         <button class="studio-nav-item ${APP.currentTab === 'voice' ? 'on' : ''}" data-tab="voice"><span class="studio-nav-icon">🎙</span>Voice</button>
         <button class="studio-nav-item ${APP.currentTab === 'visualsync' ? 'on' : ''}" data-tab="visualsync"><span class="studio-nav-icon">🎬</span>Visual Sync</button>
         <button class="studio-nav-item ${APP.currentTab === 'prepublish' ? 'on' : ''}" data-tab="prepublish"><span class="studio-nav-icon">🎯</span>Pre-publish</button>
-        <button class="studio-nav-item ${APP.currentTab === 'repurpose' ? 'on' : ''}" data-tab="repurpose"><span class="studio-nav-icon">🔁</span>Repurpose</button>
         <button class="studio-nav-item ${APP.currentTab === 'workflow' ? 'on' : ''}" data-tab="workflow"><span class="studio-nav-icon">🗂</span>Workflow</button>
         <button class="studio-nav-item ${APP.currentTab === 'analytics' ? 'on' : ''}" data-tab="analytics"><span class="studio-nav-icon">📊</span>Analytics</button>
         <button class="studio-nav-item ${APP.currentTab === 'export' ? 'on' : ''}" data-tab="export"><span class="studio-nav-icon">📦</span>Export</button>
+        <button class="studio-nav-item ${APP.currentTab === 'repurpose' ? 'on' : ''}" data-tab="repurpose"><span class="studio-nav-icon">🔁</span>Repurpose</button>
       </nav>
     </aside>`;
   }
@@ -5219,6 +5228,24 @@ async function renderRepurposePanel(){
   if (!hasScript) {
     html += `<div class="out-box" style="margin-top:14px">Generate the script first. Repurpose works from your full YouTube script.</div>`;
   } else {
+    // Batch platform picker: choose which platforms, generate them together.
+    const allKeys = Object.keys(PLATFORM_CONFIG);
+    const pendingKeys = allKeys.filter(k => !outputsByPlatform[k]);
+    const allDone = pendingKeys.length === 0;
+    let chips = '';
+    allKeys.forEach(k => {
+      const c = PLATFORM_CONFIG[k];
+      const done = !!outputsByPlatform[k];
+      chips += `<label class="repurpose-pick ${done ? 'done' : ''}">
+        <input type="checkbox" data-pick="${k}" ${done ? 'disabled' : 'checked'} />
+        <span>${c.icon} ${escapeHtml(c.label)}${done ? ' ✓' : ''}</span>
+      </label>`;
+    });
+    html += `<div class="repurpose-toolbar">
+      <div class="repurpose-pick-label">Pick which platforms to repurpose to, then generate them all together:</div>
+      <div class="repurpose-pick-row">${chips}</div>
+      <button class="btn primary" id="repurpose-gen-selected" ${allDone ? 'disabled' : ''}>${allDone ? 'All platforms generated ✓' : '✨ Generate selected'}</button>
+    </div>`;
     html += `<div class="repurpose-grid">`;
     Object.entries(PLATFORM_CONFIG).forEach(([platformKey, config]) => {
       const existing = outputsByPlatform[platformKey];
@@ -5254,6 +5281,12 @@ async function renderRepurposePanel(){
   $('studio-content').innerHTML = html;
 
   // Wire actions
+  if ($('repurpose-gen-selected')){
+    $('repurpose-gen-selected').addEventListener('click', () => {
+      const picked = Array.from(document.querySelectorAll('[data-pick]:checked')).map(el => el.dataset.pick);
+      generateSelectedRepurpose(picked);
+    });
+  }
   document.querySelectorAll('[data-gen-platform]').forEach(btn => {
     btn.addEventListener('click', () => generateRepurposeOutput(btn.dataset.genPlatform));
   });
@@ -5287,9 +5320,11 @@ function formatRepurposeForCopy(output, meta){
   return lines.join('');
 }
 
-async function generateRepurposeOutput(platformKey){
+// Core generation: produces and saves one platform adaptation.
+// No loader / toast / re-render here, so it can be reused by the batch path.
+async function generateRepurposeCore(platformKey){
   const config = PLATFORM_CONFIG[platformKey];
-  if (!config) return;
+  if (!config) throw new Error('Unknown platform');
   const p = APP.currentProject;
   const ch = APP.currentChannel;
 
@@ -5332,41 +5367,45 @@ ${(p.script || '').slice(0, 8000)}
 
 Generate the ${config.label} adaptation now.`;
 
+  const result = await AI.invoke(config.capability, { prompt, system }, { projectId: p.id });
+  const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+
+  let parsed;
+  try {
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+  } catch (e) {
+    throw new Error('AI returned malformed JSON. Try again.');
+  }
+
+  await APP.sb.from('video_repurpose_outputs').upsert({
+    user_id: APP.user.id,
+    source_project_id: p.id,
+    output_platform: platformKey,
+    output_type: platformKey === 'newsletter' ? 'newsletter' : 'short_video_script',
+    content: parsed.script || '',
+    metadata: {
+      title: parsed.title || '',
+      caption: parsed.caption || '',
+      hashtags: parsed.hashtags || [],
+      duration_seconds: parsed.duration_seconds || null,
+      notes: parsed.notes || '',
+      cost_estimate: 0.05,
+    },
+    status: 'draft',
+    generated_at: new Date().toISOString(),
+  }, { onConflict: 'source_project_id,output_platform,output_type' });
+
+  return true;
+}
+
+// Single-platform generate (button on each card).
+async function generateRepurposeOutput(platformKey){
+  const config = PLATFORM_CONFIG[platformKey];
+  if (!config) return;
   showLoader(`Adapting to ${config.label}...`);
   try {
-    const result = await AI.invoke(config.capability, {
-      prompt, system,
-    }, { projectId: p.id });
-
-    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
-
-    let parsed;
-    try {
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
-    } catch (e) {
-      throw new Error('AI returned malformed JSON. Try again.');
-    }
-
-    // Save using legacy schema (source_project_id, output_platform, output_type, content, metadata)
-    await APP.sb.from('video_repurpose_outputs').upsert({
-      user_id: APP.user.id,
-      source_project_id: p.id,
-      output_platform: platformKey,
-      output_type: platformKey === 'newsletter' ? 'newsletter' : 'short_video_script',
-      content: parsed.script || '',
-      metadata: {
-        title: parsed.title || '',
-        caption: parsed.caption || '',
-        hashtags: parsed.hashtags || [],
-        duration_seconds: parsed.duration_seconds || null,
-        notes: parsed.notes || '',
-        cost_estimate: 0.05,
-      },
-      status: 'draft',
-      generated_at: new Date().toISOString(),
-    }, { onConflict: 'source_project_id,output_platform,output_type' });
-
+    await generateRepurposeCore(platformKey);
     hideLoader();
     toast(`${config.label} generated ✓`, 'success');
     renderRepurposePanel();
@@ -5374,6 +5413,34 @@ Generate the ${config.label} adaptation now.`;
     hideLoader();
     toast('Error: ' + e.message, 'error');
   }
+}
+
+// Batch generate every selected platform in one go.
+async function generateSelectedRepurpose(platformKeys){
+  if (!platformKeys || platformKeys.length === 0){
+    toast('Select at least one platform first', 'error');
+    return;
+  }
+  let ok = 0; const failed = [];
+  for (let i = 0; i < platformKeys.length; i++){
+    const key = platformKeys[i];
+    const config = PLATFORM_CONFIG[key];
+    showLoader(`Adapting to ${config ? config.label : key}... (${i + 1}/${platformKeys.length})`);
+    try {
+      await generateRepurposeCore(key);
+      ok++;
+    } catch (e) {
+      console.warn('Repurpose failed for', key, e);
+      failed.push(config ? config.label : key);
+    }
+  }
+  hideLoader();
+  if (failed.length === 0){
+    toast(`Generated ${ok} adaptation${ok === 1 ? '' : 's'} ✓`, 'success');
+  } else {
+    toast(`Done: ${ok} ok, ${failed.length} failed (${failed.join(', ')})`, failed.length === platformKeys.length ? 'error' : 'default');
+  }
+  renderRepurposePanel();
 }
 
 function viewRepurposeDetail(platformKey, outputsByPlatform){
