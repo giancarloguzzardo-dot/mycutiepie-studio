@@ -3283,6 +3283,10 @@ function renderPrePublishPanel(){
         <div class="pulse-hero-desc">Score your title against alternatives. Critique your thumbnail brief. Catch issues now, not after publish.</div>
       </div>
 
+      <div style="background:var(--color-surface-2);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--color-text-muted)">
+        ℹ️ <strong>What actions do:</strong> "Use as title" updates this project's title + adds a reviewer checkpoint in Workflow. "Replace in script" rewrites the thumbnail brief inside your script. "Send to Workflow" creates a thumbnail-designer task with the brief — so your decisions flow straight into production.
+      </div>
+
       ${!hasScript ? '<div style="background:var(--color-warning-soft);color:#854F0B;padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px">⚠️ Generate the full script first — title scoring needs the script context.</div>' : ''}
 
       <div class="studio-tabs">
@@ -3414,6 +3418,36 @@ ${(p.outline || '').slice(0, 800)}`;
   }
 }
 
+// Create (or update) a workflow task from a Pre-publish decision.
+// role: 'thumbnail_designer' | 'video_editor' | 'reviewer' etc.
+async function createWorkflowTaskFromPrePublish(role, brief){
+  const p = APP.currentProject;
+  try {
+    // Avoid duplicates: check for an existing auto task with same role + tag
+    const tag = `[Pre-publish]`;
+    const { data: existing } = await APP.sb.from('workflow_tasks')
+      .select('id, brief, role').eq('project_id', p.id).eq('role', role);
+    const dup = (existing || []).find(t => (t.brief || '').includes(tag) && (t.brief || '').includes(brief.slice(0, 40)));
+    if (dup) {
+      toast('A matching workflow task already exists', 'success');
+      return;
+    }
+    const { error } = await APP.sb.from('workflow_tasks').insert({
+      owner_id: APP.user.id,
+      project_id: p.id,
+      role: role,
+      assignee_email: APP.user.email,
+      assignee_name: '🎯 From Pre-publish',
+      status: 'pending',
+      brief: `${tag} ${brief}`,
+    });
+    if (error) throw error;
+    toast(`✓ Task created in Workflow (${role.replace(/_/g,' ')})`, 'success');
+  } catch(e){
+    toast('Could not create task: ' + e.message, 'error');
+  }
+}
+
 async function useVariantAsTitle(newTitle){
   if (!newTitle) return;
   showLoader('Updating title...');
@@ -3422,6 +3456,8 @@ async function useVariantAsTitle(newTitle){
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   APP.currentProject.title = newTitle;
   toast(`Title set to "${newTitle.slice(0,40)}${newTitle.length > 40 ? '...' : ''}"`, 'success');
+  // Feed the confirmed title into the Workflow as a reviewer checkpoint task
+  await createWorkflowTaskFromPrePublish('reviewer', `Confirmed video title: "${newTitle}". Verify it matches thumbnail + content before publish.`);
   // Update breadcrumb + re-render to show new current badge
   renderBreadcrumb([
     { label: APP.currentChannel.name, href: `#/channels/${APP.currentChannel.id}` },
@@ -3496,6 +3532,7 @@ ${thumbBrief}`;
         <div class="pulse-actions">
           <button class="btn primary" id="copy-rewritten-btn">📋 Copy rewritten brief</button>
           <button class="btn" id="replace-thumb-btn">💾 Replace in script</button>
+          <button class="btn" id="thumb-to-workflow-btn">🗂 Send to Workflow (designer task)</button>
         </div>
       </div>` : ''}
     `;
@@ -3510,6 +3547,11 @@ ${thumbBrief}`;
     if ($('replace-thumb-btn')) {
       $('replace-thumb-btn').addEventListener('click', () => {
         confirmModal('Replace thumbnail brief in script?', 'This will replace the original thumbnail brief in your script with the rewritten version. The action cannot be undone.', 'Replace', () => replaceThumbInScript(parsed.rewritten_brief));
+      });
+    }
+    if ($('thumb-to-workflow-btn')) {
+      $('thumb-to-workflow-btn').addEventListener('click', () => {
+        createWorkflowTaskFromPrePublish('thumbnail_designer', `Thumbnail brief for "${p.title}": ${parsed.rewritten_brief}`);
       });
     }
 
