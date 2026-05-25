@@ -2457,6 +2457,7 @@ async function renderVideoStudio(){
         <button class="studio-nav-item ${APP.currentTab === 'outline' ? 'on' : ''}" data-tab="outline"><span class="studio-nav-icon">📋</span>Outline</button>
         <button class="studio-nav-item ${APP.currentTab === 'script' ? 'on' : ''}" data-tab="script"><span class="studio-nav-icon">📝</span>Script</button>
         <button class="studio-nav-item ${APP.currentTab === 'voice' ? 'on' : ''}" data-tab="voice"><span class="studio-nav-icon">🎙</span>Voice</button>
+        <button class="studio-nav-item ${APP.currentTab === 'visualsync' ? 'on' : ''}" data-tab="visualsync"><span class="studio-nav-icon">🎬</span>Visual Sync</button>
         <button class="studio-nav-item ${APP.currentTab === 'prepublish' ? 'on' : ''}" data-tab="prepublish"><span class="studio-nav-icon">🎯</span>Pre-publish</button>
         <button class="studio-nav-item ${APP.currentTab === 'repurpose' ? 'on' : ''}" data-tab="repurpose"><span class="studio-nav-icon">🔁</span>Repurpose</button>
         <button class="studio-nav-item ${APP.currentTab === 'workflow' ? 'on' : ''}" data-tab="workflow"><span class="studio-nav-icon">🗂</span>Workflow</button>
@@ -2536,6 +2537,7 @@ function renderStudioPanel(){
   if (tab === 'outline') return renderOutlinePanel();
   if (tab === 'script') return renderScriptPanel();
   if (tab === 'voice') return renderVoicePanel();
+  if (tab === 'visualsync') return renderVisualSyncPanel();
   if (tab === 'prepublish') return renderPrePublishPanel();
   if (tab === 'repurpose') return renderRepurposePanel();
   if (tab === 'workflow') return renderProjectWorkflowPanel();
@@ -2883,6 +2885,222 @@ Respond with the JSON structure described in the system prompt. Be specific and 
     hideLoader();
     toast('Error: ' + e.message, 'error');
   }
+}
+
+// ============================================================
+// VISUAL SYNC PANEL — keyword→B-roll shot list synced to script
+// ============================================================
+async function renderVisualSyncPanel(){
+  const p = APP.currentProject;
+  const hasScript = !!p.script;
+
+  if (!hasScript) {
+    $('studio-content').innerHTML = `<div class="panel">
+      <div class="panel-title">🎬 Visual Sync</div>
+      <div class="panel-desc">Generate a synchronized shot list that tells you which B-roll clip to place and when, based on the keywords in your script.</div>
+      <div class="empty-state"><p>Generate a script first, then come back here to build your shot list.</p></div>
+    </div>`;
+    return;
+  }
+
+  // Load any previously-saved shot list
+  let saved = null;
+  try {
+    const { data } = await APP.sb.from('projects').select('visual_sync').eq('id', p.id).single();
+    if (data && data.visual_sync) saved = typeof data.visual_sync === 'string' ? JSON.parse(data.visual_sync) : data.visual_sync;
+  } catch(e){ /* column may not exist yet; we'll fall back to in-memory */ }
+  if (!saved && APP._visualSyncCache && APP._visualSyncCache[p.id]) saved = APP._visualSyncCache[p.id];
+
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">🎬 Visual Sync</div>
+    <div class="panel-desc">Auto-generate a synchronized shot list: each key moment in your script gets a suggested B-roll visual and an approximate timestamp. Open it next to CapCut and follow along — no more guessing what clip goes where.</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn primary" id="vs-generate-btn">${saved ? '🔄 Re-generate shot list' : '🎬 Generate shot list'}</button>
+      ${saved ? '<button class="btn" id="vs-copy-btn">📋 Copy as text</button>' : ''}
+      ${saved ? '<button class="btn" id="vs-export-btn">⬇ Export .txt</button>' : ''}
+    </div>
+
+    <div id="vs-content"></div>
+  </div>`;
+
+  if (saved) renderVisualSyncShotList(saved);
+
+  $('vs-generate-btn').addEventListener('click', () => generateVisualSync());
+  if (saved) {
+    $('vs-copy-btn').addEventListener('click', () => copyVisualSyncText(saved));
+    $('vs-export-btn').addEventListener('click', () => exportVisualSyncText(saved));
+  }
+}
+
+async function generateVisualSync(){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  // Build vocal sections from the script (reuse the same parser as Voice)
+  const allSections = parseScriptSections(p.script);
+  const vocalSections = allSections.filter(s => isVocalSection(s.title, s.body));
+  if (vocalSections.length === 0) { toast('No vocal sections found in script', 'error'); return; }
+
+  try {
+    const shotList = [];
+    let cumulativeTime = 0; // seconds elapsed across sections
+
+    for (let i = 0; i < vocalSections.length; i++){
+      const sec = vocalSections[i];
+      showLoader(`Analyzing visuals — section ${i+1}/${vocalSections.length}...`);
+      const { cleanText } = extractAnnotations(sec.body);
+      const sectionDuration = estimateAudioDuration(cleanText);
+
+      const system = `You are a video editor's assistant. You identify the most visually-representable keywords/phrases in a narration script and suggest B-roll for each. You ALWAYS respond with valid JSON only, no markdown, no preamble.`;
+      const prompt = `Below is a narration section. Identify 4-8 key VISUAL moments — words or short phrases that a viewer would benefit from seeing illustrated with B-roll footage (concrete nouns, places, objects, actions, concepts that have a clear visual: e.g. "Wall Street", "stacked coins", "luxury yacht", "stock chart crashing", "bank vault").
+
+For each, return:
+- "keyword": the exact word/phrase from the script
+- "position": a number 0.0-1.0 indicating roughly how far into the section it appears (0=start, 1=end)
+- "search_query": an optimized 2-4 word search query for finding this B-roll on Pexels/stock sites
+- "visual_note": a 3-6 word description of the ideal shot
+
+Section title: ${sec.title}
+Narration:
+"""
+${cleanText.slice(0, 3000)}
+"""
+
+Respond with ONLY a JSON array like:
+[{"keyword":"...","position":0.1,"search_query":"...","visual_note":"..."}]
+Language for notes: ${langName}.`;
+
+      let items = [];
+      try {
+        const result = await AI.invoke('analyze_topic', { prompt, system, topic_query: 'visual sync' }, { projectId: p.id });
+        const rawText = result.content?.[0]?.text || result.text || '';
+        const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+        items = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+      } catch(e){
+        console.warn('Visual sync parse failed for section', sec.title, e);
+        items = [];
+      }
+
+      // Convert positions to absolute timestamps
+      items.forEach(item => {
+        const pos = Math.max(0, Math.min(1, parseFloat(item.position) || 0));
+        const absTime = cumulativeTime + Math.round(pos * sectionDuration);
+        shotList.push({
+          section: cleanSectionTitle(sec.title),
+          timestamp: absTime,
+          timestampLabel: formatDuration(absTime),
+          keyword: item.keyword || '',
+          search_query: item.search_query || item.keyword || '',
+          visual_note: item.visual_note || '',
+        });
+      });
+
+      cumulativeTime += sectionDuration;
+    }
+
+    // Sort by timestamp
+    shotList.sort((a,b) => a.timestamp - b.timestamp);
+
+    const payload = { generated_at: new Date().toISOString(), total_shots: shotList.length, shots: shotList };
+
+    // Try to save to DB; fall back to in-memory cache if column doesn't exist
+    try {
+      await APP.sb.from('projects').update({ visual_sync: payload }).eq('id', p.id);
+    } catch(e){
+      APP._visualSyncCache = APP._visualSyncCache || {};
+      APP._visualSyncCache[p.id] = payload;
+    }
+    APP._visualSyncCache = APP._visualSyncCache || {};
+    APP._visualSyncCache[p.id] = payload;
+
+    hideLoader();
+    toast(`Shot list generated ✓ (${shotList.length} visual cues)`, 'success');
+    renderVisualSyncPanel();
+  } catch(e){
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+function renderVisualSyncShotList(payload){
+  const shots = payload.shots || [];
+  if (shots.length === 0){
+    $('vs-content').innerHTML = '<div class="empty-state"><p>No visual cues found. Try re-generating.</p></div>';
+    return;
+  }
+
+  let rows = '';
+  let lastSection = '';
+  shots.forEach(shot => {
+    if (shot.section !== lastSection){
+      rows += `<tr style="background:var(--color-surface-2)"><td colspan="4" style="padding:8px 12px;font-weight:700;font-size:12px;color:var(--color-accent)">${escapeHtml(shot.section)}</td></tr>`;
+      lastSection = shot.section;
+    }
+    const pexelsUrl = 'https://www.pexels.com/search/videos/' + encodeURIComponent(shot.search_query) + '/';
+    rows += `<tr style="border-bottom:1px solid var(--color-border-subtle)">
+      <td style="padding:10px 12px;font-family:var(--font-mono);font-size:12px;color:var(--color-text-muted);white-space:nowrap;vertical-align:top">${shot.timestampLabel}</td>
+      <td style="padding:10px 12px;vertical-align:top">
+        <div style="font-weight:600;font-size:13px">${escapeHtml(shot.keyword)}</div>
+        <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px">${escapeHtml(shot.visual_note)}</div>
+      </td>
+      <td style="padding:10px 12px;font-size:12px;color:var(--color-text-subtle);vertical-align:top">🔍 ${escapeHtml(shot.search_query)}</td>
+      <td style="padding:10px 12px;vertical-align:top;white-space:nowrap"><a href="${pexelsUrl}" target="_blank" rel="noopener" class="btn sm">Search Pexels ↗</a></td>
+    </tr>`;
+  });
+
+  $('vs-content').innerHTML = `
+    <div style="background:var(--color-accent-soft);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--color-text)">
+      💡 <strong>${shots.length} visual cues</strong> across your video. Timestamps are approximate (based on narration pace) — adjust ±2-3s in CapCut. Open this next to your editor and place each clip at its cue.
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--color-border-subtle);border-radius:var(--radius-md)">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:var(--color-surface-3);text-align:left">
+            <th style="padding:10px 12px;font-size:11px;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.04em">Time</th>
+            <th style="padding:10px 12px;font-size:11px;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.04em">Keyword / Shot</th>
+            <th style="padding:10px 12px;font-size:11px;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.04em">Search query</th>
+            <th style="padding:10px 12px;font-size:11px;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.04em">B-roll</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function visualSyncToText(payload){
+  const shots = payload.shots || [];
+  let txt = `VISUAL SYNC — SHOT LIST\n${APP.currentProject.title || ''}\nGenerated: ${new Date(payload.generated_at).toLocaleString()}\n${'='.repeat(50)}\n\n`;
+  let lastSection = '';
+  shots.forEach(shot => {
+    if (shot.section !== lastSection){
+      txt += `\n## ${shot.section}\n`;
+      lastSection = shot.section;
+    }
+    txt += `[${shot.timestampLabel}] "${shot.keyword}"\n    → shot: ${shot.visual_note}\n    → search: ${shot.search_query}\n    → pexels: https://www.pexels.com/search/videos/${encodeURIComponent(shot.search_query)}/\n\n`;
+  });
+  return txt;
+}
+
+function copyVisualSyncText(payload){
+  const txt = visualSyncToText(payload);
+  navigator.clipboard.writeText(txt).then(
+    () => toast('Shot list copied to clipboard ✓', 'success'),
+    () => toast('Copy failed — try Export instead', 'error')
+  );
+}
+
+function exportVisualSyncText(payload){
+  const txt = visualSyncToText(payload);
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `shotlist_${(APP.currentProject.title||'video').replace(/[^a-z0-9]/gi,'_')}.txt`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Shot list exported ✓', 'success');
 }
 
 // ============================================================
