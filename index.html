@@ -597,6 +597,18 @@ body{
 .repurpose-pick input{accent-color:var(--color-accent);cursor:pointer;margin:0}
 .repurpose-pick.done{opacity:.55;cursor:default;color:var(--color-success)}
 .repurpose-pick.done:hover{border-color:var(--color-border)}
+/* ===== COMPETITOR WATCHLIST ===== */
+.wl-note{font-size:12px;color:var(--color-text-muted);margin-bottom:14px;line-height:1.6}
+.wl-add-row{display:flex;gap:8px;margin-bottom:16px}
+.wl-add-row input{flex:1;box-sizing:border-box;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--color-text);font-family:inherit}
+.wl-add-row input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-soft)}
+.wl-list{display:flex;flex-direction:column;gap:8px}
+.wl-empty{font-size:13px;color:var(--color-text-subtle);text-align:center;padding:18px;border:1px dashed var(--color-border);border-radius:var(--radius-sm)}
+.wl-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-surface-2);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);padding:12px 14px}
+.wl-item-info{min-width:0;flex:1}
+.wl-item-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-item-meta{font-size:11px;color:var(--color-text-subtle);margin-top:2px}
+.wl-item-actions{display:flex;gap:6px;flex-shrink:0}
 
 .script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
 .script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
@@ -2192,6 +2204,44 @@ async function renderCompetitorAnalysis(){
   const { data: pastAnalyses } = await APP.sb.from('competitor_channel_analyses')
     .select('*').eq('channel_id', ch.id).order('created_at', { ascending: false }).limit(10);
 
+  // Load the watchlist (the persistent roster of competitors to track)
+  let watchlist = [];
+  try {
+    const { data: wl } = await APP.sb.from('competitor_watchlist')
+      .select('*').eq('channel_id', ch.id).order('added_at', { ascending: true });
+    watchlist = wl || [];
+  } catch(e){ console.warn('Watchlist load failed:', e); }
+
+  let wlRows = '';
+  if (watchlist.length === 0){
+    wlRows = `<div class="wl-empty">No competitors yet. Analyze a channel above (it's added here automatically) or add one manually below.</div>`;
+  } else {
+    wlRows = watchlist.map(w => `<div class="wl-item">
+      <div class="wl-item-info">
+        <div class="wl-item-name">${escapeHtml(w.competitor_name || w.competitor_handle)}</div>
+        <div class="wl-item-meta">${escapeHtml(w.competitor_handle)} · ${w.last_analyzed_at ? 'analyzed ' + new Date(w.last_analyzed_at).toLocaleDateString() : 'never analyzed'}</div>
+      </div>
+      <div class="wl-item-actions">
+        <button class="btn sm" data-wl-analyze="${escapeHtml(w.competitor_handle)}">Analyze now</button>
+        <button class="btn ghost sm" data-wl-remove="${w.id}">Remove</button>
+      </div>
+    </div>`).join('');
+  }
+
+  const wlHtml = `
+    <div class="section-title" style="margin-top:32px">
+      <span>📡 Competitor Watchlist (${watchlist.length})</span>
+      ${watchlist.length > 0 ? '<button class="btn sm" id="wl-refresh-all">🔄 Refresh all</button>' : ''}
+    </div>
+    <div class="panel">
+      <div class="wl-note">A permanent roster of competitors. Refresh them to keep your Idea Generator fed with their latest content gaps.</div>
+      <div class="wl-add-row">
+        <input type="text" id="wl-add-input" placeholder="@handle to track (added without analyzing yet)" />
+        <button class="btn" id="wl-add-btn">+ Add</button>
+      </div>
+      <div class="wl-list">${wlRows}</div>
+    </div>`;
+
   let pastHtml = '';
   if (pastAnalyses && pastAnalyses.length > 0) {
     pastHtml = `<div class="section-title" style="margin-top:32px"><span>📜 Past analyses (${pastAnalyses.length})</span></div>
@@ -2227,6 +2277,7 @@ async function renderCompetitorAnalysis(){
       <div id="comp-analysis-result"></div>
     </div>
 
+    ${wlHtml}
     ${pastHtml}
   `;
 
@@ -2236,6 +2287,83 @@ async function renderCompetitorAnalysis(){
   document.querySelectorAll('[data-view-analysis]').forEach(btn => {
     btn.addEventListener('click', () => viewCompetitorAnalysis(btn.dataset.viewAnalysis, pastAnalyses));
   });
+
+  // Wire watchlist
+  if ($('wl-add-btn')) $('wl-add-btn').addEventListener('click', addToWatchlist);
+  if ($('wl-add-input')) $('wl-add-input').addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); addToWatchlist(); } });
+  if ($('wl-refresh-all')) $('wl-refresh-all').addEventListener('click', () => refreshAllWatchlist(watchlist.map(w => w.competitor_handle)));
+  document.querySelectorAll('[data-wl-analyze]').forEach(btn => {
+    btn.addEventListener('click', () => analyzeWatchlistItem(btn.dataset.wlAnalyze));
+  });
+  document.querySelectorAll('[data-wl-remove]').forEach(btn => {
+    btn.addEventListener('click', () => removeFromWatchlist(btn.dataset.wlRemove));
+  });
+}
+
+// ----- Watchlist actions -----
+async function addToWatchlist(){
+  const ch = APP.currentChannel;
+  const raw = $('wl-add-input').value.trim();
+  if (!raw){ toast('Enter a channel handle', 'error'); return; }
+  const handle = normalizeYouTubeHandle(raw);
+  showLoader('Adding to watchlist...');
+  const { error } = await APP.sb.from('competitor_watchlist').upsert({
+    user_id: APP.user.id,
+    channel_id: ch.id,
+    competitor_handle: handle,
+    competitor_name: handle,
+  }, { onConflict: 'channel_id,competitor_handle' });
+  hideLoader();
+  if (error){ toast('Error: ' + error.message, 'error'); return; }
+  toast(`${handle} added to watchlist ✓`, 'success');
+  renderCompetitorAnalysis();
+}
+
+async function removeFromWatchlist(id){
+  const { error } = await APP.sb.from('competitor_watchlist').delete().eq('id', id);
+  if (error){ toast('Error: ' + error.message, 'error'); return; }
+  toast('Removed from watchlist', 'success');
+  renderCompetitorAnalysis();
+}
+
+async function analyzeWatchlistItem(handle){
+  const ch = APP.currentChannel;
+  showLoader(`Fetching ${handle} channel data + analyzing patterns...`);
+  try {
+    const { analysis, savedId } = await analyzeCompetitorHandle(handle, ch);
+    hideLoader();
+    renderCompetitorResult(analysis, savedId);
+    toast(`${handle} re-analyzed ✓`, 'success');
+    // Refresh the page list so "last analyzed" updates (result stays rendered above)
+    const wlSection = document.querySelector('.wl-list');
+    if (wlSection) renderCompetitorAnalysis();
+  } catch(e){
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function refreshAllWatchlist(handles){
+  if (!handles || handles.length === 0){ toast('Watchlist is empty', 'error'); return; }
+  const ch = APP.currentChannel;
+  let ok = 0; const failed = [];
+  for (let i = 0; i < handles.length; i++){
+    showLoader(`Refreshing watchlist — ${handles[i]} (${i + 1}/${handles.length})...`);
+    try {
+      await analyzeCompetitorHandle(handles[i], ch);
+      ok++;
+    } catch(e){
+      console.warn('Refresh failed for', handles[i], e);
+      failed.push(handles[i]);
+    }
+  }
+  hideLoader();
+  if (failed.length === 0){
+    toast(`Refreshed ${ok} competitor${ok === 1 ? '' : 's'} ✓ — Idea Generator is now up to date`, 'success');
+  } else {
+    toast(`Done: ${ok} ok, ${failed.length} failed (${failed.join(', ')})`, failed.length === handles.length ? 'error' : 'default');
+  }
+  renderCompetitorAnalysis();
 }
 
 function normalizeYouTubeHandle(input){
@@ -2255,17 +2383,29 @@ async function runCompetitorAnalysis(){
   const ch = APP.currentChannel;
   const rawInput = $('comp-handle-input').value.trim();
   if (!rawInput) { toast('Enter a channel handle or URL', 'error'); return; }
-
   const handle = normalizeYouTubeHandle(rawInput);
+  showLoader(`Fetching ${handle} channel data + analyzing patterns...`);
+  try {
+    const { analysis, savedId } = await analyzeCompetitorHandle(handle, ch);
+    hideLoader();
+    renderCompetitorResult(analysis, savedId);
+    toast('Competitor analyzed ✓ (added to watchlist)', 'success');
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
 
+// Core competitor analysis for a given handle. Saves the analysis AND
+// auto-adds/updates the channel in the watchlist. No loader/toast/render here,
+// so it can be reused by single-run, watchlist "Analyze now", and "Refresh all".
+async function analyzeCompetitorHandle(handle, ch){
   const nicheName = ch.active_niche_profile?.name || 'general topic';
   const audience = ch.active_niche_profile?.target_audience || 'general audience';
   const toneName = ch.default_tone_template?.name || 'neutral';
   const lang = ch.active_niche_profile?.language || 'en';
 
-  showLoader(`Fetching ${handle} channel data + analyzing patterns...`);
-  try {
-    const system = `You are a YouTube competitive intelligence analyst. You analyze competitor channels and identify winning content patterns + opportunities.
+  const system = `You are a YouTube competitive intelligence analyst. You analyze competitor channels and identify winning content patterns + opportunities.
 
 Given:
 - Competitor channel data (last ~30 videos with view counts, titles, dates)
@@ -2297,7 +2437,7 @@ Produce a STRICT JSON response (no preamble, no markdown):
 
 The 5 ideas MUST be specific to USER's niche, not generic. Use competitor's winning DNA but reframe for user.`;
 
-    const prompt = `Analyze this competitor channel for a user creating content in this niche:
+  const prompt = `Analyze this competitor channel for a user creating content in this niche:
 
 USER CHANNEL:
 - Niche: ${nicheName}
@@ -2309,42 +2449,47 @@ COMPETITOR HANDLE: ${handle}
 
 Use YouTube data to analyze their last 30 videos. Identify patterns, gaps, and generate 5 video ideas for the user's channel.`;
 
-    const result = await AI.invoke('analyze_competitor_channel', {
-      prompt, system,
-      topic_query: handle,        // YouTube router uses this to fetch channel
-      channel_handle: handle,
-    }, { projectId: null });
+  const result = await AI.invoke('analyze_competitor_channel', {
+    prompt, system,
+    topic_query: handle,        // YouTube router uses this to fetch channel
+    channel_handle: handle,
+  }, { projectId: null });
 
-    const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
+  const rawText = result.content?.[0]?.text || result.text || JSON.stringify(result);
 
-    let analysis;
-    try {
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
-    } catch (e) {
-      throw new Error('AI returned malformed JSON. Try again.');
-    }
+  let analysis;
+  try {
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    analysis = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+  } catch (e) {
+    throw new Error('AI returned malformed JSON. Try again.');
+  }
 
-    // Save analysis
-    const { data: saved } = await APP.sb.from('competitor_channel_analyses').insert({
+  // Save analysis
+  const { data: saved } = await APP.sb.from('competitor_channel_analyses').insert({
+    user_id: APP.user.id,
+    channel_id: ch.id,
+    competitor_handle: handle,
+    competitor_name: analysis.competitor_name || handle,
+    competitor_subscriber_count: analysis.competitor_subscriber_count || null,
+    analysis_data: analysis,
+    raw_response: rawText,
+    top_pattern_summary: (analysis.title_patterns || [])[0] || null,
+    ideas_count: (analysis.video_ideas_for_user || []).length,
+  }).select().single();
+
+  // Auto-add / refresh in the watchlist (best-effort; never blocks analysis)
+  try {
+    await APP.sb.from('competitor_watchlist').upsert({
       user_id: APP.user.id,
       channel_id: ch.id,
       competitor_handle: handle,
       competitor_name: analysis.competitor_name || handle,
-      competitor_subscriber_count: analysis.competitor_subscriber_count || null,
-      analysis_data: analysis,
-      raw_response: rawText,
-      top_pattern_summary: (analysis.title_patterns || [])[0] || null,
-      ideas_count: (analysis.video_ideas_for_user || []).length,
-    }).select().single();
+      last_analyzed_at: new Date().toISOString(),
+    }, { onConflict: 'channel_id,competitor_handle' });
+  } catch(e){ console.warn('Watchlist upsert failed:', e); }
 
-    hideLoader();
-    renderCompetitorResult(analysis, saved?.id);
-    toast('Competitor analyzed ✓', 'success');
-  } catch (e) {
-    hideLoader();
-    toast('Error: ' + e.message, 'error');
-  }
+  return { analysis, savedId: saved?.id };
 }
 
 function renderCompetitorResult(analysis, analysisId){
