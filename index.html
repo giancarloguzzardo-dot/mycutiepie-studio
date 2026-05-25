@@ -2549,6 +2549,151 @@ function renderStudioPanel(){
 // ============================================================
 // IDEA PANEL (CutiePulse Idea Gate) — with actionable buttons + history
 // ============================================================
+async function generateVideoIdeas(){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const subNiche = ch.active_niche_profile?.sub_niche || ch.active_niche_profile?.description || '';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  const competitorHandle = ($('idea-gen-competitor')?.value || '').trim();
+
+  const resultsEl = $('idea-gen-results');
+  resultsEl.innerHTML = '<div style="padding:12px;color:var(--color-text-muted);font-size:13px">✨ Generating ideas...</div>';
+
+  try {
+    // ---- Gather competitor context (saved analyses + optional fresh handle) ----
+    let competitorContext = '';
+
+    // Saved analyses for this channel
+    const { data: savedAnalyses } = await APP.sb.from('competitor_channel_analyses')
+      .select('channel_handle, analysis_data, created_at')
+      .eq('channel_id', ch.id)
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    if (savedAnalyses && savedAnalyses.length > 0) {
+      competitorContext += '\n\nSAVED COMPETITOR INSIGHTS (mine these gaps):\n';
+      savedAnalyses.forEach(a => {
+        let d = a.analysis_data;
+        try { if (typeof d === 'string') d = JSON.parse(d); } catch(e){}
+        const gaps = d?.content_gaps || d?.gaps || [];
+        const patterns = d?.title_patterns || d?.patterns || [];
+        competitorContext += `- ${a.channel_handle}: gaps=${JSON.stringify(gaps).slice(0,300)}; patterns=${JSON.stringify(patterns).slice(0,200)}\n`;
+      });
+    }
+
+    // Fresh competitor handle → run a quick analysis inline
+    if (competitorHandle) {
+      resultsEl.innerHTML = `<div style="padding:12px;color:var(--color-text-muted);font-size:13px">🔍 Analyzing ${escapeHtml(competitorHandle)}...</div>`;
+      try {
+        const compResult = await AI.invoke('analyze_competitor_channel', {
+          channel_handle: competitorHandle,
+          niche: nicheName,
+        }, { projectId: p.id });
+        const compText = compResult.content?.[0]?.text || compResult.text || '';
+        competitorContext += `\n\nFRESH COMPETITOR ANALYSIS (${competitorHandle}):\n${compText.slice(0, 1500)}\n`;
+      } catch(e){
+        console.warn('Fresh competitor analysis failed:', e);
+        competitorContext += `\n\n(Could not analyze ${competitorHandle} — proceeding with niche + saved insights)\n`;
+      }
+    }
+
+    resultsEl.innerHTML = '<div style="padding:12px;color:var(--color-text-muted);font-size:13px">✨ Generating 12 scored ideas...</div>';
+
+    // ---- Generate ideas ----
+    const system = `You are a YouTube content strategist. You generate specific, high-potential video ideas tuned to a channel's niche and audience. You ALWAYS respond with valid JSON only — no markdown, no preamble.`;
+    const prompt = `Generate 12 specific YouTube video ideas for this channel.
+
+CHANNEL DNA:
+- Niche: ${nicheName}
+- Sub-niche / focus: ${subNiche}
+- Target audience: ${audience}
+- Tone: ${toneName}
+- Language: ${langName}
+${competitorContext}
+
+For each idea, provide:
+- "title": a click-worthy YouTube title (under 70 chars)
+- "angle": one sentence on the hook / why it works
+- "score": potential score 0-100 (consider demand, searchability, audience match, differentiation)
+- "source": one of "niche" (from niche knowledge), "gap" (fills a competitor content gap), or "trend" (rides a current trend)
+
+Order by score descending. Be specific and varied — avoid generic ideas. Mix evergreen and timely.
+
+Respond with ONLY a JSON array:
+[{"title":"...","angle":"...","score":87,"source":"gap"}]`;
+
+    const result = await AI.invoke('analyze_topic', { prompt, system, topic_query: 'idea generation' }, { projectId: p.id });
+    const rawText = result.content?.[0]?.text || result.text || '';
+    let ideas = [];
+    try {
+      const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+      ideas = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch(e){
+      throw new Error('AI returned malformed ideas. Try again.');
+    }
+
+    renderIdeaSuggestions(ideas);
+  } catch(e){
+    resultsEl.innerHTML = `<div style="padding:12px;color:var(--color-danger,#e5484d);font-size:13px">❌ ${escapeHtml(e.message)}</div>`;
+    toast('Error generating ideas: ' + e.message, 'error');
+  }
+}
+
+function renderIdeaSuggestions(ideas){
+  const resultsEl = $('idea-gen-results');
+  if (!ideas || ideas.length === 0){
+    resultsEl.innerHTML = '<div style="padding:12px;color:var(--color-text-muted)">No ideas generated. Try again.</div>';
+    return;
+  }
+
+  const sourceBadge = (src) => {
+    const map = {
+      gap: { label: '🎯 Gap', color: 'var(--color-accent)' },
+      trend: { label: '🔥 Trend', color: '#ff9500' },
+      niche: { label: '💡 Niche', color: 'var(--color-text-muted)' },
+    };
+    const s = map[src] || map.niche;
+    return `<span style="font-size:10px;font-weight:700;color:${s.color};white-space:nowrap">${s.label}</span>`;
+  };
+  const scoreColor = (sc) => sc >= 80 ? 'var(--color-success,#30a46c)' : sc >= 60 ? '#ff9500' : 'var(--color-text-muted)';
+
+  // Store ideas for the "use" handler
+  APP._suggestedIdeas = ideas;
+
+  let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+  ideas.forEach((idea, i) => {
+    const sc = parseInt(idea.score) || 0;
+    html += `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--color-bg-elevated);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md)">
+      <div style="font-weight:800;font-size:18px;color:${scoreColor(sc)};min-width:36px;text-align:center">${sc}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+          <span style="font-weight:600;font-size:13px">${escapeHtml(idea.title || '')}</span>
+          ${sourceBadge(idea.source)}
+        </div>
+        <div style="font-size:12px;color:var(--color-text-muted)">${escapeHtml(idea.angle || '')}</div>
+      </div>
+      <button class="btn sm primary" data-use-idea="${i}" style="white-space:nowrap">Use →</button>
+    </div>`;
+  });
+  html += '</div>';
+  resultsEl.innerHTML = html;
+
+  // Wire "use idea" buttons
+  resultsEl.querySelectorAll('[data-use-idea]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idea = APP._suggestedIdeas[parseInt(btn.dataset.useIdea)];
+      const briefInput = $('idea-brief-input');
+      briefInput.value = `${idea.title} — ${idea.angle}`;
+      briefInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('Idea loaded — click "Run Idea Gate" to score it', 'success');
+    });
+  });
+}
+
 async function renderIdeaPanel(){
   const p = APP.currentProject;
   const hasGate = !!p.idea_gate_score;
@@ -2651,6 +2796,21 @@ async function renderIdeaPanel(){
         <button class="btn" id="regenerate-outline-stale-btn">Go to Outline →</button>
       </div>` : ''}
 
+      <div class="panel" style="background:var(--color-surface-2);border:1px solid var(--color-border-subtle);margin-bottom:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;font-size:15px">✨ Need ideas? Let MyCutiePie suggest.</div>
+            <div style="font-size:12px;color:var(--color-text-muted);margin-top:2px">Generates video ideas tuned to your channel's niche, scored by potential. Add a competitor handle to mine content gaps.</div>
+          </div>
+        </div>
+        <div class="fld" style="margin-bottom:8px">
+          <label>Competitor handle (optional — for gap-based ideas)</label>
+          <input id="idea-gen-competitor" placeholder="@grahamstephan (leave empty to use niche + saved analyses)" />
+        </div>
+        <button class="btn primary" id="generate-ideas-btn">✨ Suggest 12 video ideas</button>
+        <div id="idea-gen-results" style="margin-top:14px"></div>
+      </div>
+
       <div class="fld">
         <label>Idea description (what's the video about?)</label>
         <textarea id="idea-brief-input" placeholder="e.g. Explain why most index fund investors underperform — focusing on behavioral mistakes, not strategy"></textarea>
@@ -2674,6 +2834,9 @@ async function renderIdeaPanel(){
 
   // Wire run + continue
   $('run-gate-btn').addEventListener('click', runIdeaGate);
+  if ($('generate-ideas-btn')) {
+    $('generate-ideas-btn').addEventListener('click', generateVideoIdeas);
+  }
   if ($('continue-outline-btn')) {
     $('continue-outline-btn').addEventListener('click', () => { APP.currentTab = 'outline'; renderVideoStudio(); });
   }
@@ -3017,7 +3180,9 @@ Language for notes: ${langName}.`;
 
     hideLoader();
     toast(`Shot list generated ✓ (${shotList.length} visual cues)`, 'success');
-    renderVisualSyncPanel();
+    // Only re-render the Visual Sync panel if we're actually on that tab
+    // (when called from the orchestrator we're on Workflow, so skip).
+    if (APP.currentTab === 'visualsync') renderVisualSyncPanel();
   } catch(e){
     hideLoader();
     toast('Error: ' + e.message, 'error');
@@ -4176,11 +4341,11 @@ async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annot
   return tasks.length;
 }
 
-async function generateVoiceForSection(sectionIndex){
+async function generateVoiceForSection(sectionIndex, voiceIdOverride){
   const p = APP.currentProject;
   const voiceSelect = $('voice-select');
-  const voiceId = voiceSelect.value;
-  const voiceName = voiceSelect.selectedOptions[0]?.dataset?.name || 'Unknown';
+  const voiceId = voiceIdOverride || (voiceSelect ? voiceSelect.value : null);
+  const voiceName = (voiceSelect && voiceSelect.selectedOptions[0]?.dataset?.name) || 'Voice';
   if (!voiceId) { toast('Pick a voice first', 'error'); return; }
 
   // Re-parse to get current section
@@ -4296,6 +4461,83 @@ async function generateAllVoices(vocalSections, existingClips){
 // ============================================================
 // PROJECT WORKFLOW PANEL (per-video tasks)
 // ============================================================
+async function runOrchestrator(action){
+  const p = APP.currentProject;
+  const log = (msg) => { const el = $('orchestrator-log'); if (el) el.innerHTML = `<div style="padding:10px 12px;background:var(--color-accent-soft);border-radius:var(--radius-sm);font-size:13px">${msg}</div>`; };
+
+  try {
+    // CHECKPOINT 1: Outline
+    if (action === 'outline') {
+      log('📋 Generating outline...');
+      await generateOutline();
+      // generateOutline switches to outline tab; bring user back to review
+      toast('Outline ready — review it, then come back to Workflow to continue', 'success');
+      APP.currentTab = 'outline';
+      renderVideoStudio();
+      return;
+    }
+
+    // CHECKPOINT 2: Script
+    if (action === 'script') {
+      if (!confirm('Generate the full script from your outline? (Checkpoint: review the outline first if you haven\'t.)')) return;
+      log('📝 Generating script in phases (this takes 2-3 min)...');
+      await generateScript();
+      toast('Script ready — review it, then come back to Workflow to generate everything', 'success');
+      APP.currentTab = 'script';
+      renderVideoStudio();
+      return;
+    }
+
+    // CASCADE: voice + visual sync + tasks (no more checkpoints)
+    if (action === 'cascade') {
+      if (!confirm('Generate everything now? This will create voice for all sections, the visual sync shot list, and workflow tasks. Estimated cost: ~$1-1.50.')) return;
+
+      // Need a voice preset
+      const { data: voices } = await APP.sb.from('voice_presets')
+        .select('*').order('is_favorite', { ascending: false }).order('created_at', { ascending: false });
+      if (!voices || voices.length === 0) {
+        log('⚠️ No voice saved. Go to the Voice tab and add a voice first, then re-run.');
+        toast('Add a voice in the Voice tab first', 'error');
+        return;
+      }
+      const voiceId = voices[0].external_voice_id;
+
+      // 1. VOICE — generate all missing sections
+      const allSections = parseScriptSections(p.script);
+      const vocalSections = allSections
+        .map((s, idx) => ({ ...s, originalIdx: idx }))
+        .filter(s => isVocalSection(s.title, s.body));
+      const { data: clips } = await APP.sb.from('project_voice_clips')
+        .select('section_index, status').eq('project_id', p.id);
+      const toGen = vocalSections.filter(s => {
+        const c = (clips || []).find(c => c.section_index === s.originalIdx);
+        return !c || c.status !== 'ready';
+      });
+
+      for (let i = 0; i < toGen.length; i++){
+        log(`🎙 Voice ${i+1}/${toGen.length}: "${cleanSectionTitle(toGen[i].title)}"...`);
+        await generateVoiceForSection(toGen[i].originalIdx, voiceId);
+      }
+      if (toGen.length === 0) log('🎙 Voice already complete, skipping...');
+
+      // 2. VISUAL SYNC
+      log('🎬 Generating visual sync shot list...');
+      await generateVisualSync();
+
+      // Done
+      log('✅ Everything generated! Voice + Visual Sync + tasks are ready. Time to edit.');
+      toast('Orchestration complete ✓', 'success');
+      // Re-render workflow to refresh the pipeline status
+      APP.currentTab = 'workflow';
+      renderVideoStudio();
+      return;
+    }
+  } catch(e){
+    log('❌ Error: ' + e.message);
+    toast('Orchestrator error: ' + e.message, 'error');
+  }
+}
+
 async function renderProjectWorkflowPanel(){
   const p = APP.currentProject;
   const { data: tasks } = await APP.sb.from('workflow_tasks')
@@ -4310,7 +4552,62 @@ async function renderProjectWorkflowPanel(){
     tasksHtml += '</div>';
   }
 
-  $('studio-content').innerHTML = `<div class="panel">
+  // ---- Orchestrator state: figure out what's done ----
+  const hasOutline = !!p.outline;
+  const hasScript = !!p.script;
+  let voiceCount = 0, vocalCount = 0;
+  if (hasScript) {
+    const allSections = parseScriptSections(p.script);
+    const vocalSections = allSections.filter(s => isVocalSection(s.title, s.body));
+    vocalCount = vocalSections.length;
+    const { data: clips } = await APP.sb.from('project_voice_clips')
+      .select('section_index, status').eq('project_id', p.id);
+    voiceCount = (clips || []).filter(c => c.status === 'ready').length;
+  }
+  const hasVoice = vocalCount > 0 && voiceCount >= vocalCount;
+  let hasVisualSync = false;
+  try {
+    const { data: vs } = await APP.sb.from('projects').select('visual_sync').eq('id', p.id).single();
+    hasVisualSync = !!(vs && vs.visual_sync);
+  } catch(e){}
+  const hasMetadata = hasScript && /##\s*2\.\s*SEO METADATA|YouTube Title|Description:/i.test(p.script || '');
+
+  const stepRow = (icon, label, done, detail) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--color-border-subtle)">
+      <div style="font-size:18px;width:24px;text-align:center">${done ? '✅' : '⚪'}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px;color:${done?'var(--color-text)':'var(--color-text-muted)'}">${icon} ${label}</div>
+        ${detail ? `<div style="font-size:11px;color:var(--color-text-subtle);margin-top:2px">${detail}</div>` : ''}
+      </div>
+      <div style="font-size:11px;font-weight:600;color:${done?'var(--color-accent)':'var(--color-text-subtle)'}">${done?'Done':'Pending'}</div>
+    </div>`;
+
+  // Determine next action for the orchestrator button
+  let orchBtnLabel = '', orchBtnAction = '';
+  if (!hasOutline) { orchBtnLabel = '🚀 Start: Generate Outline'; orchBtnAction = 'outline'; }
+  else if (!hasScript) { orchBtnLabel = '📝 Generate Script (checkpoint 1 passed)'; orchBtnAction = 'script'; }
+  else if (!hasVoice || !hasVisualSync) { orchBtnLabel = '⚡ Generate Everything (voice + visual sync + tasks)'; orchBtnAction = 'cascade'; }
+  else { orchBtnLabel = '✓ All generated — re-run cascade'; orchBtnAction = 'cascade'; }
+
+  const orchestratorHtml = `
+    <div class="panel" style="margin-bottom:16px;border:1.5px solid var(--color-accent-soft)">
+      <div class="panel-title">⚡ Orchestrator</div>
+      <div class="panel-desc">Confirm your inputs once, then let MyCutiePie build everything in cascade. Two checkpoints (Outline, Script) keep you in control of the foundations; the rest runs automatically.</div>
+
+      <div style="border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);overflow:hidden;margin-bottom:14px">
+        ${stepRow('💡', 'Idea', !!p.idea_gate_score, p.title || '')}
+        ${stepRow('📋', 'Outline', hasOutline, hasOutline ? 'Ready' : 'Not generated')}
+        ${stepRow('📝', 'Script', hasScript, hasScript ? 'Ready' : 'Needs outline first')}
+        ${stepRow('🎙', 'Voice', hasVoice, hasScript ? `${voiceCount}/${vocalCount} sections` : 'Needs script')}
+        ${stepRow('🎬', 'Visual Sync', hasVisualSync, hasVisualSync ? 'Shot list ready' : 'Needs script')}
+        ${stepRow('🎯', 'Metadata', hasMetadata, hasMetadata ? 'Title/desc/tags in script' : 'Needs script')}
+      </div>
+
+      <button class="btn primary" id="orchestrator-btn" style="width:100%">${orchBtnLabel}</button>
+      <div id="orchestrator-log" style="margin-top:12px"></div>
+    </div>`;
+
+  $('studio-content').innerHTML = orchestratorHtml + `<div class="panel">
     <div class="panel-title">🗂 Workflow</div>
     <div class="panel-desc">Assign tasks for this video. Freelancers get magic links to work on their part.</div>
     <div class="ai-action-bar">
@@ -4318,6 +4615,9 @@ async function renderProjectWorkflowPanel(){
     </div>
     ${tasksHtml}
   </div>`;
+
+  // Wire orchestrator button
+  $('orchestrator-btn').addEventListener('click', () => runOrchestrator(orchBtnAction));
 
   $('add-task-btn').addEventListener('click', () => {
     $('task-role').value = 'voice_actor'; $('task-name').value = ''; $('task-email').value = '';
