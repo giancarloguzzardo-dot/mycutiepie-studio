@@ -609,6 +609,21 @@ body{
 .wl-item-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wl-item-meta{font-size:11px;color:var(--color-text-subtle);margin-top:2px}
 .wl-item-actions{display:flex;gap:6px;flex-shrink:0}
+/* ===== IDEA BRIDGE ===== */
+.idea-bridge{background:var(--color-surface-2);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:24px}
+.idea-bridge-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.idea-bridge-title{font-weight:600;font-size:15px}
+.idea-bridge-sub{font-size:12px;color:var(--color-text-muted);margin-top:3px;max-width:560px;line-height:1.5}
+.idea-bridge-status{padding:14px 4px;font-size:13px;color:var(--color-text-muted)}
+.idea-bridge-note{font-size:12px;color:var(--color-text-muted);margin:14px 0 10px}
+.idea-list{display:flex;flex-direction:column;gap:8px}
+.idea-row{display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm)}
+.idea-score{font-weight:800;font-size:18px;min-width:34px;text-align:center;flex-shrink:0}
+.idea-body{flex:1;min-width:0}
+.idea-row-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.idea-title{font-weight:600;font-size:13px}
+.idea-angle{font-size:12px;color:var(--color-text-muted);line-height:1.5}
+.idea-row .btn{flex-shrink:0;white-space:nowrap}
 
 .script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
 .script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
@@ -1903,10 +1918,150 @@ async function renderChannelWorkspace(){
         <a href="#/channels/${ch.id}/settings" class="btn">⚙️ Settings</a>
       </div>
     </div>
+    <div class="idea-bridge">
+      <div class="idea-bridge-head">
+        <div>
+          <div class="idea-bridge-title">💡 Need your next video idea?</div>
+          <div class="idea-bridge-sub">Blends your niche with the content gaps from your competitor watchlist — then turns any idea into a video.</div>
+        </div>
+        <button class="btn primary" id="suggest-ideas-btn">✨ Suggest ideas</button>
+      </div>
+      <div id="channel-idea-results"></div>
+    </div>
     <div class="section-title"><span>Production board</span><span style="font-weight:normal;text-transform:none;letter-spacing:0">${projects.length} video${projects.length === 1 ? '' : 's'} · drag cards or use ◀ ▶ to move</span></div>
     ${bodyHtml}`;
 
+  if ($('suggest-ideas-btn')) $('suggest-ideas-btn').addEventListener('click', generateChannelIdeas);
   if (projects.length > 0) attachKanbanHandlers(ch, projects);
+}
+
+// ============================================================
+// IDEA BRIDGE — channel-level idea suggestions → create a video
+// ============================================================
+async function generateChannelIdeas(){
+  const ch = APP.currentChannel; if (!ch) return;
+  const nicheName = ch.active_niche_profile?.name || 'general topic';
+  const subNiche = ch.active_niche_profile?.sub_niche || ch.active_niche_profile?.description || '';
+  const audience = ch.active_niche_profile?.target_audience || 'general audience';
+  const toneName = ch.default_tone_template?.name || 'neutral';
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  const resultsEl = $('channel-idea-results');
+  resultsEl.innerHTML = '<div class="idea-bridge-status">✨ Gathering competitor gaps + generating ideas…</div>';
+
+  try {
+    // Gather competitor context from saved analyses (fed by the watchlist)
+    let competitorContext = '';
+    const { data: savedAnalyses } = await APP.sb.from('competitor_channel_analyses')
+      .select('channel_handle, analysis_data, created_at')
+      .eq('channel_id', ch.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (savedAnalyses && savedAnalyses.length > 0) {
+      competitorContext += '\n\nSAVED COMPETITOR INSIGHTS (mine these gaps):\n';
+      savedAnalyses.forEach(a => {
+        let d = a.analysis_data;
+        try { if (typeof d === 'string') d = JSON.parse(d); } catch(e){}
+        const gaps = d?.content_gaps || d?.gaps || [];
+        const patterns = d?.title_patterns || d?.patterns || [];
+        competitorContext += `- ${a.channel_handle}: gaps=${JSON.stringify(gaps).slice(0,300)}; patterns=${JSON.stringify(patterns).slice(0,200)}\n`;
+      });
+    }
+
+    const system = `You are a YouTube content strategist. You generate specific, high-potential video ideas tuned to a channel's niche and audience. You ALWAYS respond with valid JSON only — no markdown, no preamble.`;
+    const prompt = `Generate 12 specific YouTube video ideas for this channel.
+
+CHANNEL DNA:
+- Niche: ${nicheName}
+- Sub-niche / focus: ${subNiche}
+- Target audience: ${audience}
+- Tone: ${toneName}
+- Language: ${langName}
+${competitorContext}
+
+For each idea, provide:
+- "title": a click-worthy YouTube title (under 70 chars)
+- "angle": one sentence on the hook / why it works
+- "score": potential score 0-100 (consider demand, searchability, audience match, differentiation)
+- "source": one of "niche", "gap" (fills a competitor content gap), or "trend"
+
+Order by score descending. Be specific and varied. Mix evergreen and timely.
+
+Respond with ONLY a JSON array:
+[{"title":"...","angle":"...","score":87,"source":"gap"}]`;
+
+    const result = await AI.invoke('analyze_topic', { prompt, system, topic_query: 'channel idea generation' }, { projectId: null });
+    const rawText = result.content?.[0]?.text || result.text || '';
+    let ideas = [];
+    try {
+      const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+      ideas = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch(e){
+      throw new Error('AI returned malformed ideas. Try again.');
+    }
+    renderChannelIdeaSuggestions(ideas, savedAnalyses && savedAnalyses.length > 0);
+  } catch(e){
+    resultsEl.innerHTML = `<div class="idea-bridge-status" style="color:var(--color-danger,#e5484d)">❌ ${escapeHtml(e.message)}</div>`;
+    toast('Error generating ideas: ' + e.message, 'error');
+  }
+}
+
+function renderChannelIdeaSuggestions(ideas, hadCompetitorData){
+  const resultsEl = $('channel-idea-results');
+  if (!ideas || ideas.length === 0){
+    resultsEl.innerHTML = '<div class="idea-bridge-status">No ideas generated. Try again.</div>';
+    return;
+  }
+  APP._channelIdeas = ideas;
+
+  const sourceBadge = (src) => {
+    const map = {
+      gap:   { label: '🎯 Gap',   color: 'var(--color-accent)' },
+      trend: { label: '🔥 Trend', color: '#ff9500' },
+      niche: { label: '💡 Niche', color: 'var(--color-text-muted)' },
+    };
+    const s = map[src] || map.niche;
+    return `<span style="font-size:10px;font-weight:700;color:${s.color};white-space:nowrap">${s.label}</span>`;
+  };
+  const scoreColor = (sc) => sc >= 80 ? 'var(--color-success,#30a46c)' : sc >= 60 ? '#ff9500' : 'var(--color-text-muted)';
+
+  let html = `<div class="idea-bridge-note">${hadCompetitorData ? '🎯 Mined from your niche + competitor watchlist gaps.' : '💡 From your niche. Tip: build a Competitor Watchlist for sharper, gap-driven ideas.'}</div>`;
+  html += '<div class="idea-list">';
+  ideas.forEach((idea, i) => {
+    const sc = parseInt(idea.score) || 0;
+    html += `<div class="idea-row">
+      <div class="idea-score" style="color:${scoreColor(sc)}">${sc}</div>
+      <div class="idea-body">
+        <div class="idea-row-top">
+          <span class="idea-title">${escapeHtml(idea.title || '')}</span>
+          ${sourceBadge(idea.source)}
+        </div>
+        <div class="idea-angle">${escapeHtml(idea.angle || '')}</div>
+      </div>
+      <button class="btn sm primary" data-make-idea="${i}">Create video →</button>
+    </div>`;
+  });
+  html += '</div>';
+  resultsEl.innerHTML = html;
+
+  resultsEl.querySelectorAll('[data-make-idea]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idea = APP._channelIdeas[parseInt(btn.dataset.makeIdea)];
+      if (idea) createVideoFromIdea(idea.title, idea.angle);
+    });
+  });
+}
+
+// Open the existing New Video wizard, pre-filled with a chosen idea.
+function createVideoFromIdea(title, angle){
+  const ch = APP.currentChannel; if (!ch) return;
+  openVideoWizard(ch.id);
+  $('vw-title').value = title || '';
+  $('vw-angle').value = angle || '';
+  APP.vwizard.title = title || '';
+  APP.vwizard.angle = angle || '';
+  toast('Idea loaded — pick a format and create', 'success');
 }
 
 // ============================================================
