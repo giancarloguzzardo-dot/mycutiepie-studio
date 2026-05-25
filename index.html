@@ -3854,7 +3854,7 @@ async function renderVoicePanel(){
         ${status === 'ready' && audioUrl ? `
           <audio controls class="voice-section-audio" src="${audioUrl}"></audio>
           <div class="voice-section-actions">
-            <a href="${audioUrl}" download="${escapeHtml(s.title.replace(/[^a-z0-9]/gi,'_'))}.mp3" class="btn sm">⬇ Download</a>
+            <button class="btn sm" data-download-audio="${audioUrl}" data-download-name="${escapeHtml(s.title.replace(/[^a-z0-9]/gi,'_'))}.mp3">⬇ Download</button>
             <button class="btn sm" data-regen-section="${s.originalIdx}">🔄 Re-generate</button>
             <button class="btn sm danger" data-delete-section="${s.originalIdx}">🗑 Delete</button>
           </div>
@@ -3940,10 +3940,37 @@ async function renderVoicePanel(){
       }
     });
   });
+  document.querySelectorAll('[data-download-audio]').forEach(btn => {
+    btn.addEventListener('click', () => downloadAudioFile(btn.dataset.downloadAudio, btn.dataset.downloadName));
+  });
 
   // Wire generate all
   if ($('gen-all-btn')) {
     $('gen-all-btn').addEventListener('click', () => generateAllVoices(vocalSections, clips || []));
+  }
+}
+
+async function downloadAudioFile(url, filename){
+  showLoader('Downloading audio...');
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'voice.mp3';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    hideLoader();
+    toast('Downloaded ✓', 'success');
+  } catch(e){
+    hideLoader();
+    // Fallback: open in new tab so the user can save manually
+    window.open(url, '_blank');
+    toast('Direct download failed — opened in new tab, right-click → Save', 'error');
   }
 }
 
