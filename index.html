@@ -5427,6 +5427,7 @@ async function renderExportPanel(){
   } catch(_){}
   if (!visualSync && APP._visualSyncCache && APP._visualSyncCache[p.id]) visualSync = APP._visualSyncCache[p.id];
   const shotCount = visualSync && visualSync.shots ? visualSync.shots.length : 0;
+  const pickedCount = visualSync && visualSync.shots ? visualSync.shots.filter(s => s.picked && s.picked.video_url).length : 0;
 
   let readyClips = [];
   try {
@@ -5443,6 +5444,7 @@ async function renderExportPanel(){
         <div class="export-check ${p.outline ? 'on' : 'off'}">${p.outline ? '✓' : '○'} Outline</div>
         <div class="export-check ${p.script ? 'on' : 'off'}">${p.script ? '✓' : '○'} Full script</div>
         <div class="export-check ${shotCount ? 'on' : 'off'}">${shotCount ? '✓' : '○'} Shot list${shotCount ? ` (${shotCount} cues)` : ' — not generated'}</div>
+        <div class="export-check ${pickedCount ? 'on' : 'off'}">${pickedCount ? '✓' : '○'} B-roll${pickedCount ? ` (${pickedCount} picked)` : ' — none picked yet'}</div>
         <div class="export-check ${readyClips.length ? 'on' : 'off'}">${readyClips.length ? '✓' : '○'} Voice${readyClips.length ? ` (${readyClips.length} MP3${readyClips.length === 1 ? '' : 's'})` : ' — none generated'}</div>
       </div>
       <div class="ai-action-bar">
@@ -5450,7 +5452,7 @@ async function renderExportPanel(){
         <button class="btn" id="export-md-btn">⬇ Script + outline (.md)</button>
         <button class="btn" id="copy-all-btn">📋 Copy everything</button>
       </div>
-      <div class="export-note">The zip contains a README, your outline & script as text, the shot list (.txt + .csv), and every voice clip as an MP3 — plus a combined <strong>full-voiceover.mp3</strong>. Open it next to CapCut and you have everything in one place.</div>
+      <div class="export-note">The zip contains a README, your outline &amp; script, the shot list, every voice clip (plus a combined <strong>full-voiceover.mp3</strong>), and a <strong>broll/</strong> folder with your picked clips + a <strong>clips.csv</strong> of direct download links in order. Everything your editor needs, in one place.</div>
     `}
   </div>`;
   if ($('export-zip-btn')) $('export-zip-btn').addEventListener('click', () => downloadProductionZip(visualSync, readyClips));
@@ -5526,6 +5528,10 @@ async function downloadProductionZip(visualSync, readyClips){
     const zip = new JSZip();
     const root = zip.folder(safe);
 
+    const pickedShots = (visualSync && visualSync.shots)
+      ? visualSync.shots.filter(s => s.picked && s.picked.video_url)
+      : [];
+
     // README index
     const lines = [];
     lines.push(`PRODUCTION PACKAGE — ${p.title || 'Untitled'}`);
@@ -5537,9 +5543,11 @@ async function downloadProductionZip(visualSync, readyClips){
     lines.push(p.outline ? '- outline.txt' : '- (no outline)');
     lines.push(p.script ? '- script.txt' : '- (no script)');
     if (visualSync && visualSync.shots && visualSync.shots.length) lines.push('- shot-list.txt / shot-list.csv');
+    if (pickedShots.length) lines.push(`- broll/ (${pickedShots.length} picked clips + clips.csv with direct links)`);
     if (readyClips.length) lines.push(`- voice/ (${readyClips.length} clips + full-voiceover.mp3)`);
     lines.push('');
     lines.push('Open the shot list next to CapCut and place each B-roll cue at its timestamp.');
+    lines.push('B-roll clips are named NN_timestamp_keyword. clips.csv has the direct Pexels links in order.');
     root.file('README.txt', lines.join('\n'));
 
     if (p.outline) root.file('outline.txt', p.outline);
@@ -5575,6 +5583,35 @@ async function downloadProductionZip(visualSync, readyClips){
           voiceFolder.file('full-voiceover.mp3', combined);
         } catch(e){ console.warn('Combine failed:', e); }
       }
+    }
+
+    // B-roll: picked Pexels clips → manifest (always) + best-effort file fetch
+    if (pickedShots.length){
+      const brollFolder = root.folder('broll');
+      const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const csv = [['#','Timestamp','Section','Keyword','Filename','Direct download URL','Pexels page'].map(esc).join(',')];
+      const txt = [];
+      let bundled = 0;
+      for (let i = 0; i < pickedShots.length; i++){
+        const s = pickedShots[i];
+        const n = String(i + 1).padStart(2, '0');
+        const tstamp = (s.timestampLabel || '').replace(/[^a-z0-9]/gi, '');
+        const kw = (s.keyword || 'clip').replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'clip';
+        const filename = `${n}_${tstamp ? tstamp + '_' : ''}${kw}.mp4`;
+        csv.push([n, s.timestampLabel || '', s.section || '', s.keyword || '', filename, s.picked.video_url || '', s.picked.pexels_url || ''].map(esc).join(','));
+        txt.push(`${n}. [${s.timestampLabel || ''}] ${s.keyword || ''}\n    file: ${filename}\n    download: ${s.picked.video_url || ''}\n`);
+        // Best-effort: pull the actual file into the zip (may be blocked by CORS)
+        showLoader(`Packaging B-roll (${i + 1}/${pickedShots.length})...`);
+        try {
+          const resp = await fetch(s.picked.video_url);
+          if (resp.ok){ brollFolder.file(filename, await resp.blob()); bundled++; }
+        } catch(e){ console.warn('B-roll fetch failed (will rely on link):', s.picked.video_url, e); }
+      }
+      brollFolder.file('clips.csv', csv.join('\r\n'));
+      brollFolder.file('clips.txt',
+        `B-ROLL CLIPS — ${pickedShots.length} picked, in timestamp order.\n` +
+        `${bundled} downloaded into this folder; the rest use the direct links below.\n\n` +
+        txt.join('\n'));
     }
 
     showLoader('Building zip...');
