@@ -3854,16 +3854,20 @@ async function pickClipForCue(idx, j){
 }
 
 // ----- AI video clip generation (fal via edge function) -----
+// Model is set here (app-side) so switching is a one-line HTML change — no edge function redeploy.
+// Kling 2.5 Turbo Pro ≈ $0.07/s (~$0.35 per 5s). Cheaper alt: 'fal-ai/ltx-2/text-to-video/fast' (~$0.04/s).
+const AI_VIDEO_MODEL = 'fal-ai/kling-video/v2.5-turbo/pro/text-to-video';
+
 async function genAiClipForCue(idx){
   const shot = APP._vsPayload.shots[idx];
   if (!shot) return;
-  if (!confirm('Generate an AI video clip for this cue?\n\nThis uses your fal.ai credit (about $1) and takes 1-3 minutes. Continue?')) return;
+  if (!confirm('Generate an AI video clip for this cue?\n\nThis uses your fal.ai credit (about $0.35) and takes 1-3 minutes. Continue?')) return;
   const statusEl = $('vs-ai-' + idx);
   const setMsg = (m) => { if (statusEl) statusEl.innerHTML = `<div style="font-size:11px;color:var(--color-text-muted);margin-top:6px">${m}</div>`; };
   const prompt = [shot.keyword, shot.visual_note].filter(Boolean).join(', ') + ', cinematic, high quality, 4k';
   setMsg('⏳ Sending to AI…');
   try {
-    const cr = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'create', prompt, duration:5 }});
+    const cr = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'create', prompt, duration:5, model: AI_VIDEO_MODEL }});
     const data = cr.data || {};
     if (!data.id || data.error) throw new Error(data.error || 'create failed');
     const started = Date.now();
