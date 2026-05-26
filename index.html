@@ -636,6 +636,18 @@ body{
 .vs-clip-meta{position:absolute;bottom:0;right:0;background:rgba(0,0,0,.7);color:#fff;font-size:10px;padding:1px 5px;border-top-left-radius:5px}
 .vs-picked{display:flex;align-items:center;gap:8px}
 .vs-picked-thumb{width:80px;height:46px;object-fit:cover;border-radius:5px;display:block;background:var(--color-surface-2)}
+/* ===== DATA VIZ ===== */
+.dv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:16px}
+.dv-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px}
+.dv-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.dv-card-title{font-weight:600;font-size:14px}
+.dv-card-meta{font-size:11px;color:var(--color-text-subtle);margin-top:3px;line-height:1.4}
+.dv-chart-wrap{position:relative;width:100%;height:220px}
+.dv-present-overlay{position:fixed;inset:0;background:rgba(10,10,12,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:30px}
+.dv-present-stage{background:#fff;border-radius:14px;padding:28px 32px;width:min(900px,90vw)}
+.dv-present-title{font-size:22px;font-weight:700;color:#111;margin-bottom:16px;text-align:center}
+.dv-present-canvas{position:relative;width:100%;height:min(460px,60vh)}
+.dv-present-bar{display:flex;align-items:center;gap:12px}
 
 .script-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:10px;overflow:hidden}
 .script-section-header{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--color-surface);color:var(--color-text-muted)}
@@ -2934,6 +2946,7 @@ async function renderVideoStudio(){
         <button class="studio-nav-item ${APP.currentTab === 'script' ? 'on' : ''}" data-tab="script"><span class="studio-nav-icon">📝</span>Script</button>
         <button class="studio-nav-item ${APP.currentTab === 'voice' ? 'on' : ''}" data-tab="voice"><span class="studio-nav-icon">🎙</span>Voice</button>
         <button class="studio-nav-item ${APP.currentTab === 'visualsync' ? 'on' : ''}" data-tab="visualsync"><span class="studio-nav-icon">🎬</span>Visual Sync</button>
+        <button class="studio-nav-item ${APP.currentTab === 'dataviz' ? 'on' : ''}" data-tab="dataviz"><span class="studio-nav-icon">📊</span>Data viz</button>
         <button class="studio-nav-item ${APP.currentTab === 'prepublish' ? 'on' : ''}" data-tab="prepublish"><span class="studio-nav-icon">🎯</span>Pre-publish</button>
         <button class="studio-nav-item ${APP.currentTab === 'workflow' ? 'on' : ''}" data-tab="workflow"><span class="studio-nav-icon">🗂</span>Workflow</button>
         <button class="studio-nav-item ${APP.currentTab === 'analytics' ? 'on' : ''}" data-tab="analytics"><span class="studio-nav-icon">📊</span>Analytics</button>
@@ -3014,6 +3027,7 @@ function renderStudioPanel(){
   if (tab === 'script') return renderScriptPanel();
   if (tab === 'voice') return renderVoicePanel();
   if (tab === 'visualsync') return renderVisualSyncPanel();
+  if (tab === 'dataviz') return renderDataVizPanel();
   if (tab === 'prepublish') return renderPrePublishPanel();
   if (tab === 'repurpose') return renderRepurposePanel();
   if (tab === 'workflow') return renderProjectWorkflowPanel();
@@ -3821,6 +3835,154 @@ async function pickClipForCue(idx, j){
   } catch(e){ console.warn('Visual sync save failed:', e); }
   toast('Clip picked ✓', 'success');
   renderVisualSyncShotList(APP._vsPayload);
+}
+
+// ============================================================
+// DATA VIZ — AI-extracted data moments rendered as animated charts
+// ============================================================
+async function renderDataVizPanel(){
+  const p = APP.currentProject;
+  let specs = null;
+  try { if (p.data_viz) specs = typeof p.data_viz === 'string' ? JSON.parse(p.data_viz) : p.data_viz; } catch(_){}
+  if (!specs && APP._dataVizCache && APP._dataVizCache[p.id]) specs = APP._dataVizCache[p.id];
+  APP._dvSpecs = Array.isArray(specs) ? specs : (specs && specs.scenes) ? specs.scenes : [];
+
+  const hasScript = !!p.script;
+  $('studio-content').innerHTML = `<div class="panel">
+    <div class="panel-title">📊 Data viz</div>
+    <div class="panel-desc">Turn the numbers in your script into animated charts — the "scenes you shoot yourself." No two channels have the same ones. Record them with your screen recorder and drop into the edit.</div>
+    ${!hasScript ? '<div class="out-box">Generate the script first — data viz is built from the numbers in it.</div>' : `
+      <div class="ai-action-bar">
+        <button class="btn primary" id="gen-dataviz-btn">${APP._dvSpecs.length ? '🔄 Re-generate' : '✨ Generate data visuals'}</button>
+      </div>
+      <div id="dataviz-results"></div>
+    `}
+  </div>`;
+  if ($('gen-dataviz-btn')) $('gen-dataviz-btn').addEventListener('click', generateDataViz);
+  if (APP._dvSpecs.length) renderDataVizCards(APP._dvSpecs);
+}
+
+async function generateDataViz(){
+  const p = APP.currentProject; const ch = APP.currentChannel;
+  const lang = ch.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+  showLoader('Finding data moments in your script...');
+  try {
+    const system = `You extract "data moments" from a video script — places where a number, comparison, trend, ranking, or breakdown is mentioned and would be far clearer as an animated chart. You ALWAYS respond with valid JSON only, no markdown.`;
+    const prompt = `Read this script and extract up to 8 of the strongest data moments to visualize as charts.
+
+SCRIPT:
+${(p.script || '').slice(0, 9000)}
+
+For each, return:
+- "timestamp_label": approximate position label if inferable (e.g. "0:30"), else ""
+- "title": short chart title in ${langName} (under 50 chars)
+- "chart_type": one of "bar", "line", "doughnut", "counter" (counter = a single big animated number)
+- "labels": array of category labels (for counter, one label)
+- "values": array of numbers (for counter, one number)
+- "unit": "$", "%", "x", or "" 
+- "note": one sentence on what the chart shows
+
+Only include moments with REAL numeric content from the script. Respond with ONLY a JSON array:
+[{"timestamp_label":"0:30","title":"...","chart_type":"bar","labels":["A","B"],"values":[140,28],"unit":"$","note":"..."}]`;
+    const result = await AI.invoke('analyze_topic', { prompt, system, topic_query: 'data viz extraction' }, { projectId: p.id });
+    const rawText = result.content?.[0]?.text || result.text || '';
+    let specs = [];
+    try { const m = rawText.match(/\[[\s\S]*\]/); specs = JSON.parse(m ? m[0] : rawText); } catch(e){ throw new Error('AI returned malformed data. Try again.'); }
+    APP._dvSpecs = specs;
+    try {
+      await APP.sb.from('projects').update({ data_viz: specs }).eq('id', p.id);
+      APP._dataVizCache = APP._dataVizCache || {}; APP._dataVizCache[p.id] = specs;
+    } catch(e){ console.warn('Data viz save failed:', e); }
+    hideLoader();
+    toast(`${specs.length} data visual${specs.length === 1 ? '' : 's'} generated ✓`, 'success');
+    renderDataVizCards(specs);
+  } catch(e){
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+const DV_COLORS = ['#0A84FF','#30a46c','#EF9F27','#E24B4A','#7F77DD','#1D9E75','#D4537E','#888780'];
+
+async function renderDataVizCards(specs){
+  const el = $('dataviz-results');
+  if (!specs || specs.length === 0){ el.innerHTML = '<div class="out-box" style="margin-top:14px">No clear data moments found. Add concrete numbers to your script and re-generate.</div>'; return; }
+  let html = '<div class="dv-grid">';
+  specs.forEach((s, i) => {
+    html += `<div class="dv-card">
+      <div class="dv-card-head">
+        <div>
+          <div class="dv-card-title">${escapeHtml(s.title || 'Chart')}</div>
+          <div class="dv-card-meta">${s.timestamp_label ? '⏱ ' + escapeHtml(s.timestamp_label) + ' · ' : ''}${escapeHtml(s.note || '')}</div>
+        </div>
+        <button class="btn sm" data-present-dv="${i}">⛶ Present</button>
+      </div>
+      <div class="dv-chart-wrap"><canvas id="dv-canvas-${i}"></canvas></div>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+
+  try { await loadScriptOnce('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js'); } catch(e){ toast('Could not load chart library', 'error'); return; }
+  // Destroy old instances
+  if (APP._dvCharts) APP._dvCharts.forEach(c => { try { c.destroy(); } catch(_){} });
+  APP._dvCharts = [];
+  specs.forEach((s, i) => {
+    const cv = $('dv-canvas-' + i);
+    if (cv) APP._dvCharts.push(buildDvChart(cv, s));
+  });
+  el.querySelectorAll('[data-present-dv]').forEach(btn => {
+    btn.addEventListener('click', () => presentDataViz(parseInt(btn.dataset.presentDv, 10)));
+  });
+}
+
+function buildDvChart(canvas, s){
+  const unit = s.unit || '';
+  const fmt = (v) => (unit === '$' ? '$' : '') + Number(v).toLocaleString() + (unit === '%' ? '%' : unit === 'x' ? 'x' : '');
+  const labels = s.labels || [];
+  const values = (s.values || []).map(Number);
+  if (s.chart_type === 'counter'){
+    return new Chart(canvas, {
+      type: 'doughnut',
+      data: { labels: [s.labels?.[0] || ''], datasets: [{ data: [1], backgroundColor: [DV_COLORS[0]], borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '78%', plugins: { legend: { display: false },
+        tooltip: { enabled: false },
+        title: { display: true, text: fmt(values[0] || 0), font: { size: 34, weight: '700' }, color: '#0A84FF' } },
+        animation: { animateRotate: true, duration: 1400 } }
+    });
+  }
+  const type = (s.chart_type === 'line' || s.chart_type === 'doughnut') ? s.chart_type : 'bar';
+  const colors = values.map((_, k) => DV_COLORS[k % DV_COLORS.length]);
+  return new Chart(canvas, {
+    type,
+    data: { labels, datasets: [{ data: values, backgroundColor: type === 'line' ? 'rgba(10,132,255,0.15)' : colors, borderColor: type === 'line' ? '#0A84FF' : colors, borderWidth: type === 'line' ? 2 : 0, borderRadius: 6, fill: type === 'line', tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      animation: { duration: 1400, easing: 'easeOutQuart' },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmt(c.raw) } } },
+      scales: type === 'doughnut' ? {} : { y: { beginAtZero: true, ticks: { callback: (v) => fmt(v), color: '#888780' }, grid: { color: 'rgba(136,135,128,0.15)' } }, x: { ticks: { color: '#888780' }, grid: { display: false } } } }
+  });
+}
+
+function presentDataViz(idx){
+  const s = APP._dvSpecs[idx]; if (!s) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'dv-present-overlay';
+  overlay.innerHTML = `<div class="dv-present-stage">
+      <div class="dv-present-title">${escapeHtml(s.title || '')}</div>
+      <div class="dv-present-canvas"><canvas id="dv-present-canvas"></canvas></div>
+    </div>
+    <div class="dv-present-bar">
+      <span style="font-size:12px;color:#aaa">Screen-record this (Cmd+Shift+5) for a clean MP4</span>
+      <button class="btn sm" id="dv-replay">↻ Replay</button>
+      <button class="btn sm" id="dv-close">✕ Close</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  let chart = buildDvChart($('dv-present-canvas'), s);
+  $('dv-replay').addEventListener('click', () => { try { chart.destroy(); } catch(_){} chart = buildDvChart($('dv-present-canvas'), s); });
+  const close = () => { try { chart.destroy(); } catch(_){} overlay.remove(); };
+  $('dv-close').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 }
 
 function visualSyncToText(payload){
