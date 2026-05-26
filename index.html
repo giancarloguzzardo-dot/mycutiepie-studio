@@ -3887,8 +3887,10 @@ async function pickClipForCue(idx, j){
 const AI_VIDEO_MODELS = [
   { id:'fal-kling-turbo', label:'Kling 2.5 Turbo · fal', provider:'fal', model:'fal-ai/kling-video/v2.5-turbo/pro/text-to-video', cost:'~$0.35', dur:5 },
   { id:'rep-kling-std',   label:'Kling standard · Replicate', provider:'replicate', model:'kwaivgi/kling-v1.6-standard', cost:'~$0.25', dur:5 },
+  { id:'fal-seedance',    label:'Seedance 1.0 Pro · fal', provider:'fal', model:'fal-ai/bytedance/seedance/v1/pro/text-to-video', cost:'~$0.30', dur:5 },
   { id:'fal-ltx-fast',    label:'LTX-2 Fast · fal (cheapest)', provider:'fal', model:'fal-ai/ltx-2/text-to-video/fast', cost:'~$0.20', dur:6 },
   { id:'fal-veo3',        label:'Veo 3.1 · fal (premium)', provider:'fal', model:'fal-ai/veo3', cost:'~$1.00', dur:5 },
+  { id:'fal-sora2',       label:'Sora 2 · fal (premium $$)', provider:'fal', model:'fal-ai/sora-2/text-to-video', cost:'~$2.00', dur:5 },
 ];
 function currentAiModel(){
   let id = APP._aiModelId;
@@ -4124,6 +4126,8 @@ function exportVisualSyncText(payload){
 function renderPrePublishPanel(){
   const p = APP.currentProject;
   const hasScript = !!p.script;
+  const titleTxt = (p.title || 'this video').replace(/"/g, '');
+  const defaultThumbPrompt = `YouTube thumbnail, 16:9, for a video titled "${titleTxt}". Bold eye-catching composition, one clear focal subject, dramatic high-contrast lighting, vibrant punchy colors, cinematic. Leave empty space on one side for a large bold text overlay. No watermark, no text.`;
 
   $('studio-content').innerHTML = `
     <div class="panel">
@@ -4142,6 +4146,7 @@ function renderPrePublishPanel(){
       <div class="studio-tabs">
         <button class="studio-tab on" data-tab="titles">Title scoring</button>
         <button class="studio-tab" data-tab="thumbnail">Thumbnail critique</button>
+        <button class="studio-tab" data-tab="thumbgen">Generate thumbnail</button>
       </div>
 
       <div class="tab-pnl on" id="pp-titles">
@@ -4157,6 +4162,16 @@ function renderPrePublishPanel(){
         </div>
         <div id="thumb-result"></div>
       </div>
+
+      <div class="tab-pnl" id="pp-thumbgen">
+        <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:10px;line-height:1.5">Generate real thumbnail images with AI (Nano Banana Pro · 16:9 · strong text rendering). Edit the prompt below, then generate 3 options to choose from. ~$0.08 each.</div>
+        <textarea id="thumb-prompt" rows="4" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-text);font-family:inherit;font-size:13px;line-height:1.5;resize:vertical">${escapeHtml(defaultThumbPrompt)}</textarea>
+        <div class="ai-action-bar" style="margin-top:10px">
+          <button class="btn primary" id="gen-thumb-btn">✨ Generate 3 thumbnails (~$0.24)</button>
+        </div>
+        <div id="thumbgen-status"></div>
+        <div id="thumbgen-result" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div>
+      </div>
     </div>`;
 
   document.querySelectorAll('.studio-tab').forEach(t => {
@@ -4170,6 +4185,58 @@ function renderPrePublishPanel(){
 
   if ($('score-titles-btn')) $('score-titles-btn').addEventListener('click', scoreTitles);
   if ($('critique-thumb-btn')) $('critique-thumb-btn').addEventListener('click', critiqueThumbnail);
+  if ($('gen-thumb-btn')) $('gen-thumb-btn').addEventListener('click', genThumbnails);
+}
+
+// Thumbnail image generation (Nano Banana Pro via the generate-video-clip edge fn, kind:"image")
+const THUMB_MODEL = 'fal-ai/nano-banana-pro';
+
+async function genOneThumb(prompt){
+  const cr = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'create', kind:'image', model:THUMB_MODEL, prompt, aspect_ratio:'16:9' }});
+  const data = cr.data || {};
+  if (data.error || !data.id) throw new Error(data.error || 'create failed');
+  const started = Date.now();
+  while (Date.now() - started < 120000){
+    await new Promise(r => setTimeout(r, 4000));
+    const st = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'status', status_url:data.status_url, response_url:data.response_url }});
+    const sd = st.data || {};
+    if (sd.error) throw new Error(sd.error);
+    if (sd.status === 'succeeded') return sd.output;
+  }
+  return null;
+}
+
+async function genThumbnails(){
+  const prompt = ($('thumb-prompt')?.value || '').trim();
+  if (!prompt){ toast('Write a thumbnail prompt first', 'error'); return; }
+  if (!confirm('Generate 3 thumbnail images with Nano Banana Pro (~$0.24 total)?\n\nTakes ~15-40 seconds. Continue?')) return;
+  const statusEl = $('thumbgen-status');
+  const resultEl = $('thumbgen-result');
+  const setMsg = (m) => { if (statusEl) statusEl.innerHTML = m ? `<div style="font-size:12px;color:var(--color-text-muted);margin-top:8px">${m}</div>` : ''; };
+  if (resultEl) resultEl.innerHTML = '';
+  if ($('gen-thumb-btn')) $('gen-thumb-btn').disabled = true;
+  setMsg('⏳ Generating 3 thumbnails… keep this tab open');
+  try {
+    const settled = await Promise.allSettled([0,1,2].map(() => genOneThumb(prompt)));
+    const ok = settled.filter(s => s.status === 'fulfilled' && s.value).map(s => s.value);
+    if (!ok.length){
+      const firstErr = settled.find(s => s.status === 'rejected');
+      throw new Error(firstErr ? (firstErr.reason?.message || String(firstErr.reason)) : 'No images returned');
+    }
+    resultEl.innerHTML = ok.map((u, i) => `
+      <div style="border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface-2)">
+        <img src="${u}" style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover" />
+        <div style="padding:8px"><a class="btn" href="${u}" target="_blank" rel="noopener" style="display:block;text-align:center">↗ Open / save image ${i+1}</a></div>
+      </div>`).join('');
+    const failed = 3 - ok.length;
+    setMsg(`${ok.length} thumbnail${ok.length>1?'s':''} ready ✓${failed ? ` · ${failed} failed (try again)` : ''} · right-click → Save image`);
+    toast('Thumbnails generated ✓', 'success');
+  } catch(e){
+    setMsg('❌ ' + (e.message || e));
+    toast('Thumbnail generation failed: ' + (e.message || e), 'error');
+  } finally {
+    if ($('gen-thumb-btn')) $('gen-thumb-btn').disabled = false;
+  }
 }
 
 async function scoreTitles(){
