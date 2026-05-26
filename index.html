@@ -1843,10 +1843,28 @@ async function loadProjects(channelId){
 // ============================================================
 // VIEW: DASHBOARD
 // ============================================================
-function renderDashboard(){
+async function renderDashboard(){
   const firstName = (APP.profile.full_name || '').split(' ')[0] || 'there';
   const count = APP.channels.length;
-  const sub = count === 0 ? "Let's set up your first money-making channel." : `${count} channel${count > 1 ? 's' : ''} ready · let's make money on YouTube`;
+  const sub = count === 0
+    ? "Set up your first channel to get started."
+    : `${count} channel${count > 1 ? 's' : ''} in your studio`;
+
+  // Lightweight per-channel video tally for the cards
+  const counts = {};
+  if (count > 0){
+    try {
+      const { data: projs } = await APP.sb.from('projects').select('channel_id, board_status');
+      (projs || []).forEach(pr => {
+        const c = counts[pr.channel_id] = counts[pr.channel_id] || { total:0, published:0, ready:0, active:0 };
+        c.total++;
+        if (pr.board_status === 'published') c.published++;
+        else if (pr.board_status === 'ready') c.ready++;
+        else c.active++;
+      });
+    } catch(_){}
+  }
+
   let body = '';
   if (count === 0) {
     body = `<div class="empty-state">
@@ -1861,20 +1879,30 @@ function renderDashboard(){
       const toneName = ch.default_tone_template?.name || 'Default tone';
       const isReady = ch.status === 'active' || ch.active_niche_profile_id;
       const meta = ch.handle ? `${ch.handle} · ${nicheName} · ${toneName}` : `${nicheName} · ${toneName}`;
+      const cc = counts[ch.id] || { total:0, published:0, ready:0, active:0 };
+      const banner = cc.total === 0
+        ? `<div class="cta-banner">
+            <div class="cta-emoji">🎯</div>
+            <div class="cta-content">
+              <div class="cta-title">Ready to make your first video?</div>
+              <div class="cta-desc">We'll guide you through script, voice, and production.</div>
+            </div>
+            <a href="#/channels/${ch.id}/videos/new" class="cta-btn">Start →</a>
+          </div>`
+        : `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--color-border-subtle)">
+            <div style="font-size:13px;color:var(--color-text-muted)">
+              <strong style="color:var(--color-text)">${cc.active + cc.ready}</strong> in production
+              &nbsp;·&nbsp; <strong style="color:var(--color-text)">${cc.published}</strong> published
+            </div>
+            <a href="#/channels/${ch.id}" class="cta-btn">Open studio →</a>
+          </div>`;
       body += `<div class="channel-card" data-channel-id="${ch.id}">
         <div class="channel-header">
           <div class="channel-emoji" style="background:${ch.brand_color}1a">${ch.emoji || '🎬'}</div>
           <div style="flex:1;min-width:0"><div class="channel-name">${escapeHtml(ch.name)}</div><div class="channel-meta">${escapeHtml(meta)}</div></div>
           <div class="channel-status ${isReady ? 'ready' : ''}">${isReady ? 'Ready' : 'Draft'}</div>
         </div>
-        <div class="cta-banner">
-          <div class="cta-emoji">🎯</div>
-          <div class="cta-content">
-            <div class="cta-title">Ready to make your first video?</div>
-            <div class="cta-desc">We'll guide you through script, voice, and production.</div>
-          </div>
-          <a href="#/channels/${ch.id}/videos/new" class="cta-btn">Start →</a>
-        </div>
+        ${banner}
       </div>`;
     });
     body += `<div class="quick-actions">
@@ -1886,7 +1914,7 @@ function renderDashboard(){
   }
   $('view-container').innerHTML = `
     <div class="welcome">
-      <div class="welcome-label">Dashboard</div>
+      <div class="welcome-label">Studio</div>
       <div class="welcome-title">Hello, ${escapeHtml(firstName)}</div>
       <div class="welcome-sub">${escapeHtml(sub)}</div>
     </div>${body}`;
@@ -2906,7 +2934,7 @@ async function renderVideoStudio(){
   const ch = APP.currentChannel; const p = APP.currentProject;
   if (!ch || !p) return;
 
-  const isProMode = APP.profile.studio_mode === 'pro';
+  const isProMode = true; // locked to full layout — Beginner toggle removed
   const stages = ['idea', 'outline', 'script', 'voice', 'prepublish', 'workflow', 'export'];
   const currentStage = p.current_stage || 'idea';
   // currentStage tracks where the user is in the workflow; idea is start
@@ -2961,10 +2989,6 @@ async function renderVideoStudio(){
     <div class="studio-header">
       <div class="studio-title-row">
         <input type="text" class="studio-title-input" id="studio-title-input" value="${escapeHtml(p.title || 'Untitled')}" />
-        <div class="studio-mode-toggle">
-          <span>${isProMode ? 'Pro' : 'Beginner'}</span>
-          <div class="toggle-switch ${isProMode ? 'on' : ''}" id="studio-mode-toggle"></div>
-        </div>
       </div>
       <div class="studio-chips">
         <span class="dna-chip">💡 ${escapeHtml(nicheName)}</span>
@@ -2978,9 +3002,6 @@ async function renderVideoStudio(){
   // Wire title save
   $('studio-title-input').addEventListener('blur', saveProjectTitle);
   $('studio-title-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
-
-  // Wire mode toggle
-  $('studio-mode-toggle').addEventListener('click', toggleStudioMode);
 
   // Wire timeline + sidebar — scoped to view-container only (avoids picking elements from hidden wizards)
   const viewContainer = $('view-container');
@@ -3746,6 +3767,13 @@ function renderVisualSyncShotList(payload){
       💡 <strong>${shots.length} visual cues</strong>${pickedCount ? ` · <strong>${pickedCount} picked</strong>` : ''}. Timestamps are approximate — adjust ±2-3s in CapCut. Pick a clip per cue and it'll be bundled into your Export package.
     </div>
     ${keyBar}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap">
+      <span style="color:var(--color-text-muted)">🎬 AI clip model:</span>
+      <select id="ai-model-select" style="padding:5px 8px;border-radius:var(--radius-sm);border:1px solid var(--color-border-subtle);background:var(--color-surface);color:var(--color-text);font-size:12px">
+        ${AI_VIDEO_MODELS.map(mm => `<option value="${mm.id}"${mm.id === currentAiModel().id ? ' selected' : ''}>${escapeHtml(mm.label)} (${mm.cost})</option>`).join('')}
+      </select>
+      <span style="font-size:11px;color:var(--color-text-subtle)">used by the ✨ AI clip button</span>
+    </div>
     <div style="overflow-x:auto;border:1px solid var(--color-border-subtle);border-radius:var(--radius-md)">
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead>
@@ -3770,6 +3798,7 @@ function renderVisualSyncShotList(payload){
   document.querySelectorAll('[data-ai-clip]').forEach(btn => {
     btn.addEventListener('click', () => genAiClipForCue(parseInt(btn.dataset.aiClip, 10)));
   });
+  if ($('ai-model-select')) $('ai-model-select').addEventListener('change', (e) => setAiModel(e.target.value));
 }
 
 // ----- Pexels integration -----
@@ -3853,35 +3882,49 @@ async function pickClipForCue(idx, j){
   renderVisualSyncShotList(APP._vsPayload);
 }
 
-// ----- AI video clip generation (fal via edge function) -----
-// Model is set here (app-side) so switching is a one-line HTML change — no edge function redeploy.
-// Kling 2.5 Turbo Pro ≈ $0.07/s (~$0.35 per 5s). Cheaper alt: 'fal-ai/ltx-2/text-to-video/fast' (~$0.04/s).
-const AI_VIDEO_MODEL = 'fal-ai/kling-video/v2.5-turbo/pro/text-to-video';
+// ----- AI video clip generation (router: pick provider+model per generation) -----
+// All fal models share one API, so adding more is just a new entry here. Replicate uses a separate poll path.
+const AI_VIDEO_MODELS = [
+  { id:'fal-kling-turbo', label:'Kling 2.5 Turbo · fal', provider:'fal', model:'fal-ai/kling-video/v2.5-turbo/pro/text-to-video', cost:'~$0.35', dur:5 },
+  { id:'rep-kling-std',   label:'Kling standard · Replicate', provider:'replicate', model:'kwaivgi/kling-v1.6-standard', cost:'~$0.25', dur:5 },
+  { id:'fal-ltx-fast',    label:'LTX-2 Fast · fal (cheapest)', provider:'fal', model:'fal-ai/ltx-2/text-to-video/fast', cost:'~$0.20', dur:6 },
+  { id:'fal-veo3',        label:'Veo 3.1 · fal (premium)', provider:'fal', model:'fal-ai/veo3', cost:'~$1.00', dur:5 },
+];
+function currentAiModel(){
+  let id = APP._aiModelId;
+  if (!id){ try { id = localStorage.getItem('mcp_ai_model'); } catch(_){} }
+  return AI_VIDEO_MODELS.find(m => m.id === id) || AI_VIDEO_MODELS[0];
+}
+function setAiModel(id){ APP._aiModelId = id; try { localStorage.setItem('mcp_ai_model', id); } catch(_){} }
 
 async function genAiClipForCue(idx){
   const shot = APP._vsPayload.shots[idx];
   if (!shot) return;
-  if (!confirm('Generate an AI video clip for this cue?\n\nThis uses your fal.ai credit (about $0.35) and takes 1-3 minutes. Continue?')) return;
+  const m = currentAiModel();
+  if (!confirm(`Generate an AI clip with ${m.label} (${m.cost})?\n\nUses your credit and takes 1-3 minutes. Continue?`)) return;
   const statusEl = $('vs-ai-' + idx);
-  const setMsg = (m) => { if (statusEl) statusEl.innerHTML = `<div style="font-size:11px;color:var(--color-text-muted);margin-top:6px">${m}</div>`; };
+  const setMsg = (msg) => { if (statusEl) statusEl.innerHTML = `<div style="font-size:11px;color:var(--color-text-muted);margin-top:6px">${msg}</div>`; };
   const prompt = [shot.keyword, shot.visual_note].filter(Boolean).join(', ') + ', cinematic, high quality, 4k';
   setMsg('⏳ Sending to AI…');
   try {
-    const cr = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'create', prompt, duration:5, model: AI_VIDEO_MODEL }});
+    const cr = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:m.provider, action:'create', prompt, duration:m.dur, model:m.model }});
     const data = cr.data || {};
-    if (!data.id || data.error) throw new Error(data.error || 'create failed');
+    if (data.error || !data.id) throw new Error(data.error || 'create failed');
     const started = Date.now();
     let out = null;
-    while (Date.now() - started < 5 * 60 * 1000){
+    while (Date.now() - started < 6 * 60 * 1000){
       await new Promise(r => setTimeout(r, 12000));
-      const st = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'status', status_url:data.status_url, response_url:data.response_url }});
+      const statusBody = m.provider === 'replicate'
+        ? { provider:'replicate', action:'status', prediction_id:data.id }
+        : { provider:'fal', action:'status', status_url:data.status_url, response_url:data.response_url };
+      const st = await APP.sb.functions.invoke('generate-video-clip', { body: statusBody });
       const sd = st.data || {};
       if (sd.error) throw new Error(sd.error);
       if (sd.status === 'succeeded'){ out = sd.output; break; }
       setMsg('🎬 Generating… (' + Math.round((Date.now() - started) / 1000) + 's — keep this tab open)');
     }
     if (!out) throw new Error('Timed out — try again');
-    APP._vsPayload.shots[idx].picked = { source:'ai', provider:'fal', video_url: out, thumbnail:null, prediction_id:data.id };
+    APP._vsPayload.shots[idx].picked = { source:'ai', provider:m.provider, model:m.model, video_url: out, thumbnail:null, prediction_id:data.id };
     const p = APP.currentProject;
     try {
       await APP.sb.from('projects').update({ visual_sync: APP._vsPayload }).eq('id', p.id);
