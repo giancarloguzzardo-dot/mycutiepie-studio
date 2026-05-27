@@ -3735,13 +3735,14 @@ function renderVisualSyncShotList(payload){
              : `<img src="${escapeHtml(picked.thumbnail || '')}" class="vs-picked-thumb" alt="" />`}
            <div>
              <div style="font-size:11px;font-weight:700;color:var(--color-success,#30a46c)">✓ ${isAi ? 'AI clip' : 'Picked'}${(!isAi && picked.duration) ? ' · ' + picked.duration + 's' : ''}</div>
-             ${picked.video_url ? `<a href="${escapeHtml(picked.video_url)}" target="_blank" rel="noopener" style="font-size:11px">▶ Preview</a>` : ''}
+             ${picked.video_url ? `<button class="btn sm ghost" data-preview="${idx}" style="font-size:11px;padding:2px 8px;margin-top:2px">▶ Preview</button>` : ''}
              <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
                ${hasKey ? `<button class="btn sm ghost" data-find-clips="${idx}">Change</button>` : ''}
                <button class="btn sm ghost" data-ai-clip="${idx}">↻ AI</button>
              </div>
            </div>
          </div>
+         <div id="vs-prev-${idx}"></div>
          <div class="vs-clips" id="vs-clips-${idx}"></div>
          <div id="vs-ai-${idx}"></div>`
       : `<div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -3798,7 +3799,22 @@ function renderVisualSyncShotList(payload){
   document.querySelectorAll('[data-ai-clip]').forEach(btn => {
     btn.addEventListener('click', () => genAiClipForCue(parseInt(btn.dataset.aiClip, 10)));
   });
+  document.querySelectorAll('[data-preview]').forEach(btn => {
+    btn.addEventListener('click', () => previewClip(parseInt(btn.dataset.preview, 10)));
+  });
   if ($('ai-model-select')) $('ai-model-select').addEventListener('change', (e) => setAiModel(e.target.value));
+}
+
+// Inline clip preview (no new tab) — toggles a <video> player right inside the row.
+function previewClip(idx){
+  const c = $('vs-prev-' + idx);
+  if (!c) return;
+  if (c.dataset.open === '1'){ c.innerHTML = ''; c.dataset.open = '0'; return; }
+  const shot = APP._vsPayload && APP._vsPayload.shots[idx];
+  const url = shot && shot.picked && shot.picked.video_url;
+  if (!url){ toast('No clip to preview', 'error'); return; }
+  c.innerHTML = `<video src="${escapeHtml(url)}" controls autoplay muted playsinline style="margin-top:6px;max-width:260px;width:100%;border-radius:6px;border:1px solid var(--color-border-subtle);display:block"></video>`;
+  c.dataset.open = '1';
 }
 
 // ----- Pexels integration -----
@@ -3906,7 +3922,7 @@ async function genAiClipForCue(idx){
   if (!confirm(`Generate an AI clip with ${m.label} (${m.cost})?\n\nUses your credit and takes 1-3 minutes. Continue?`)) return;
   const statusEl = $('vs-ai-' + idx);
   const setMsg = (msg) => { if (statusEl) statusEl.innerHTML = `<div style="font-size:11px;color:var(--color-text-muted);margin-top:6px">${msg}</div>`; };
-  const prompt = [shot.keyword, shot.visual_note].filter(Boolean).join(', ') + ', cinematic, high quality, 4k';
+  const prompt = [shot.keyword, shot.visual_note, shot.section].filter(Boolean).join(', ') + ', cinematic b-roll footage, high quality, 4k, no text, no captions, no watermark';
   setMsg('⏳ Sending to AI…');
   try {
     const cr = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:m.provider, action:'create', prompt, duration:m.dur, model:m.model }});
@@ -3914,7 +3930,7 @@ async function genAiClipForCue(idx){
     if (data.error || !data.id) throw new Error(data.error || 'create failed');
     const started = Date.now();
     let out = null;
-    while (Date.now() - started < 6 * 60 * 1000){
+    while (Date.now() - started < 8 * 60 * 1000){
       await new Promise(r => setTimeout(r, 12000));
       const statusBody = m.provider === 'replicate'
         ? { provider:'replicate', action:'status', prediction_id:data.id }
@@ -3927,14 +3943,18 @@ async function genAiClipForCue(idx){
     }
     if (!out) throw new Error('Timed out — try again');
     APP._vsPayload.shots[idx].picked = { source:'ai', provider:m.provider, model:m.model, video_url: out, thumbnail:null, prediction_id:data.id };
-    const p = APP.currentProject;
-    try {
-      await APP.sb.from('projects').update({ visual_sync: APP._vsPayload }).eq('id', p.id);
-      APP._visualSyncCache = APP._visualSyncCache || {};
-      APP._visualSyncCache[p.id] = APP._vsPayload;
-    } catch(e){ console.warn('Visual sync save failed:', e); }
-    toast('AI clip generated ✓', 'success');
+    // Keep it in memory immediately so a PAID clip is never lost this session…
+    APP._visualSyncCache = APP._visualSyncCache || {};
+    APP._visualSyncCache[APP.currentProject.id] = APP._vsPayload;
     renderVisualSyncShotList(APP._vsPayload);
+    // …and persist to the DB. If that fails, warn loudly (the clip cost money).
+    try {
+      await APP.sb.from('projects').update({ visual_sync: APP._vsPayload }).eq('id', APP.currentProject.id);
+      toast('AI clip generated & saved ✓', 'success');
+    } catch(e){
+      console.warn('Visual sync save failed:', e);
+      toast('⚠️ Clip generated but DB save failed — re-open Visual Sync and pick again, or copy the URL from the console.', 'error');
+    }
   } catch(e){
     setMsg('❌ ' + (e.message || e));
     toast('AI clip failed: ' + (e.message || e), 'error');
@@ -5875,7 +5895,7 @@ async function downloadProductionZip(visualSync, readyClips){
     if (readyClips.length) lines.push(`- voice/ (${readyClips.length} clips + full-voiceover.mp3)`);
     lines.push('');
     lines.push('Open the shot list next to CapCut and place each B-roll cue at its timestamp.');
-    lines.push('B-roll clips are named NN_timestamp_keyword. clips.csv has the direct Pexels links in order.');
+    lines.push('B-roll clips are named NN_timestamp_keyword. clips.csv has the direct download links in order.');
     root.file('README.txt', lines.join('\n'));
 
     if (p.outline) root.file('outline.txt', p.outline);
