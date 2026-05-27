@@ -5110,6 +5110,7 @@ async function renderVoicePanel(){
         <select id="voice-select">${voiceOptions}</select>
       </div>
       <button class="btn" id="add-voice-toggle-btn">+ Add new voice</button>
+      <button class="btn" id="manage-voices-toggle-btn">⚙ Manage</button>
     </div>
 
     <div id="add-voice-form" class="add-voice-form" style="display:none">
@@ -5121,6 +5122,25 @@ async function renderVoicePanel(){
           <button class="btn" id="save-voice-btn">+ Save</button>
         </div>
         <div class="fld-hint">Get a voice ID from <a href="https://elevenlabs.io/voice-library" target="_blank" style="color:var(--color-accent)">ElevenLabs Voice Library</a></div>
+      </div>
+    </div>
+
+    <div id="manage-voices-panel" class="add-voice-form" style="display:none">
+      <div class="fld">
+        <label>Saved voices${(voices && voices.length) ? ` (${voices.length})` : ''}</label>
+        ${(!voices || voices.length === 0)
+          ? '<div class="fld-hint">No voices saved yet. Add one above.</div>'
+          : `<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+              ${voices.map(v => `
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);background:var(--color-surface)">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:600">${escapeHtml(v.display_name)}</div>
+                    <div style="font-size:11px;color:var(--color-text-muted);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(v.external_voice_id)}</div>
+                  </div>
+                  <button class="btn sm danger" data-delete-voice-id="${v.id}" data-delete-voice-name="${escapeHtml(v.display_name)}">🗑 Delete</button>
+                </div>`).join('')}
+            </div>`}
+        <div class="fld-hint" style="margin-top:8px">Removing a voice from the library doesn't delete clips you've already generated — those stay safe.</div>
       </div>
     </div>
 
@@ -5151,6 +5171,20 @@ async function renderVoicePanel(){
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   });
   $('save-voice-btn')?.addEventListener('click', saveNewVoice);
+
+  // Wire Manage voices toggle + delete
+  $('manage-voices-toggle-btn')?.addEventListener('click', () => {
+    const panel = $('manage-voices-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+  document.querySelectorAll('[data-delete-voice-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.deleteVoiceName || 'this voice';
+      if (confirm(`Remove "${name}" from your voice library? Existing voiceovers will not be affected.`)) {
+        deleteVoicePreset(btn.dataset.deleteVoiceId);
+      }
+    });
+  });
 
   // Wire generate buttons per section
   document.querySelectorAll('[data-gen-section]').forEach(btn => {
@@ -5236,6 +5270,14 @@ async function saveNewVoice(){
   });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Voice saved ✓', 'success');
+  renderVoicePanel();
+}
+
+async function deleteVoicePreset(presetId){
+  if (!presetId) return;
+  const { error } = await APP.sb.from('voice_presets').delete().eq('id', presetId);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Voice removed from library ✓', 'success');
   renderVoicePanel();
 }
 
@@ -5406,11 +5448,11 @@ async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annot
   return tasks.length;
 }
 
-async function generateVoiceForSection(sectionIndex, voiceIdOverride){
+async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameOverride){
   const p = APP.currentProject;
   const voiceSelect = $('voice-select');
   const voiceId = voiceIdOverride || (voiceSelect ? voiceSelect.value : null);
-  const voiceName = (voiceSelect && voiceSelect.selectedOptions[0]?.dataset?.name) || 'Voice';
+  const voiceName = voiceNameOverride || (voiceSelect && voiceSelect.selectedOptions[0]?.dataset?.name) || 'Voice';
   if (!voiceId) { toast('Pick a voice first', 'error'); return; }
 
   // Re-parse to get current section
@@ -5505,6 +5547,11 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride){
 async function generateAllVoices(vocalSections, existingClips){
   const voiceSelect = $('voice-select');
   if (!voiceSelect.value) { toast('Pick a voice first', 'error'); return; }
+  // Capture voice ONCE up-front. After each section the panel re-renders and
+  // rebuilds the dropdown — if we read voiceSelect.value mid-loop it goes empty
+  // (the auto-advance was stalling after ~2 sections for exactly this reason).
+  const voiceId = voiceSelect.value;
+  const voiceName = (voiceSelect.selectedOptions[0]?.dataset?.name) || 'Voice';
 
   const toGenerate = vocalSections.filter(s => {
     const clip = existingClips.find(c => c.section_index === s.originalIdx);
@@ -5518,7 +5565,7 @@ async function generateAllVoices(vocalSections, existingClips){
   for (let i = 0; i < toGenerate.length; i++) {
     const s = toGenerate[i];
     showLoader(`Generating ${i+1}/${toGenerate.length}: "${s.title}"...`);
-    await generateVoiceForSection(s.originalIdx);
+    await generateVoiceForSection(s.originalIdx, voiceId, voiceName);
   }
   toast(`Generated ${toGenerate.length} voice clips ✓`, 'success');
 }
