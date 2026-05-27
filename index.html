@@ -1589,6 +1589,9 @@ function parseHash(){
   const hash = location.hash.slice(1) || '/';
   const parts = hash.split('/').filter(Boolean);
   if (parts.length === 0) return { name: 'dashboard' };
+  if (parts[0] === 'invite' && parts[1]) {
+    return { name: 'invite', token: parts[1] };
+  }
   if (parts[0] === 'channels' && parts[1] && parts[2] === 'settings') {
     return { name: 'channel-settings', channelId: parts[1] };
   }
@@ -1620,6 +1623,20 @@ async function handleRoute(){
   const route = parseHash();
   hide('wizard'); hide('video-wizard');
   show('app-shell');
+
+  // Invite acceptance: stash the token, clean the URL, process it.
+  // (Stashing in localStorage covers the case where the user wasn't signed in
+  // when they clicked the link and went through sign-up / email confirmation.)
+  if (route.name === 'invite') {
+    try { localStorage.setItem('pending_invite_token', route.token); } catch(_){}
+    history.replaceState(null, '', location.pathname + location.search + '#/');
+  }
+  let pendingInviteToken = null;
+  try { pendingInviteToken = localStorage.getItem('pending_invite_token'); } catch(_){}
+  if (pendingInviteToken) {
+    await processPendingInvite();
+    return;
+  }
 
   if (route.name === 'dashboard') {
     APP.currentChannel = null; APP.currentProject = null;
@@ -1709,6 +1726,92 @@ async function handleRoute(){
 }
 
 window.addEventListener('hashchange', handleRoute);
+
+// ============================================================
+// CHANNEL COLLAB — invite + members
+// ============================================================
+async function processPendingInvite(){
+  let token = null;
+  try { token = localStorage.getItem('pending_invite_token'); } catch(_){}
+  if (!token) return false;
+  try { localStorage.removeItem('pending_invite_token'); } catch(_){}
+  showLoader('Accepting invite...');
+  try {
+    const { data, error } = await APP.sb.functions.invoke('accept-channel-invite', { body: { token } });
+    hideLoader();
+    if (error) {
+      const msg = (error && (error.message || error.error || String(error))) || 'invite error';
+      toast('Invite error: ' + msg, 'error');
+      navigate('/');
+      return false;
+    }
+    if (data && data.error) {
+      toast('Invite: ' + data.error, 'error');
+      navigate('/');
+      return false;
+    }
+    if (data && data.ok) {
+      toast(data.already_member ? 'Already a member of this channel ✓' : 'Invite accepted ✓', 'success');
+      await loadChannels();
+      navigate(`/channels/${data.channel_id}`);
+      return true;
+    }
+  } catch(e) {
+    hideLoader();
+    toast('Invite error: ' + (e?.message || e), 'error');
+    navigate('/');
+  }
+  return false;
+}
+
+async function generateInviteLink(channelId){
+  // Token: a compact UUID-ish string (no dashes), generated client-side.
+  let token;
+  if (window.crypto && window.crypto.randomUUID) {
+    token = window.crypto.randomUUID().replace(/-/g, '');
+  } else {
+    token = (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).slice(0, 32);
+  }
+  const { error } = await APP.sb.from('channel_invites').insert({
+    channel_id: channelId,
+    token,
+    role: 'editor',
+    created_by: APP.user.id,
+  });
+  if (error) { toast('Could not create invite: ' + error.message, 'error'); return null; }
+  const url = `${location.origin}${location.pathname}#/invite/${token}`;
+  return url;
+}
+
+async function loadChannelMembers(channelId){
+  // Owner sees all member rows for their channel (RLS policy: channel_members_owner_sees_all).
+  const { data: members, error } = await APP.sb.from('channel_members')
+    .select('id, user_id, role, created_at, added_by')
+    .eq('channel_id', channelId)
+    .order('created_at', { ascending: true });
+  if (error) { console.warn('Members load failed:', error); return []; }
+  if (!members || members.length === 0) return [];
+  // Pull emails / names for display (owner can SELECT profiles of their members
+  // via the user_profiles_owner_sees_members policy)
+  const userIds = members.map(m => m.user_id);
+  const { data: profiles } = await APP.sb.from('user_profiles')
+    .select('id, email, full_name').in('id', userIds);
+  const byId = {};
+  (profiles || []).forEach(p => { byId[p.id] = p; });
+  members.forEach(m => {
+    const p = byId[m.user_id];
+    m.email = p?.email || null;
+    m.full_name = p?.full_name || null;
+  });
+  return members;
+}
+
+async function revokeMember(memberId){
+  const { error } = await APP.sb.from('channel_members').delete().eq('id', memberId);
+  if (error) { toast('Could not remove member: ' + error.message, 'error'); return; }
+  toast('Member removed', 'success');
+  await renderChannelSettings();
+}
 
 function renderBreadcrumb(items){
   const el = $('breadcrumb');
@@ -2248,6 +2351,7 @@ async function moveProjectBoardStatus(projectId, newStatus){
 // ============================================================
 async function renderChannelSettings(){
   const ch = APP.currentChannel; if (!ch) return;
+  const isOwner = ch.user_id === APP.user.id;
   const { data: history } = await APP.sb.from('channel_niche_history')
     .select('*').eq('channel_id', ch.id).order('active_from', { ascending: false });
   const historyItems = (history || []).map((h, idx) => `<div class="history-item">
@@ -2258,6 +2362,30 @@ async function renderChannelSettings(){
       ${h.pivot_reason ? `<div class="history-reason">${escapeHtml(h.pivot_reason)}</div>` : ''}
     </div>
   </div>`).join('');
+
+  // Members (owner-only)
+  let members = [];
+  if (isOwner) members = await loadChannelMembers(ch.id);
+  const membersHtml = isOwner ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);background:var(--color-surface-2);margin-bottom:6px">
+      <div style="min-width:0;flex:1">
+        <div style="font-size:13px;font-weight:600">${escapeHtml(APP.profile.email || 'You')}</div>
+        <div style="font-size:11px;color:var(--color-text-muted)">Channel owner</div>
+      </div>
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--color-accent);background:var(--color-accent-soft);padding:3px 8px;border-radius:99px;white-space:nowrap">Owner</span>
+    </div>
+    ${members.length === 0
+      ? '<div style="font-size:12px;color:var(--color-text-muted);padding:4px 0">No additional members yet. Generate an invite link below to add one.</div>'
+      : members.map(m => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);background:var(--color-surface);margin-bottom:6px">
+          <div style="min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(m.email || m.full_name || (m.user_id.slice(0,8) + '...'))}</div>
+            <div style="font-size:11px;color:var(--color-text-muted)">${escapeHtml(m.role)} · joined ${new Date(m.created_at).toLocaleDateString()}</div>
+          </div>
+          <button class="btn sm danger" data-revoke-member="${m.id}">Remove</button>
+        </div>
+      `).join('')}
+  ` : '';
 
   $('view-container').innerHTML = `
     <div class="welcome">
@@ -2292,6 +2420,21 @@ async function renderChannelSettings(){
       <div class="settings-section-header"><div><div class="settings-section-title">Positioning history</div><div class="settings-section-desc">Track all the pivots and repositionings of this channel.</div></div></div>
       ${historyItems || '<div class="text-muted" style="font-size:13px">No history yet.</div>'}
     </div>
+    ${isOwner ? `<div class="settings-section">
+      <div class="settings-section-header"><div><div class="settings-section-title">Members & access</div><div class="settings-section-desc">People who can collaborate on this channel. Members can create/edit videos but cannot change channel settings.</div></div></div>
+      <div id="members-list" style="margin-bottom:14px">${membersHtml}</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" id="gen-invite-btn">+ Generate invite link</button>
+        <div style="font-size:12px;color:var(--color-text-muted)">Link valid 7 days · single-use</div>
+      </div>
+      <div id="invite-link-area" style="margin-top:12px;display:none">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="invite-link-input" readonly style="flex:1;padding:8px 10px;border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);background:var(--color-surface-2);color:var(--color-text);font-family:var(--font-mono);font-size:11px" />
+          <button class="btn sm" id="copy-invite-btn">📋 Copy</button>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--color-text-muted)">Send via WhatsApp/iMessage. The invitee needs a MyCutiePie account (free signup works).</div>
+      </div>
+    </div>` : ''}
     <div class="danger-section">
       <div class="danger-title">Danger zone</div>
       <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:14px">Deleting a channel removes it permanently. Videos and history are also deleted.</p>
@@ -2306,6 +2449,42 @@ async function renderChannelSettings(){
   $('delete-channel-btn').addEventListener('click', () => {
     confirmModal('Delete channel?', `This will permanently delete "${ch.name}" and all its videos. This cannot be undone.`, 'Delete forever', deleteChannel);
   });
+
+  // Members & invite wiring (owner-only)
+  if (isOwner) {
+    if ($('gen-invite-btn')) $('gen-invite-btn').addEventListener('click', async () => {
+      $('gen-invite-btn').disabled = true;
+      $('gen-invite-btn').textContent = 'Generating...';
+      const url = await generateInviteLink(ch.id);
+      $('gen-invite-btn').disabled = false;
+      $('gen-invite-btn').textContent = '+ Generate invite link';
+      if (!url) return;
+      const area = $('invite-link-area');
+      const input = $('invite-link-input');
+      input.value = url;
+      area.style.display = 'block';
+      input.focus(); input.select();
+      toast('Invite link ready — copy & share', 'success');
+    });
+    if ($('copy-invite-btn')) $('copy-invite-btn').addEventListener('click', async () => {
+      const input = $('invite-link-input');
+      if (!input || !input.value) return;
+      try {
+        await navigator.clipboard.writeText(input.value);
+        toast('Link copied ✓', 'success');
+      } catch(_) {
+        input.select(); document.execCommand('copy');
+        toast('Link copied ✓', 'success');
+      }
+    });
+    document.querySelectorAll('[data-revoke-member]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (confirm('Remove this member from the channel? They will lose access immediately.')) {
+          revokeMember(btn.dataset.revokeMember);
+        }
+      });
+    });
+  }
 }
 
 async function saveIdentity(){
