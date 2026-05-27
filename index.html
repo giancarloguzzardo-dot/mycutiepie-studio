@@ -5448,6 +5448,25 @@ async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annot
   return tasks.length;
 }
 
+// Voice chunk generation with retry — covers transient 546 / network hiccups from ai-router or ElevenLabs.
+// 3 attempts: immediate, +1.5s, +3.5s. ~95% of transient failures recover on retry 2 or 3.
+async function invokeVoiceWithRetry(payload, opts, onRetry){
+  const waits = [0, 1500, 3500];
+  let lastErr;
+  for (let attempt = 1; attempt <= waits.length; attempt++){
+    if (waits[attempt - 1] > 0) await new Promise(r => setTimeout(r, waits[attempt - 1]));
+    try {
+      return await AI.invoke('generate_voice', payload, opts);
+    } catch(e){
+      lastErr = e;
+      const msg = String(e?.message || e);
+      console.warn(`generate_voice attempt ${attempt}/${waits.length} failed: ${msg}`);
+      if (attempt < waits.length && onRetry) onRetry(attempt + 1, waits.length);
+    }
+  }
+  throw lastErr;
+}
+
 async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameOverride){
   const p = APP.currentProject;
   const voiceSelect = $('voice-select');
@@ -5498,9 +5517,13 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
       if (chunks.length > 1) {
         showLoader(`Generating voice for "${section.title}" — part ${i + 1}/${chunks.length}...`);
       }
-      const blob = await AI.invoke('generate_voice', {
-        text: chunks[i], voice_id: voiceId, model_id: 'eleven_turbo_v2_5'
-      }, { projectId: p.id });
+      const blob = await invokeVoiceWithRetry(
+        { text: chunks[i], voice_id: voiceId, model_id: 'eleven_turbo_v2_5' },
+        { projectId: p.id },
+        (next, total) => {
+          showLoader(`Generating voice for "${section.title}"${chunks.length > 1 ? ` — part ${i + 1}/${chunks.length}` : ''} — retry ${next}/${total} (transient hiccup)...`);
+        }
+      );
       blobs.push(blob);
     }
     const finalBlob = await concatenateAudioBlobs(blobs);
