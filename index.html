@@ -5556,6 +5556,7 @@ function extractAnnotations(text) {
 }
 
 async function createWorkflowTasksFromAnnotations(projectId, sectionTitle, annotations) {
+   return 0; // DISABLED — replaced by video_assembler aggregator (see MCP.aggregator)
   if (!annotations || annotations.length === 0) return 0;
 
   // Map annotation category → workflow_role enum value
