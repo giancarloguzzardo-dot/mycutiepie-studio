@@ -5647,6 +5647,36 @@ async function invokeVoiceWithRetry(payload, opts, onRetry){
   throw lastErr;
 }
 
+// ─────────────────────────────────────────────────────────
+// MyCutiePie · generateVoiceForSection — v2 (with alignment)
+//
+// Sostituisce le DUE funzioni esistenti in index.html:
+//   - generateVoiceForSection (estesa)
+//   - aggiungi anche base64ToBlob (helper nuovo)
+//
+// Cambiamenti chiave:
+//   - Passa `with_alignment: true` a ElevenLabs (via ai-router → elevenlabs v2)
+//   - Riceve JSON: { audio_base64, alignment, normalized_alignment }
+//   - Decodifica audio_base64 → Blob (sostituisce response Blob diretta)
+//   - Concatena alignment dei chunk con offset cumulativo dei timestamp
+//   - Salva alignment_data nel DB + duration_sec REALE dal timestamp finale
+//   - Backward compatible: se ai-router non ritorna alignment (legacy),
+//     procede normalmente con audio Blob senza alignment_data
+// ─────────────────────────────────────────────────────────
+
+// HELPER: decodifica base64 in Blob (per ElevenLabs /with-timestamps response)
+function base64ToBlob(base64, contentType = 'audio/mpeg') {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+    const slice = byteCharacters.slice(offset, offset + 1024);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  return new Blob(byteArrays, { type: contentType });
+}
+
 async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameOverride){
   const p = APP.currentProject;
   const voiceSelect = $('voice-select');
@@ -5661,7 +5691,6 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
 
   // STRIP ANNOTATIONS — extract scenic directions, clean voice text
   const { cleanText, annotations } = extractAnnotations(section.body);
-
   if (!cleanText || cleanText.length < 10) { toast('Section too short to generate (after cleaning annotations)', 'error'); return; }
 
   // Split long sections into chunks so we never hit the ElevenLabs per-request limit.
@@ -5670,9 +5699,7 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
   // CREATE WORKFLOW TASKS from annotations (silently, in background)
   if (annotations.length > 0) {
     const created = await createWorkflowTasksFromAnnotations(p.id, section.title, annotations);
-    if (created > 0) {
-      console.log(`Created ${created} workflow tasks from ${section.title}`);
-    }
+    if (created > 0) console.log(`Created ${created} workflow tasks from ${section.title}`);
   }
 
   // Mark as generating in DB
@@ -5681,7 +5708,7 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
     project_id: p.id,
     section_index: sectionIndex,
     section_title: section.title,
-    section_body: cleanText,  // store CLEAN text, not original
+    section_body: cleanText,
     status: 'generating',
     voice_id: voiceId,
     voice_name: voiceName,
@@ -5691,22 +5718,68 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
 
   showLoader(`Generating voice for "${section.title}"...${chunks.length > 1 ? ` (${chunks.length} parts)` : ''} ${annotations.length > 0 ? `(+ ${annotations.length} workflow tasks)` : ''}`);
   try {
-    // Generate each chunk, then concatenate into one MP3.
+    // Generate each chunk with alignment, then concatenate
     const blobs = [];
+    const alignmentChunks = [];        // NEW: alignment data per chunk
+    let cumulativeAudioDur = 0;        // NEW: tracks total audio duration to offset timestamps
+
     for (let i = 0; i < chunks.length; i++) {
       if (chunks.length > 1) {
         showLoader(`Generating voice for "${section.title}" — part ${i + 1}/${chunks.length}...`);
       }
-      const blob = await invokeVoiceWithRetry(
-        { text: chunks[i], voice_id: voiceId, model_id: 'eleven_turbo_v2_5' },
+
+      // CHANGED: pass with_alignment: true
+      const result = await invokeVoiceWithRetry(
+        { text: chunks[i], voice_id: voiceId, model_id: 'eleven_turbo_v2_5', with_alignment: true },
         { projectId: p.id },
         (next, total) => {
           showLoader(`Generating voice for "${section.title}"${chunks.length > 1 ? ` — part ${i + 1}/${chunks.length}` : ''} — retry ${next}/${total} (transient hiccup)...`);
         }
       );
+
+      // NEW: handle both legacy Blob response and new JSON response
+      let blob, chunkAlignment = null, chunkDur = 0;
+      if (result instanceof Blob) {
+        // Legacy fallback (alignment not available)
+        blob = result;
+        console.warn(`[voice] chunk ${i} returned Blob (alignment unavailable)`);
+      } else if (result && typeof result === 'object' && result.audio_base64) {
+        // New alignment-mode response
+        blob = base64ToBlob(result.audio_base64, 'audio/mpeg');
+        if (result.alignment && Array.isArray(result.alignment.character_end_times_seconds)) {
+          chunkAlignment = result.alignment;
+          chunkDur = result.alignment.character_end_times_seconds.slice(-1)[0] || 0;
+        }
+      } else {
+        throw new Error(`Unexpected voice response shape for chunk ${i}`);
+      }
       blobs.push(blob);
+
+      // Offset this chunk's timestamps by cumulative duration and store
+      if (chunkAlignment) {
+        alignmentChunks.push({
+          chunk_index: i,
+          chunk_text: chunks[i],
+          characters: chunkAlignment.characters,
+          starts: chunkAlignment.character_start_times_seconds.map(t => t + cumulativeAudioDur),
+          ends: chunkAlignment.character_end_times_seconds.map(t => t + cumulativeAudioDur),
+          chunk_duration_sec: chunkDur,
+        });
+      }
+      cumulativeAudioDur += chunkDur;
     }
+
     const finalBlob = await concatenateAudioBlobs(blobs);
+
+    // Merge alignment chunks into single flat structure
+    const mergedAlignment = alignmentChunks.length > 0 ? {
+      characters: alignmentChunks.flatMap(c => c.characters),
+      character_start_times_seconds: alignmentChunks.flatMap(c => c.starts),
+      character_end_times_seconds: alignmentChunks.flatMap(c => c.ends),
+      total_duration_sec: cumulativeAudioDur,
+      chunk_count: alignmentChunks.length,
+      generated_at: new Date().toISOString(),
+    } : null;
 
     // Upload to Storage
     const audioPath = `voices/${APP.user.id}/${p.id}/section_${sectionIndex}_${Date.now()}.mp3`;
@@ -5719,14 +5792,22 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
     const { data: urlData } = APP.sb.storage.from('media').getPublicUrl(audioPath);
     const audioUrl = urlData.publicUrl;
 
-    // Update clip in DB
-    const { error: updErr } = await APP.sb.from('project_voice_clips').update({
+    // REAL duration from alignment, fallback to estimate
+    const realDuration = mergedAlignment ? Math.round(mergedAlignment.total_duration_sec) : estimateAudioDuration(cleanText);
+
+    // Update clip in DB — INCLUDE alignment_data
+    const updatePayload = {
       audio_url: audioUrl,
       audio_path: audioPath,
-      duration_sec: estimateAudioDuration(cleanText),
+      duration_sec: realDuration,
       status: 'ready',
       error_message: null,
-    }).eq('project_id', p.id).eq('section_index', sectionIndex);
+    };
+    if (mergedAlignment) {
+      updatePayload.alignment_data = mergedAlignment;
+    }
+    const { error: updErr } = await APP.sb.from('project_voice_clips').update(updatePayload)
+      .eq('project_id', p.id).eq('section_index', sectionIndex);
     if (updErr) throw updErr;
 
     // Update project stage
@@ -5734,7 +5815,8 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
     APP.currentProject.current_stage = 'voice';
 
     hideLoader();
-    toast(`"${section.title}" voiced ✓`, 'success');
+    const alignmentNote = mergedAlignment ? ` (${mergedAlignment.characters.length} char alignment ✓)` : '';
+    toast(`"${section.title}" voiced ✓${alignmentNote}`, 'success');
     renderVoicePanel();
   } catch (e) {
     hideLoader();
