@@ -5737,19 +5737,31 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
         }
       );
 
-      // NEW: handle both legacy Blob response and new JSON response
+// Handle: JSON object | JSON Blob (AI.invoke wrapping) | legacy audio Blob
       let blob, chunkAlignment = null, chunkDur = 0;
-      if (result instanceof Blob) {
-        // Legacy fallback (alignment not available)
-        blob = result;
-        console.warn(`[voice] chunk ${i} returned Blob (alignment unavailable)`);
-      } else if (result && typeof result === 'object' && result.audio_base64) {
-        // New alignment-mode response
-        blob = base64ToBlob(result.audio_base64, 'audio/mpeg');
-        if (result.alignment && Array.isArray(result.alignment.character_end_times_seconds)) {
-          chunkAlignment = result.alignment;
-          chunkDur = result.alignment.character_end_times_seconds.slice(-1)[0] || 0;
+      let normalized = result;
+      // AI.invoke wraps JSON as Blob of application/json — decode it
+      if (result instanceof Blob && result.type.includes('json')) {
+        try {
+          const text = await result.text();
+          if (text.startsWith('{')) normalized = JSON.parse(text);
+        } catch (e) { console.warn('JSON Blob parse failed:', e); }
+      }
+      if (normalized && typeof normalized === 'object' && !(normalized instanceof Blob)) {
+        // ai-router envelope { ok, data: {...} } OR direct { audio_base64, alignment }
+        const payload = normalized.audio_base64 ? normalized : normalized.data;
+        if (payload && payload.audio_base64) {
+          blob = base64ToBlob(payload.audio_base64, 'audio/mpeg');
+          if (payload.alignment && Array.isArray(payload.alignment.character_end_times_seconds)) {
+            chunkAlignment = payload.alignment;
+            chunkDur = payload.alignment.character_end_times_seconds.slice(-1)[0] || 0;
+          }
+        } else {
+          throw new Error(`No audio_base64 in JSON for chunk ${i}`);
         }
+      } else if (normalized instanceof Blob) {
+        blob = normalized;
+        console.warn(`[voice] chunk ${i} returned legacy audio Blob (type=${normalized.type})`);
       } else {
         throw new Error(`Unexpected voice response shape for chunk ${i}`);
       }
