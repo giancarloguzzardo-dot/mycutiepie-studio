@@ -215,13 +215,34 @@
 
   <div class="vt-config">
 
+    <div class="vt-banner">
+      💡 <strong>Quick guide</strong>: Default capability è <code>score_titles</code> (Title Generator vero). I params templates sono best-guess — se ricevi errore tipo "missing field X", apri DevTools Network tab sull'app principale mentre usi Title Generator, copia il body request reale, e paste qui sotto.
+    </div>
+
     <label>Channel</label>
     <select id="vt-channel-selector">
       <option>Loading channels...</option>
     </select>
 
-    <label>AI Capability</label>
-    <input type="text" id="vt-capability" value="title_generation" placeholder="e.g. title_generation, idea_gate, seo_pack">
+    <label>AI Capability (default: score_titles = Title Generator)</label>
+    <select id="vt-capability-select">
+      <option value="score_titles" selected>score_titles — Generate & score title variants (Title Generator)</option>
+      <option value="generate_outline">generate_outline — Video outline structure</option>
+      <option value="generate_script">generate_script — Full 9-section production script</option>
+      <option value="generate_seo">generate_seo — Title, description, tags, chapters</option>
+      <option value="generate_thumbnail_prompt">generate_thumbnail_prompt — Thumbnail concept prompts</option>
+      <option value="critique_thumbnail">critique_thumbnail — Thumbnail analysis (Pre-publish)</option>
+      <option value="analyze_topic">analyze_topic — Idea Gate scoring</option>
+      <option value="analyze_topic_multi_platform">analyze_topic_multi_platform — Score per platform</option>
+      <option value="research_topic">research_topic — Topic angles, gaps, opportunities</option>
+      <option value="analyze_competitor">analyze_competitor — Competitor channel scan</option>
+      <option value="analyze_competitor_channel">analyze_competitor_channel — Top performers + ideas</option>
+      <option value="adapt_to_shorts">adapt_to_shorts — Long → 60s Shorts</option>
+      <option value="adapt_to_tiktok">adapt_to_tiktok — Adapt to TikTok</option>
+      <option value="adapt_to_instagram_reels">adapt_to_instagram_reels — Adapt to Reels</option>
+      <option value="adapt_to_newsletter">adapt_to_newsletter — Adapt to newsletter/blog</option>
+    </select>
+    <input type="hidden" id="vt-capability" value="score_titles">
 
     <label>Topic to test (single per comparison)</label>
     <input type="text" id="vt-topic" placeholder="e.g. Why 401k default options are designed to fail you">
@@ -282,6 +303,37 @@ const QUICK_TOPICS = {
     'The cognitive bias that makes you waste 2 hours/day on social media'
   ]
 };
+
+// ═══════════════════════════════════════════════════════════════
+// Capability dropdown → updates hidden capability + suggests params
+// ═══════════════════════════════════════════════════════════════
+const PARAMS_TEMPLATES = {
+  'score_titles': {"topic": "TOPIC_HERE", "n_variants": 5},
+  'generate_outline': {"topic": "TOPIC_HERE", "target_duration_min": 20},
+  'generate_script': {"outline": "OUTLINE_HERE", "target_duration_min": 20},
+  'generate_seo': {"title": "TOPIC_HERE", "summary": "SUMMARY_HERE"},
+  'generate_thumbnail_prompt': {"topic": "TOPIC_HERE", "n_concepts": 3},
+  'critique_thumbnail': {"thumbnail_brief": "BRIEF_HERE"},
+  'analyze_topic': {"topic": "TOPIC_HERE"},
+  'analyze_topic_multi_platform': {"topic": "TOPIC_HERE", "platforms": ["youtube_long", "shorts", "tiktok"]},
+  'research_topic': {"topic": "TOPIC_HERE"},
+  'analyze_competitor': {"channel_handle": "@HandleHere"},
+  'analyze_competitor_channel': {"channel_handle": "@HandleHere", "n_ideas": 5},
+  'adapt_to_shorts': {"script": "SCRIPT_HERE"},
+  'adapt_to_tiktok': {"script": "SCRIPT_HERE"},
+  'adapt_to_instagram_reels': {"script": "SCRIPT_HERE"},
+  'adapt_to_newsletter': {"script": "SCRIPT_HERE"}
+};
+
+document.getElementById('vt-capability-select').onchange = (e) => {
+  const cap = e.target.value;
+  document.getElementById('vt-capability').value = cap;
+  const template = PARAMS_TEMPLATES[cap] || {"topic": "TOPIC_HERE"};
+  document.getElementById('vt-params').value = JSON.stringify(template, null, 2);
+};
+
+// Init default params template for score_titles
+document.getElementById('vt-params').value = JSON.stringify(PARAMS_TEMPLATES['score_titles'], null, 2);
 
 // ═══════════════════════════════════════════════════════════════
 // AUTH
