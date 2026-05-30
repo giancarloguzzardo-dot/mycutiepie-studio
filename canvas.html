@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Channel Strategy Canvas — MyCutiePie</title>
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem;
+    background: #0a0a0a;
+    color: #e5e5e5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.5;
+  }
+
+  .cc-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #141414;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #2a2a2a;
+  }
+
+  .cc-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #2a2a2a;
+    flex-wrap: wrap;
+  }
+  .cc-header h2 {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+    font-size: 1.5rem;
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cc-header select, .cc-header button {
+    padding: 0.6rem 1rem;
+    background: #2a2a2a;
+    color: #e5e5e5;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+  .cc-header button:hover { background: #3a3a3a; }
+  .cc-header select { min-width: 200px; }
+
+  .cc-field-group {
+    margin-bottom: 2rem;
+  }
+  .cc-field-group > label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #a78bfa;
+    font-size: 0.95rem;
+  }
+  .cc-field-group > label .cc-hint {
+    color: #6b7280;
+    font-weight: 400;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+  }
+  .cc-field-group textarea,
+  .cc-field-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: #1a1a1a;
+    color: #e5e5e5;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    transition: border-color 0.15s;
+  }
+  .cc-field-group textarea:focus,
+  .cc-field-group input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+  }
+
+  .cc-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .cc-metrics-grid input {
+    text-align: center;
+  }
+
+  .cc-moat {
+    background: #1a1a1a;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 3px solid #8b5cf6;
+  }
+  .cc-moat strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: #c4b5fd;
+    font-size: 0.9rem;
+  }
+  .cc-moat textarea {
+    margin-bottom: 0.5rem;
+  }
+
+  .cc-subgroup {
+    background: #1a1a1a;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    border-left: 2px solid #4b5563;
+  }
+  .cc-subgroup strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #c4b5fd;
+  }
+
+  .cc-footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    flex-wrap: wrap;
+  }
+  .cc-footer button {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: background 0.15s;
+  }
+  #cc-save-btn { background: #8b5cf6; }
+  #cc-save-btn:hover { background: #7c3aed; }
+  #cc-preview-btn { background: #374151; }
+  #cc-preview-btn:hover { background: #4b5563; }
+  #cc-status {
+    flex: 1;
+    text-align: right;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    min-width: 200px;
+  }
+
+  .cc-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 2rem;
+  }
+  .cc-modal.hidden { display: none; }
+  .cc-modal-content {
+    background: #141414;
+    padding: 2rem;
+    border-radius: 16px;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow-y: auto;
+    width: 100%;
+    border: 1px solid #2a2a2a;
+  }
+  .cc-modal-content h3 {
+    margin-top: 0;
+    color: #a78bfa;
+  }
+  .cc-modal-content pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 0.85rem;
+    background: #0a0a0a;
+    padding: 1rem;
+    border-radius: 8px;
+    color: #d4d4d4;
+    border: 1px solid #2a2a2a;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .cc-modal-content button {
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    background: #374151;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .cc-auth-banner {
+    background: #7c2d12;
+    color: #fed7aa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    .cc-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    body { padding: 1rem; }
+    .cc-section { padding: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<section class="cc-section">
+  <div class="cc-header">
+    <h2>🎯 Channel Strategy Canvas</h2>
+    <select id="cc-channel-selector">
+      <option>Loading channels...</option>
+    </select>
+    <button id="cc-new-channel-btn">+ New Channel</button>
+  </div>
+
+  <div id="cc-auth-status"></div>
+
+  <div class="cc-body">
+
+    <div class="cc-field-group">
+      <label>1. Positioning Statement <span class="cc-hint">(1 frase: chi → outcome → approccio → vs alternatives)</span></label>
+      <textarea id="cc-positioning" rows="4" placeholder="Aiutiamo [audience specifica] a [outcome] tramite [approccio unico], a differenza di [competitor] che [cosa sbagliano]."></textarea>
+    </div>
+
+    <div class="cc-field-group">
+      <label>2. Viewer Pain Point <span class="cc-hint">(cosa frustra il target nel cercare contenuti del niche oggi)</span></label>
+      <textarea id="cc-pain" rows="4" placeholder="Il dolore specifico del target viewer è..."></textarea>
+    </div>
+
+    <div class="cc-field-group">
+      <label>3. Unfair Advantages <span class="cc-hint">(1 per linea — perché TU vs competitor 10x più grosso)</span></label>
+      <textarea id="cc-advantages" rows="5" placeholder="Advantage 1...
+Advantage 2...
+Advantage 3..."></textarea>
+    </div>
+
+    <div class="cc-field-group">
+      <label>4. 90-Day Success Metric <span class="cc-hint">(numeri specifici, non range)</span></label>
+      <div class="cc-metrics-grid">
+        <input type="number" id="cc-subs" placeholder="Subs (es. 1500)">
+        <input type="number" id="cc-ctr" placeholder="CTR (0.04)" step="0.001">
+        <input type="number" id="cc-avpd" placeholder="AVPD % (0.35)" step="0.01">
+        <input type="number" id="cc-sponsor" placeholder="Sponsor inq.">
+      </div>
+      <textarea id="cc-metric-note" rows="3" placeholder="Note: perché questi numeri, cosa indica successo/fallimento..."></textarea>
+    </div>
+
+    <div class="cc-field-group">
+      <label>5. Counter-Intuitive Insight <span class="cc-hint">(la thesis ricorrente di tutti i video)</span></label>
+      <textarea id="cc-insight" rows="5" placeholder="La cosa contro-intuitiva che gli altri creator del niche non sanno o non dicono..."></textarea>
+    </div>
+
+    <div class="cc-field-group">
+      <label>6. Moats <span class="cc-hint">(3 vantaggi defendibili nei primi 12 mesi)</span></label>
+      <div class="cc-moat" data-rank="1">
+        <strong>Moat #1 (priorità più alta)</strong>
+        <textarea class="cc-moat-text" rows="3" placeholder="Cosa rende difficile copiarti..."></textarea>
+        <textarea class="cc-moat-defensible" rows="2" placeholder="Perché è defensibile..."></textarea>
+      </div>
+      <div class="cc-moat" data-rank="2">
+        <strong>Moat #2</strong>
+        <textarea class="cc-moat-text" rows="3"></textarea>
+        <textarea class="cc-moat-defensible" rows="2" placeholder="Perché defensibile..."></textarea>
+      </div>
+      <div class="cc-moat" data-rank="3">
+        <strong>Moat #3</strong>
+        <textarea class="cc-moat-text" rows="3"></textarea>
+        <textarea class="cc-moat-defensible" rows="2" placeholder="Perché defensibile..."></textarea>
+      </div>
+    </div>
+
+    <div class="cc-field-group">
+      <label>7. Pivot Conditions <span class="cc-hint">(cosa proteggi vs cosa cambi se dati lo richiedono)</span></label>
+      <div class="cc-subgroup">
+        <strong>What to keep no matter what (1 per linea)</strong>
+        <textarea id="cc-keep" rows="3"></textarea>
+      </div>
+      <div class="cc-subgroup">
+        <strong>What to change if needed (1 per linea)</strong>
+        <textarea id="cc-change" rows="3"></textarea>
+      </div>
+      <div class="cc-subgroup">
+        <strong>Pivot triggers (1 per linea — "se X allora pivot Y")</strong>
+        <textarea id="cc-triggers" rows="4"></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cc-footer">
+    <button id="cc-save-btn">💾 Save Brief</button>
+    <button id="cc-preview-btn">👁 Preview System Prompt</button>
+    <span id="cc-status">Ready</span>
+  </div>
+</section>
+
+<div id="cc-preview-modal" class="cc-modal hidden">
+  <div class="cc-modal-content">
+    <h3>System Prompt che verrà iniettato negli AI features</h3>
+    <p style="color:#9ca3af; font-size:0.85rem;">Questo è il context che ai-router edge function inietterà prima di ogni richiesta AI (Title Generator, Idea Generator, Script Analyzer, SEO Pack) per questo canale.</p>
+    <pre id="cc-preview-text"></pre>
+    <button onclick="document.getElementById('cc-preview-modal').classList.add('hidden')">Close</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — Sostituisci con la tua Supabase config
+// ═══════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://wibbjxynnrwbnzohqwlt.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpYmJqeHlubnJ3Ym56b2hxd2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTkzODYsImV4cCI6MjA5Mzk3NTM4Nn0.uZGF4eP_CcjUKZdHBUAZF3cucEWDuec2rNYW6bn4eiE';
+
+// Inizializza Supabase client
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// State
+let currentChannels = [];
+let currentChannelId = null;
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH check
+// ═══════════════════════════════════════════════════════════════
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('cc-auth-status').innerHTML = `
+      <div class="cc-auth-banner">
+        ⚠ Non autenticato. Devi avere una sessione attiva. Login via app principale, poi torna qui.
+      </div>`;
+    return null;
+  }
+  return session.user.id;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOAD channels
+// ═══════════════════════════════════════════════════════════════
+async function loadChannels() {
+  const userId = await checkAuth();
+  if (!userId) return;
+
+  setStatus('Loading channels...');
+
+  const { data, error } = await sb
+    .from('channels')
+    .select('id, name, emoji, brand_color, channel_brief, status')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    setStatus('❌ Error: ' + error.message);
+    return;
+  }
+
+  currentChannels = data;
+  renderChannelSelector();
+
+  if (data.length > 0) {
+    currentChannelId = data[0].id;
+    document.getElementById('cc-channel-selector').value = data[0].id;
+    renderChannelBrief(data[0].channel_brief);
+    setStatus(`✅ Loaded ${data.length} channel(s)`);
+  } else {
+    setStatus('No channels yet. Create one to start.');
+  }
+}
+
+function renderChannelSelector() {
+  const selector = document.getElementById('cc-channel-selector');
+  selector.innerHTML = currentChannels.map(c =>
+    `<option value="${c.id}">${c.emoji || '📺'} ${escapeHtml(c.name)}</option>`
+  ).join('');
+
+  selector.onchange = (e) => {
+    currentChannelId = e.target.value;
+    const channel = currentChannels.find(c => c.id === currentChannelId);
+    renderChannelBrief(channel?.channel_brief);
+    setStatus(`Editing: ${channel?.name}`);
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER brief into form
+// ═══════════════════════════════════════════════════════════════
+function renderChannelBrief(brief) {
+  // Clear form first
+  const fields = ['positioning', 'pain', 'advantages', 'insight', 'metric-note', 'keep', 'change', 'triggers'];
+  fields.forEach(id => {
+    const el = document.getElementById('cc-' + id);
+    if (el) el.value = '';
+  });
+  ['subs', 'ctr', 'avpd', 'sponsor'].forEach(id => {
+    document.getElementById('cc-' + id).value = '';
+  });
+  document.querySelectorAll('.cc-moat').forEach(m => {
+    m.querySelector('.cc-moat-text').value = '';
+    m.querySelector('.cc-moat-defensible').value = '';
+  });
+
+  if (!brief) return;
+
+  document.getElementById('cc-positioning').value = brief.positioning || '';
+  document.getElementById('cc-pain').value = brief.pain || '';
+  document.getElementById('cc-advantages').value = (brief.unfair_advantages || []).join('\n');
+
+  const metric = brief.ninety_day_success_metric || {};
+  document.getElementById('cc-subs').value = metric.subs || '';
+  document.getElementById('cc-ctr').value = metric.ctr_avg || '';
+  document.getElementById('cc-avpd').value = metric.avpd_pct || '';
+  document.getElementById('cc-sponsor').value = metric.sponsor_inquiries || '';
+  document.getElementById('cc-metric-note').value = metric.note || '';
+
+  document.getElementById('cc-insight').value = brief.counter_intuitive_insight || '';
+
+  const moats = brief.moats || [];
+  document.querySelectorAll('.cc-moat').forEach((moatEl, i) => {
+    const m = moats[i] || {};
+    moatEl.querySelector('.cc-moat-text').value = m.moat || '';
+    moatEl.querySelector('.cc-moat-defensible').value = m.why_defensible || '';
+  });
+
+  const pivot = brief.pivot_conditions || {};
+  document.getElementById('cc-keep').value = (pivot.what_to_keep || []).join('\n');
+  document.getElementById('cc-change').value = (pivot.what_to_change_if_needed || []).join('\n');
+  document.getElementById('cc-triggers').value = (pivot.pivot_triggers || []).join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COLLECT brief from form
+// ═══════════════════════════════════════════════════════════════
+function collectBriefFromForm() {
+  const channel = currentChannels.find(c => c.id === currentChannelId);
+
+  const moats = [];
+  document.querySelectorAll('.cc-moat').forEach((moatEl, i) => {
+    const moatText = moatEl.querySelector('.cc-moat-text').value.trim();
+    const moatDef = moatEl.querySelector('.cc-moat-defensible').value.trim();
+    if (moatText) {
+      moats.push({
+        rank: i + 1,
+        moat: moatText,
+        why_defensible: moatDef
+      });
+    }
+  });
+
+  return {
+    channel: channel?.name || '',
+    positioning: document.getElementById('cc-positioning').value.trim(),
+    pain: document.getElementById('cc-pain').value.trim(),
+    unfair_advantages: parseLines('cc-advantages'),
+    ninety_day_success_metric: {
+      subs: parseInt(document.getElementById('cc-subs').value) || 0,
+      ctr_avg: parseFloat(document.getElementById('cc-ctr').value) || 0,
+      avpd_pct: parseFloat(document.getElementById('cc-avpd').value) || 0,
+      sponsor_inquiries: parseInt(document.getElementById('cc-sponsor').value) || 0,
+      note: document.getElementById('cc-metric-note').value.trim()
+    },
+    counter_intuitive_insight: document.getElementById('cc-insight').value.trim(),
+    moats: moats,
+    pivot_conditions: {
+      what_to_keep: parseLines('cc-keep'),
+      what_to_change_if_needed: parseLines('cc-change'),
+      pivot_triggers: parseLines('cc-triggers')
+    },
+    _meta: {
+      version: '1.0',
+      compiled_date: new Date().toISOString().split('T')[0],
+      compiled_by: 'Giancarlo Guzzardo',
+      testamento_section_ref: '5.5',
+      last_saved_at: new Date().toISOString()
+    }
+  };
+}
+
+function parseLines(elementId) {
+  return document.getElementById(elementId).value
+    .split('\n')
+    .map(s => s.trim())
+    .filter(s => s);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════════════════════════════
+async function saveBrief() {
+  if (!currentChannelId) {
+    setStatus('❌ No channel selected');
+    return;
+  }
+
+  const brief = collectBriefFromForm();
+  setStatus('💾 Saving...');
+
+  const { error } = await sb
+    .from('channels')
+    .update({
+      channel_brief: brief,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', currentChannelId);
+
+  if (error) {
+    setStatus('❌ Save error: ' + error.message);
+    return;
+  }
+
+  setStatus('✅ Saved at ' + new Date().toLocaleTimeString());
+
+  // Update local cache
+  const idx = currentChannels.findIndex(c => c.id === currentChannelId);
+  if (idx >= 0) currentChannels[idx].channel_brief = brief;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PREVIEW system prompt
+// ═══════════════════════════════════════════════════════════════
+function previewPrompt() {
+  const brief = collectBriefFromForm();
+  const prompt = generateSystemPrompt(brief);
+  document.getElementById('cc-preview-text').textContent = prompt;
+  document.getElementById('cc-preview-modal').classList.remove('hidden');
+}
+
+function generateSystemPrompt(brief) {
+  return `You are generating content for a YouTube channel with this strategic brief.
+You MUST use this brief as foundational context for all output (titles, ideas, hooks, scripts, SEO).
+
+═══ CHANNEL BRIEF ═══
+
+CHANNEL: ${brief.channel}
+
+POSITIONING:
+${brief.positioning}
+
+VIEWER PAIN POINT:
+${brief.pain}
+
+UNFAIR ADVANTAGES (creator's defensible expertise):
+${brief.unfair_advantages.map((a, i) => `  ${i+1}. ${a}`).join('\n')}
+
+90-DAY SUCCESS TARGET:
+  - Subs: ${brief.ninety_day_success_metric.subs}
+  - CTR avg: ${brief.ninety_day_success_metric.ctr_avg}
+  - AVPD %: ${brief.ninety_day_success_metric.avpd_pct}
+  - Sponsor inquiries: ${brief.ninety_day_success_metric.sponsor_inquiries}
+  Context: ${brief.ninety_day_success_metric.note}
+
+COUNTER-INTUITIVE INSIGHT (recurring thesis of the channel):
+${brief.counter_intuitive_insight}
+
+MOATS (defensive positioning):
+${brief.moats.map(m => `  Rank ${m.rank}: ${m.moat}\n    Defensible because: ${m.why_defensible}`).join('\n\n')}
+
+PIVOT CONDITIONS (what's protected vs adjustable):
+  Keep no matter what:
+${brief.pivot_conditions.what_to_keep.map(s => '    - ' + s).join('\n')}
+  Adjustable if data demands:
+${brief.pivot_conditions.what_to_change_if_needed.map(s => '    - ' + s).join('\n')}
+  Pivot triggers:
+${brief.pivot_conditions.pivot_triggers.map(s => '    - ' + s).join('\n')}
+
+═══ INSTRUCTIONS FOR ALL OUTPUT ═══
+
+1. Target the SPECIFIC viewer described in positioning (age, financial situation, mindset, frustrations)
+2. Address the pain point directly in hooks and value propositions
+3. Lean on the counter-intuitive insight as the recurring thesis across all output
+4. Differentiate against competitors named in positioning (don't sound like them)
+5. Match tone and depth implied by unfair_advantages (expert, not surface-level)
+6. Output must include social science labels:
+   - hook_type (e.g. loss_aversion, curiosity_gap, authority, scarcity)
+   - emotion_profile (Ekman 7 base emotions percentages)
+   - cialdini_principle (reciprocity, commitment, social_proof, authority, liking, scarcity, unity)
+   - narrative_role (hook, exposition, build_up, revelation, application, transformation)
+
+═══ END CHANNEL BRIEF ═══`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CREATE new channel
+// ═══════════════════════════════════════════════════════════════
+async function createNewChannel() {
+  const name = window.prompt('Nome del nuovo canale?');
+  if (!name) return;
+
+  const userId = await checkAuth();
+  if (!userId) return;
+
+  // Eredita status enum da un canale esistente (evita di indovinare valori enum)
+  const existingStatus = currentChannels[0]?.status;
+  if (!existingStatus) {
+    alert('Crea prima un canale dall\'app principale, poi torna qui.');
+    return;
+  }
+
+  setStatus('Creating channel...');
+
+  const { data, error } = await sb
+    .from('channels')
+    .insert({
+      user_id: userId,
+      name: name,
+      status: existingStatus,
+      emoji: '📺',
+      brand_color: '#6366F1'
+    })
+    .select()
+    .single();
+
+  if (error) {
+    setStatus('❌ Create error: ' + error.message);
+    return;
+  }
+
+  currentChannels.push(data);
+  renderChannelSelector();
+  currentChannelId = data.id;
+  document.getElementById('cc-channel-selector').value = data.id;
+  renderChannelBrief(null);
+  setStatus(`✅ Created: ${name}`);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Utils
+// ═══════════════════════════════════════════════════════════════
+function setStatus(msg) {
+  document.getElementById('cc-status').textContent = msg;
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, m =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Bind & init
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('cc-save-btn').onclick = saveBrief;
+document.getElementById('cc-preview-btn').onclick = previewPrompt;
+document.getElementById('cc-new-channel-btn').onclick = createNewChannel;
+
+loadChannels();
+
+// Expose for debugging
+window.ChannelCanvas = {
+  loadChannels, saveBrief, previewPrompt, collectBriefFromForm,
+  currentChannels: () => currentChannels,
+  currentChannelId: () => currentChannelId
+};
+</script>
+
+</body>
+</html>
