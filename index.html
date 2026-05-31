@@ -1824,7 +1824,460 @@ function renderBreadcrumb(items){
   });
   el.innerHTML = html;
 }
+// ============================================================
+// AGGREGATOR v4.3 INLINE — auto-render engine (Sprint 1B Step 3)
+//
+// Was: aggregator-console-v4-3.js (manual console paste workflow)
+// Now: auto-loaded by initApp() after window.APP is exposed.
+// Exposes on window.MCP: aggregator.{preview,run,runFullVideo,runSplit},
+//                         render, renderBoth, previewChartUrl
+// v4.3 features:
+//   - Gap-fill: cues sorted into single sequential timeline, first cue
+//     forced to start_at=0, each cue extends to next cue's start_at.
+//   - Data viz exclusive slots: no overlap with regular b-roll visuals.
+// ============================================================
+function initMcpAggregator() {
+  if (window.MCP?.aggregator) return; // already initialized
+  window.MCP = window.MCP || {};
+  const sb = window.APP?.sb;
+  if (!sb) { console.warn("MCP aggregator init: APP.sb not ready, skipping"); return; }
 
+  function sectionsMatch(voiceTitle, syncSection) {
+    if (!voiceTitle || !syncSection) return false;
+    return voiceTitle.toLowerCase().includes(syncSection.toLowerCase());
+  }
+
+  function parseTimestamp(label) {
+    if (typeof label !== "string") return null;
+    const parts = label.split(":");
+    if (parts.length !== 2) return null;
+    const min = parseInt(parts[0], 10);
+    const sec = parseInt(parts[1], 10);
+    if (isNaN(min) || isNaN(sec)) return null;
+    return min * 60 + sec;
+  }
+
+  function fmtValue(v, unit) {
+    if (unit === "$") return "$" + Number(v).toLocaleString();
+    if (unit === "%") return v + "%";
+    return String(v);
+  }
+
+  function findKeywordInAlignment(alignment, keyword) {
+    if (!alignment?.characters || !keyword) return null;
+    const chars = alignment.characters;
+    const starts = alignment.character_start_times_seconds || [];
+    const ends = alignment.character_end_times_seconds || [];
+    if (chars.length !== starts.length) return null;
+    const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9$%.\s]/g, "").replace(/\s+/g, " ").trim();
+    const charsStr = chars.join("");
+    const normText = normalize(charsStr);
+    const normKey = normalize(keyword);
+    if (!normKey || normKey.length < 2) return null;
+    let idx = normText.indexOf(normKey);
+    if (idx < 0) {
+      const words = normKey.split(/\s+/).filter(w => w.length >= 3);
+      if (words.length === 0) return null;
+      const longest = words.sort((a, b) => b.length - a.length)[0];
+      idx = normText.indexOf(longest);
+      if (idx < 0) return null;
+    }
+    let origIdx = 0, normCount = 0;
+    while (origIdx < chars.length && normCount < idx) {
+      const ch = (chars[origIdx] || "").toLowerCase();
+      if (/[a-z0-9$%.\s]/.test(ch)) {
+        if (/\s/.test(ch)) {
+          if (normCount > 0 && normText[normCount - 1] !== " ") normCount++;
+        } else normCount++;
+      }
+      origIdx++;
+    }
+    if (origIdx >= starts.length) origIdx = starts.length - 1;
+    return { found: true, start_sec: starts[origIdx], end_sec: ends[origIdx] };
+  }
+
+  function buildChartConfig(d) {
+    const unit = d.unit || "";
+    const palette = ["#0A84FF", "#34C759", "#FF9F0A", "#FF3B30", "#BF5AF2"];
+    const labels = (d.labels || []).map((l, i) => [l, fmtValue((d.values || [0])[i], unit)]);
+    return {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{ label: "", data: d.values || [0],
+          backgroundColor: (d.values || [0]).map((_, i) => palette[i % palette.length]),
+          borderWidth: 0, barPercentage: 0.55, categoryPercentage: 0.7 }],
+      },
+      options: {
+        layout: { padding: { top: 40, bottom: 60, left: 100, right: 100 } },
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: d.title || "Data point", color: "#FFFFFF", font: { size: 58, weight: "bold" }, padding: { top: 10, bottom: 20 } },
+          subtitle: d.note ? { display: true, text: d.note, color: "#A0A0A8", font: { size: 26 }, padding: { bottom: 50 } } : undefined,
+          datalabels: { display: false },
+        },
+        scales: {
+          x: { ticks: { color: "#FFFFFF", font: { size: 34, weight: "bold" } }, grid: { display: false } },
+          y: { display: false },
+        },
+      },
+    };
+  }
+
+  function buildQuickChartUrl(d) {
+    const encoded = encodeURIComponent(JSON.stringify(buildChartConfig(d)));
+    return "https://quickchart.io/chart?c=" + encoded + "&v=3&width=1920&height=1080&backgroundColor=%230A0A0A&devicePixelRatio=1";
+  }
+
+  // ─── v4.3 BUILD SCENE — gap-fill + exclusive data_viz slots ───
+  function buildSceneForClip(clip, allShots, dataViz, sectionStartSec) {
+    const duration = Number(clip.duration_sec) || 30;
+    const alignment = clip.alignment_data;
+    const hasAlignment = !!(alignment?.characters?.length);
+
+    const matchedShots = allShots
+      .filter((s) => sectionsMatch(clip.section_title, s.section))
+      .filter((s) => s.picked?.video_url || s.picked?.thumbnail)
+      .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+    const regularCues = matchedShots.map((shot) => {
+      let startAt, timingSource = "script_fallback";
+      if (hasAlignment) {
+        const match = findKeywordInAlignment(alignment, shot.keyword) ||
+          findKeywordInAlignment(alignment, shot.search_query);
+        if (match) { startAt = match.start_sec; timingSource = "alignment"; }
+      }
+      if (startAt === undefined) startAt = Number(shot.timestamp) || 0;
+      return {
+        _kind: 'visual',
+        start_at: startAt,
+        url: shot.picked.video_url || shot.picked.thumbnail,
+        type: shot.picked.video_url ? "video" : "image",
+        keyword: shot.keyword,
+        timing_source: timingSource,
+      };
+    });
+
+    const sectionEnd = sectionStartSec + duration;
+    const dataVizCues = [];
+    for (const d of dataViz || []) {
+      const t = parseTimestamp(d.timestamp_label);
+      if (t == null) continue;
+      if (t < sectionStartSec || t >= sectionEnd) continue;
+      let startAt, timingSource = "script_fallback";
+      if (hasAlignment) {
+        const searchTerms = [d.keyword, d.title, ...(d.labels || [])].filter(Boolean);
+        for (const term of searchTerms) {
+          const match = findKeywordInAlignment(alignment, term);
+          if (match) { startAt = match.start_sec; timingSource = "alignment"; break; }
+        }
+      }
+      if (startAt === undefined) startAt = Math.max(0, t - sectionStartSec);
+      dataVizCues.push({
+        _kind: 'data_viz',
+        start_at: startAt,
+        url: buildQuickChartUrl(d),
+        type: "image",
+        keyword: "[DATA_VIZ] " + (d.title || "chart"),
+        is_data_viz: true,
+        _source_timestamp: d.timestamp_label,
+        timing_source: timingSource,
+      });
+    }
+
+    const allCues = [...regularCues, ...dataVizCues]
+      .sort((a, b) => a.start_at - b.start_at);
+
+    if (allCues.length === 0) {
+      return {
+        duration, section_title: clip.section_title, voice_url: clip.audio_url,
+        visuals: [], text_overlays: [], _alignment_used: hasAlignment,
+      };
+    }
+
+    if (allCues[0].start_at > 0) {
+      allCues[0].start_at = 0;
+    }
+
+    for (let i = 0; i < allCues.length; i++) {
+      const nextStart = i + 1 < allCues.length ? allCues[i + 1].start_at : duration;
+      const dur = Math.max(0.5, nextStart - allCues[i].start_at);
+      allCues[i].duration = Number(dur.toFixed(2));
+      allCues[i].start_at = Number(allCues[i].start_at.toFixed(2));
+    }
+
+    const visuals = allCues.map(c => {
+      const { _kind, ...rest } = c;
+      return rest;
+    });
+
+    return {
+      duration,
+      section_title: clip.section_title,
+      voice_url: clip.audio_url,
+      visuals,
+      text_overlays: [],
+      _alignment_used: hasAlignment,
+    };
+  }
+
+  async function loadProject(projectId) {
+    const { data, error } = await sb.from("projects").select("*").eq("id", projectId).single();
+    if (error) throw new Error("Load project: " + error.message);
+    return data;
+  }
+
+  async function loadVoiceClips(projectId) {
+    const { data, error } = await sb.from("project_voice_clips").select("*")
+      .eq("project_id", projectId).not("audio_url", "is", null)
+      .order("section_index", { ascending: true });
+    if (error) throw new Error("Load clips: " + error.message);
+    return data || [];
+  }
+
+  function computeSectionStarts(clips) {
+    let cumulative = 0;
+    const starts = {};
+    for (const clip of clips) {
+      starts[clip.id] = cumulative;
+      cumulative += Number(clip.duration_sec) || 0;
+    }
+    return { starts, totalDuration: cumulative };
+  }
+
+  async function preview(projectId) {
+    projectId = projectId || window.APP?.currentProject?.id;
+    const project = await loadProject(projectId);
+    const clips = await loadVoiceClips(projectId);
+    const allShots = project.visual_sync?.shots || [];
+    const dataViz = project.data_viz || [];
+    const { starts, totalDuration } = computeSectionStarts(clips);
+
+    console.log("─── AGGREGATOR PREVIEW v4.3 (gap-fill + exclusive data_viz) ───");
+    console.log(`Project: ${project.title}`);
+    console.log(`Voice clips: ${clips.length} · ${(totalDuration / 60).toFixed(1)} min total`);
+    console.log(`Clips with alignment: ${clips.filter(c => c.alignment_data?.characters?.length).length}/${clips.length}`);
+    console.log(`Visual_sync picked: ${allShots.filter((s) => s.picked?.video_url || s.picked?.thumbnail).length}`);
+    console.log(`Data_viz items: ${dataViz.length}`);
+
+    const rows = clips.map((clip) => {
+      const sectionStart = starts[clip.id] || 0;
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      const regular = scene.visuals.filter((v) => !v.is_data_viz);
+      const dv = scene.visuals.filter((v) => v.is_data_viz);
+      const aligned = scene.visuals.filter(v => v.timing_source === 'alignment').length;
+      const sumDur = scene.visuals.reduce((s, v) => s + v.duration, 0);
+      const gapCheck = Math.abs(sumDur - scene.duration) < 0.5 ? '✓' : '⚠';
+      return {
+        idx: clip.section_index,
+        title: (clip.section_title || "").slice(0, 28),
+        sec_dur: Math.round(scene.duration),
+        cues_sum: Math.round(sumDur),
+        gap: gapCheck,
+        v: regular.length,
+        ch: dv.length,
+        aligned: `${aligned}/${scene.visuals.length}`,
+      };
+    });
+    console.table(rows);
+
+    console.log("⚠ in 'gap' column = sum of cue durations ≠ section duration. Investigate.");
+    console.log("Per section: await MCP.aggregator.run()");
+    console.log("Full video:  await MCP.aggregator.runFullVideo()");
+    console.log("Split (2x):  await MCP.aggregator.runSplit() // default after SECTION 2");
+    return rows;
+  }
+
+  async function run(projectId) {
+    projectId = projectId || window.APP?.currentProject?.id;
+    const user = window.APP?.user;
+    if (!user) throw new Error("Not logged in");
+    const project = await loadProject(projectId);
+    const clips = await loadVoiceClips(projectId);
+    const allShots = project.visual_sync?.shots || [];
+    const dataViz = project.data_viz || [];
+    const { starts } = computeSectionStarts(clips);
+    if (clips.length === 0) { console.warn("No voice clips."); return []; }
+
+    const tasks = clips.map((clip) => {
+      const sectionStart = starts[clip.id] || 0;
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      const rc = scene.visuals.filter((v) => !v.is_data_viz).length;
+      const dc = scene.visuals.filter((v) => v.is_data_viz).length;
+      const ac = scene.visuals.filter((v) => v.timing_source === 'alignment').length;
+      return {
+        project_id: projectId, owner_id: user.id, role: "video_assembler", status: "pending",
+        brief: `[v4.3] ${clip.section_title} · ${rc} visuals · ${dc} charts · ${ac} aligned · ${Number(clip.duration_sec).toFixed(0)}s`,
+        assignee_email: user.email, assignee_name: "🎬 MyCutiePie (auto)",
+        payload: { schema_version: 1, scenes: [scene] },
+      };
+    });
+
+    const { data: inserted, error } = await sb.from("workflow_tasks").insert(tasks).select("id, brief, payload");
+    if (error) { console.error("Insert failed:", error); throw error; }
+    console.log(`✓ Created ${inserted.length} per-section tasks (v4.3)`);
+    return inserted;
+  }
+
+  async function runFullVideo(projectId) {
+    projectId = projectId || window.APP?.currentProject?.id;
+    const user = window.APP?.user;
+    if (!user) throw new Error("Not logged in");
+
+    const project = await loadProject(projectId);
+    const clips = await loadVoiceClips(projectId);
+    const allShots = project.visual_sync?.shots || [];
+    const dataViz = project.data_viz || [];
+    const { starts, totalDuration } = computeSectionStarts(clips);
+
+    if (clips.length === 0) { console.warn("No voice clips."); return null; }
+
+    let totalVisuals = 0, totalCharts = 0, totalAligned = 0;
+    const allScenes = clips.map((clip) => {
+      const sectionStart = starts[clip.id] || 0;
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      totalVisuals += scene.visuals.filter(v => !v.is_data_viz).length;
+      totalCharts += scene.visuals.filter(v => v.is_data_viz).length;
+      totalAligned += scene.visuals.filter(v => v.timing_source === 'alignment').length;
+      return scene;
+    });
+
+    const combinedPayload = { schema_version: 1, resolution: "full-hd", quality: "low", scenes: allScenes };
+
+    const task = {
+      project_id: projectId, owner_id: user.id, role: 'video_assembler', status: 'pending',
+      brief: `[FULL v4.3] ${clips.length} sec · ${Math.round(totalDuration)}s (${(totalDuration/60).toFixed(1)}min) · ${totalVisuals}v ${totalCharts}c ${totalAligned}a`,
+      assignee_email: user.email, assignee_name: '🎬 MyCutiePie (FULL)',
+      payload: combinedPayload,
+    };
+
+    const { data, error } = await sb.from('workflow_tasks').insert(task).select('id, brief').single();
+    if (error) { console.error('Insert failed:', error); throw error; }
+
+    console.log(`✓ Created FULL-VIDEO task: ${data.id}`);
+    console.log(`  Scenes: ${allScenes.length} · ${totalVisuals} visuals · ${totalCharts} charts · ${totalAligned} aligned`);
+    console.log(`  Duration: ${Math.round(totalDuration)}s (${(totalDuration/60).toFixed(1)} min)`);
+    console.log(`  Render: await MCP.render('${data.id}')`);
+    return data;
+  }
+
+  async function runSplit(splitAfterIndex, projectId) {
+    splitAfterIndex = splitAfterIndex ?? 3;
+    projectId = projectId || window.APP?.currentProject?.id;
+    const user = window.APP?.user;
+    if (!user) throw new Error("Not logged in");
+
+    const project = await loadProject(projectId);
+    const clips = await loadVoiceClips(projectId);
+    const allShots = project.visual_sync?.shots || [];
+    const dataViz = project.data_viz || [];
+    const { starts, totalDuration } = computeSectionStarts(clips);
+
+    if (clips.length === 0) { console.warn("No voice clips."); return null; }
+    if (splitAfterIndex < 0 || splitAfterIndex >= clips.length - 1) {
+      throw new Error(`splitAfterIndex must be 0..${clips.length - 2} (got ${splitAfterIndex})`);
+    }
+
+    let totalVisuals = 0, totalCharts = 0, totalAligned = 0;
+    const allScenes = clips.map((clip) => {
+      const sectionStart = starts[clip.id] || 0;
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      totalVisuals += scene.visuals.filter(v => !v.is_data_viz).length;
+      totalCharts += scene.visuals.filter(v => v.is_data_viz).length;
+      totalAligned += scene.visuals.filter(v => v.timing_source === 'alignment').length;
+      return scene;
+    });
+
+    const part1Scenes = allScenes.slice(0, splitAfterIndex + 1);
+    const part2Scenes = allScenes.slice(splitAfterIndex + 1);
+    const part1Duration = part1Scenes.reduce((s, sc) => s + sc.duration, 0);
+    const part2Duration = part2Scenes.reduce((s, sc) => s + sc.duration, 0);
+
+    const CAP = 1800;
+    if (part1Duration > CAP) throw new Error(`Part 1 = ${Math.round(part1Duration)}s > ${CAP}s cap.`);
+    if (part2Duration > CAP) throw new Error(`Part 2 = ${Math.round(part2Duration)}s > ${CAP}s cap.`);
+
+    const makeTask = (label, scenes, dur, startIdx) => {
+      const tv = scenes.reduce((s, sc) => s + sc.visuals.filter(v => !v.is_data_viz).length, 0);
+      const tc = scenes.reduce((s, sc) => s + sc.visuals.filter(v => v.is_data_viz).length, 0);
+      return {
+        project_id: projectId, owner_id: user.id, role: 'video_assembler', status: 'pending',
+        brief: `[SPLIT v4.3 ${label}] sec ${startIdx + 1}-${startIdx + scenes.length} · ${scenes.length} scenes · ${Math.round(dur)}s · ${tv}v ${tc}c`,
+        assignee_email: user.email, assignee_name: `🎬 MyCutiePie (SPLIT ${label})`,
+        payload: { schema_version: 1, resolution: "full-hd", quality: "low", scenes },
+      };
+    };
+
+    const tasks = [
+      makeTask('1/2', part1Scenes, part1Duration, 0),
+      makeTask('2/2', part2Scenes, part2Duration, splitAfterIndex + 1),
+    ];
+
+    const { data, error } = await sb.from('workflow_tasks').insert(tasks).select('id, brief');
+    if (error) { console.error('Insert failed:', error); throw error; }
+
+    console.log(`✓ Created 2 SPLIT tasks (v4.3, split after clip ${splitAfterIndex}):`);
+    console.log(`  Part 1/2: ${data[0].id}`);
+    console.log(`  Part 2/2: ${data[1].id}`);
+    console.log(`\nTotal: ${totalVisuals}v ${totalCharts}c ${totalAligned}a · ${Math.round(totalDuration)}s`);
+    console.log(`\nRender both: await MCP.renderBoth(['${data[0].id}','${data[1].id}']);`);
+    return data;
+  }
+
+  function previewChartUrl(itemIndex) {
+    const items = window.MCP?._dataViz;
+    if (!items || itemIndex < 0 || itemIndex >= items.length) { console.warn("Bad index"); return; }
+    const url = buildQuickChartUrl(items[itemIndex]);
+    window.open(url, "_blank");
+    return url;
+  }
+
+  async function render(taskId, opts = {}) {
+    const pollIntervalMs = opts.pollIntervalMs || 15000;
+    const maxAttempts = opts.maxAttempts || 60;
+    console.log(`→ Firing render for task ${taskId}`);
+    const { data: fire, error: fireErr } = await sb.functions.invoke(
+      "assemble-video", { body: { mode: "from_task", task_id: taskId } },
+    );
+    if (fireErr || !fire?.ok) { console.error("Fire failed:", fireErr || fire); return null; }
+    console.log(`  project_id: ${fire.project_id}`);
+    for (let i = 1; i <= maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, pollIntervalMs));
+      const { data: status } = await sb.functions.invoke("assemble-video", {
+        body: { mode: "check_status", task_id: taskId },
+      });
+      const s = status?.movie?.status;
+      console.log(`  [${i}/${maxAttempts}] status: ${s}${status?._task_updated ? " (task updated)" : ""}`);
+      if (s === "done") { console.log("✓ Rendered:", status.movie.url); return status.movie.url; }
+      if (s === "error") { console.error("✗ Render error:", status.movie.message); return null; }
+    }
+    console.warn("Polling timeout. Check task in DB.");
+    return null;
+  }
+
+  async function renderBoth(taskIds) {
+    if (!Array.isArray(taskIds) || taskIds.length === 0) { console.warn("Pass array of task IDs"); return []; }
+    const urls = [];
+    for (let i = 0; i < taskIds.length; i++) {
+      console.log(`\n══════ Render ${i + 1}/${taskIds.length} ══════`);
+      const url = await render(taskIds[i]);
+      urls.push(url);
+      if (!url) { console.error(`✗ Part ${i + 1} failed — stopping`); return urls; }
+    }
+    console.log(`\n✓✓ All ${urls.length} renders complete:`);
+    urls.forEach((u, i) => console.log(`  Part ${i + 1}: ${u}`));
+    return urls;
+  }
+
+  window.MCP.aggregator = { preview, run, runFullVideo, runSplit };
+  window.MCP.render = render;
+  window.MCP.renderBoth = renderBoth;
+  window.MCP.previewChartUrl = previewChartUrl;
+  window.MCP._findKeywordInAlignment = findKeywordInAlignment;
+  window.MCP._buildQuickChartUrl = buildQuickChartUrl;
+  console.log("✓ MCP toolkit v4.3 loaded inline (gap-fill + exclusive data_viz)");
+}
+   
 // ============================================================
 // AUTH
 // ============================================================
