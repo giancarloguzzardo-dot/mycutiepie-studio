@@ -6752,6 +6752,10 @@ $('studio-content').innerHTML = orchestratorHtml + autoRenderHtml + `<div class=
   // Wire orchestrator button
   $('orchestrator-btn').addEventListener('click', () => runOrchestrator(orchBtnAction));
 
+   // Wire auto-render button
+  const arBtn = document.getElementById('auto-render-btn');
+  if (arBtn) arBtn.addEventListener('click', autoRenderVideo);
+
   $('add-task-btn').addEventListener('click', () => {
     $('task-role').value = 'voice_actor'; $('task-name').value = ''; $('task-email').value = '';
     $('task-deadline').value = ''; $('task-brief').value = '';
