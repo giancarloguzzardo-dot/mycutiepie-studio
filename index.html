@@ -3729,7 +3729,7 @@ async function generateVideoIdeas(){
         try { if (typeof d === 'string') d = JSON.parse(d); } catch(e){}
         const gaps = d?.content_gaps || d?.gaps || [];
         const patterns = d?.title_patterns || d?.patterns || [];
-        competitorContext += `- ${a.channel_handle}: gaps=${JSON.stringify(gaps).slice(0,300)}; patterns=${JSON.stringify(patterns).slice(0,200)}\n`;
+        competitorContext += `- ${a.competitor_handle}: gaps=${JSON.stringify(gaps).slice(0,300)}; patterns=${JSON.stringify(patterns).slice(0,200)}\n`;
       });
     }
 
