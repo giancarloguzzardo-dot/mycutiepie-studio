@@ -2567,7 +2567,7 @@ async function generateChannelIdeas(){
     // Gather competitor context from saved analyses (fed by the watchlist)
     let competitorContext = '';
     const { data: savedAnalyses } = await APP.sb.from('competitor_channel_analyses')
-      .select('channel_handle, analysis_data, created_at')
+      .select('competitor_handle, analysis_data, created_at')
       .eq('channel_id', ch.id)
       .order('created_at', { ascending: false })
       .limit(5);
@@ -2578,7 +2578,7 @@ async function generateChannelIdeas(){
         try { if (typeof d === 'string') d = JSON.parse(d); } catch(e){}
         const gaps = d?.content_gaps || d?.gaps || [];
         const patterns = d?.title_patterns || d?.patterns || [];
-        competitorContext += `- ${a.channel_handle}: gaps=${JSON.stringify(gaps).slice(0,300)}; patterns=${JSON.stringify(patterns).slice(0,200)}\n`;
+        competitorContext += `- ${a.competitor_handle}: gaps=${JSON.stringify(gaps).slice(0,300)}; patterns=${JSON.stringify(patterns).slice(0,200)}\n`;
       });
     }
 
