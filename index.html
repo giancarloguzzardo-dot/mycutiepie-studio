@@ -6323,7 +6323,273 @@ async function generateAllVoices(vocalSections, existingClips){
   }
   toast(`Generated ${toGenerate.length} voice clips ✓`, 'success');
 }
+// ============================================================
+// AUTO-RENDER (Sprint 1B Step 3 Phase 3)
+// Native UI for one-click MP4 render via assemble-video → JSON2Video.
+// Replaces the manual console-paste 3-line workflow.
+// ============================================================
 
+// Cost estimate: JSON2Video charges by output duration.
+// ~$0.50 for short, ~$1.50 for long (split into 2 parts).
+function estimateRenderCost(totalSec) {
+  if (!totalSec || totalSec <= 0) return '~$0';
+  const needsSplit = totalSec > 1740; // 29 min cap
+  const dollars = needsSplit ? 1.50 : Math.max(0.50, (totalSec / 60) * 0.05);
+  return '$' + dollars.toFixed(2);
+}
+
+// Format duration in M:SS
+function fmtSecondsToMS(sec) {
+  if (!sec || sec < 1) return '—';
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+// Build the Auto-render section HTML, run by renderProjectWorkflowPanel.
+async function renderAutoRenderSection(p) {
+  // ---- Load preflight data ----
+  const { data: clips } = await APP.sb.from('project_voice_clips')
+    .select('section_index, status, duration_sec, alignment_data, audio_url')
+    .eq('project_id', p.id);
+
+  // visual_sync + data_viz are on the project; reload to be safe
+  const { data: projData } = await APP.sb.from('projects')
+    .select('visual_sync, data_viz').eq('id', p.id).single();
+
+  // Recent render history (last 3 video_assembler tasks)
+  const { data: renderTasks } = await APP.sb.from('workflow_tasks')
+    .select('id, brief, status, created_at')
+    .eq('project_id', p.id).eq('role', 'video_assembler')
+    .order('created_at', { ascending: false }).limit(3);
+
+  // ---- Calculations ----
+  const voiceReady = (clips || []).filter(c => c.status === 'ready' && c.audio_url).length;
+  const voiceTotal = (clips || []).length;
+  const alignmentCount = (clips || []).filter(c => c.alignment_data?.characters?.length).length;
+  const totalDuration = (clips || []).reduce((s, c) => s + (c.duration_sec || 0), 0);
+  const totalShots = projData?.visual_sync?.shots?.length || 0;
+  const pickedShots = (projData?.visual_sync?.shots || []).filter(s => s.picked?.video_url || s.picked?.thumbnail).length;
+  const dataVizCount = (projData?.data_viz || []).length;
+
+  // ---- Pre-flight checks ----
+  const checks = {
+    voiceFull: voiceTotal > 0 && voiceReady === voiceTotal,
+    voicePartial: voiceReady > 0 && voiceReady < voiceTotal,
+    voiceNone: voiceTotal === 0 || voiceReady === 0,
+    alignmentFull: alignmentCount === voiceTotal && voiceTotal > 0,
+    alignmentNone: voiceTotal > 0 && alignmentCount === 0,
+    pickedAny: pickedShots > 0,
+    pickedLow: totalShots > 0 && pickedShots > 0 && pickedShots / totalShots < 0.5,
+    durationOk: totalDuration > 0 && totalDuration <= 1740,
+    durationSplit: totalDuration > 1740 && totalDuration <= 3480,
+    durationTooLong: totalDuration > 3480,
+  };
+
+  // ---- Can we render? ----
+  // Critical: voice ready, at least 1 picked shot, duration under 2x cap
+  const canRender = checks.voiceFull && checks.pickedAny && !checks.durationTooLong;
+
+  // ---- Build check rows ----
+  const checkRow = (icon, label, detail) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--color-border-subtle)">
+      <div style="font-size:16px;width:20px;text-align:center">${icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${label}</div>
+        ${detail ? `<div style="font-size:11px;color:var(--color-text-muted);margin-top:1px">${detail}</div>` : ''}
+      </div>
+    </div>`;
+
+  let checksHtml = '<div style="border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);overflow:hidden;margin-bottom:14px">';
+
+  // Voice clips
+  if (checks.voiceFull) {
+    checksHtml += checkRow('✅', 'Voice clips', `${voiceReady}/${voiceTotal} ready · ${fmtSecondsToMS(totalDuration)} total`);
+  } else if (checks.voicePartial) {
+    checksHtml += checkRow('⚠️', 'Voice clips', `Only ${voiceReady}/${voiceTotal} ready — generate missing ones first`);
+  } else {
+    checksHtml += checkRow('❌', 'Voice clips', `${voiceTotal} found, ${voiceReady} ready — generate voice first`);
+  }
+
+  // Alignment
+  if (checks.alignmentFull) {
+    checksHtml += checkRow('✅', 'Word-level alignment', 'All clips have timestamps — visual timing will be precise');
+  } else if (checks.alignmentNone) {
+    checksHtml += checkRow('⚠️', 'Word-level alignment', `0/${voiceTotal} clips have alignment — timing will fallback to script position`);
+  } else {
+    checksHtml += checkRow('⚠️', 'Word-level alignment', `${alignmentCount}/${voiceTotal} clips aligned — partial fallback`);
+  }
+
+  // Visual sync picked
+  if (totalShots > 0 && !checks.pickedAny) {
+    checksHtml += checkRow('❌', 'B-roll picked', `${pickedShots}/${totalShots} — pick at least one clip per cue in Visual Sync`);
+  } else if (checks.pickedLow) {
+    checksHtml += checkRow('⚠️', 'B-roll picked', `${pickedShots}/${totalShots} — many cues missing, video will have visual gaps`);
+  } else if (checks.pickedAny) {
+    checksHtml += checkRow('✅', 'B-roll picked', `${pickedShots}/${totalShots} cues have clips`);
+  } else {
+    checksHtml += checkRow('⚠️', 'B-roll picked', 'No visual sync generated — render will have no b-roll');
+  }
+
+  // Data viz
+  if (dataVizCount > 0) {
+    checksHtml += checkRow('✅', 'Data viz', `${dataVizCount} chart${dataVizCount === 1 ? '' : 's'} ready`);
+  } else {
+    checksHtml += checkRow('⚪', 'Data viz', 'No charts (optional)');
+  }
+
+  // Duration
+  if (checks.durationTooLong) {
+    checksHtml += checkRow('❌', 'Total duration', `${fmtSecondsToMS(totalDuration)} — too long, max 58 min total (can split in 2)`);
+  } else if (checks.durationSplit) {
+    checksHtml += checkRow('⚠️', 'Total duration', `${fmtSecondsToMS(totalDuration)} — will split in 2 renders (JSON2Video 30-min cap)`);
+  } else if (checks.durationOk) {
+    checksHtml += checkRow('✅', 'Total duration', `${fmtSecondsToMS(totalDuration)} — single render`);
+  }
+
+  checksHtml += '</div>';
+
+  // ---- History ----
+  let historyHtml = '';
+  if (renderTasks && renderTasks.length > 0) {
+    historyHtml = '<div style="margin-top:16px"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-subtle);margin-bottom:8px">Recent renders</div>';
+    renderTasks.forEach(t => {
+      const date = new Date(t.created_at).toLocaleString();
+      // Try to extract MP4 URL from brief if present
+      const urlMatch = (t.brief || '').match(/https?:\/\/\S+\.mp4/i);
+      const url = urlMatch ? urlMatch[0] : null;
+      const statusIcon = t.status === 'approved' ? '✅' : t.status === 'rejected' ? '❌' : t.status === 'submitted' ? '🎬' : '⏳';
+      historyHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--color-surface-2);border-radius:var(--radius-sm);margin-bottom:6px;font-size:12px">
+        <span>${statusIcon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500">${escapeHtml((t.brief || '').slice(0, 80))}</div>
+          <div style="font-size:10px;color:var(--color-text-muted);margin-top:2px">${date} · ${t.status}</div>
+        </div>
+        ${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="btn sm">⬇ MP4</a>` : ''}
+      </div>`;
+    });
+    historyHtml += '</div>';
+  }
+
+  // ---- Main panel ----
+  const borderColor = canRender ? 'var(--color-success)' : 'var(--color-border-subtle)';
+  const buttonLabel = !canRender
+    ? '⚠️ Pre-flight failed'
+    : checks.durationSplit
+      ? `🎬 Render video (split, ~${estimateRenderCost(totalDuration)})`
+      : `🎬 Render video (~${estimateRenderCost(totalDuration)})`;
+
+  return `
+    <div class="panel" style="margin-bottom:16px;border:1.5px solid ${borderColor}">
+      <div class="panel-title">🎬 Auto-render video</div>
+      <div class="panel-desc">Renders the final MP4 via JSON2Video. Single render up to 29 min, auto-split for longer videos. Takes 5-15 min per part.</div>
+      ${checksHtml}
+      <button class="btn primary" id="auto-render-btn" ${!canRender ? 'disabled' : ''} style="width:100%">
+        ${buttonLabel}
+      </button>
+      <div id="auto-render-status" style="margin-top:12px"></div>
+      ${historyHtml}
+    </div>`;
+}
+
+// Run the full auto-render flow when the button is clicked.
+async function autoRenderVideo() {
+  const p = APP.currentProject;
+  if (!p) return;
+
+  // Confirm
+  if (!confirm('Render this video to MP4?\n\nCost: ~$0.50-1.50\nTime: 5-15 minutes (longer if split in 2 parts)\n\nKEEP THIS TAB OPEN until complete.')) return;
+
+  const statusEl = document.getElementById('auto-render-status');
+  const btnEl = document.getElementById('auto-render-btn');
+  const setMsg = (msg) => { if (statusEl) statusEl.innerHTML = `<div style="padding:10px 12px;background:var(--color-accent-soft);border-radius:var(--radius-sm);font-size:13px">${msg}</div>`; };
+  const setError = (msg) => { if (statusEl) statusEl.innerHTML = `<div style="padding:10px 12px;background:var(--color-danger-soft);color:var(--color-danger);border-radius:var(--radius-sm);font-size:13px">${msg}</div>`; };
+  const setSuccess = (urls) => {
+    if (!statusEl) return;
+    const links = urls.map((u, i) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener" class="btn primary sm" style="margin-right:6px">⬇ Download MP4${urls.length > 1 ? ' part ' + (i + 1) : ''}</a>`).join('');
+    statusEl.innerHTML = `<div style="padding:12px 14px;background:var(--color-success-soft);border:1px solid var(--color-success);border-radius:var(--radius-sm)">
+      <div style="font-weight:600;color:var(--color-success);margin-bottom:8px">✓ Render complete!</div>
+      <div style="font-size:13px;color:var(--color-text);margin-bottom:10px">${urls.length === 1 ? 'Open the file or download to upload on YouTube.' : 'Two parts ready — merge in QuickTime (drag both, splice, export) then upload to YouTube.'}</div>
+      <div>${links}</div>
+    </div>`;
+  };
+
+  if (btnEl) btnEl.disabled = true;
+
+  try {
+    // 1. Verify MCP is loaded
+    if (!window.MCP?.aggregator?.runFullVideo) {
+      throw new Error('Aggregator not loaded. Hard-reload the page (Cmd+Shift+R) and try again.');
+    }
+
+    // 2. Clean old video_assembler tasks for this project
+    setMsg('🧹 Cleaning old render tasks...');
+    await APP.sb.from('workflow_tasks').delete({ count: 'exact' })
+      .eq('project_id', p.id).eq('role', 'video_assembler');
+
+    // 3. Decide split vs single based on duration
+    const { data: clips } = await APP.sb.from('project_voice_clips')
+      .select('duration_sec').eq('project_id', p.id);
+    const totalDuration = (clips || []).reduce((s, c) => s + (c.duration_sec || 0), 0);
+    const needsSplit = totalDuration > 1740; // 29 min
+
+    const resultUrls = [];
+
+    if (needsSplit) {
+      // Split flow: 2 tasks, 2 renders
+      setMsg(`📐 Splitting in 2 parts (total ${fmtSecondsToMS(totalDuration)})...`);
+      const parts = await MCP.aggregator.runSplit();
+      if (!parts || parts.length !== 2) throw new Error('Split task creation failed');
+
+      setMsg(`🎬 Rendering Part 1/2 via JSON2Video (5-10 min, polling every 15s — keep tab open)...`);
+      const url1 = await MCP.render(parts[0].id);
+      if (!url1) throw new Error('Part 1 render failed (check console for details)');
+      resultUrls.push(url1);
+
+      setMsg(`🎬 Part 1 done ✓ — Rendering Part 2/2 (5-10 min)...`);
+      const url2 = await MCP.render(parts[1].id);
+      if (!url2) throw new Error('Part 2 render failed (Part 1 succeeded — check console)');
+      resultUrls.push(url2);
+    } else {
+      // Single video flow
+      setMsg(`📦 Creating render task (total ${fmtSecondsToMS(totalDuration)})...`);
+      const task = await MCP.aggregator.runFullVideo();
+      if (!task) throw new Error('Render task creation failed');
+
+      setMsg(`🎬 Rendering via JSON2Video (5-15 min, polling every 15s — keep tab open)...`);
+      const url = await MCP.render(task.id);
+      if (!url) throw new Error('Render failed (check console for details)');
+      resultUrls.push(url);
+    }
+
+    // 4. Save URL(s) in the task brief for history display
+    try {
+      const { data: doneTasks } = await APP.sb.from('workflow_tasks')
+        .select('id, brief').eq('project_id', p.id).eq('role', 'video_assembler');
+      for (let i = 0; i < (doneTasks || []).length; i++) {
+        const t = doneTasks[i];
+        const url = resultUrls[i];
+        if (url) {
+          await APP.sb.from('workflow_tasks').update({
+            status: 'approved',
+            brief: (t.brief || '') + ' · URL: ' + url,
+          }).eq('id', t.id);
+        }
+      }
+    } catch (e) { console.warn('History save failed:', e); }
+
+    setSuccess(resultUrls);
+    toast('Render complete ✓ — MP4 ready to upload', 'success');
+  } catch (e) {
+    console.error('Auto-render error:', e);
+    setError('❌ ' + (e.message || e));
+    toast('Render failed: ' + (e.message || e), 'error');
+  } finally {
+    // Re-render the panel to refresh history after a short delay
+    setTimeout(() => { if (APP.currentTab === 'workflow') renderProjectWorkflowPanel(); }, 2000);
+  }
+}
+   
 // ============================================================
 // PROJECT WORKFLOW PANEL (per-video tasks)
 // ============================================================
