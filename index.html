@@ -1832,6 +1832,9 @@ async function initApp(){
   APP.sb = supabase.createClient(SUPA_URL, SUPA_KEY, {
     auth: { persistSession: true, autoRefreshToken: true }
   });
+  // Expose globals for console scripts & dev tools (Sprint 1B Step 3 prep)
+  window.APP = APP;
+  window.MCP = window.MCP || {};
   const { data: { session } } = await APP.sb.auth.getSession();
   if (session) { APP.user = session.user; await onLogin(); }
   else show('auth-screen');
