@@ -3717,7 +3717,7 @@ async function generateVideoIdeas(){
 
     // Saved analyses for this channel
     const { data: savedAnalyses } = await APP.sb.from('competitor_channel_analyses')
-      .select('channel_handle, analysis_data, created_at')
+      .select('competitor_handle, analysis_data, created_at')
       .eq('channel_id', ch.id)
       .order('created_at', { ascending: false })
       .limit(3);
