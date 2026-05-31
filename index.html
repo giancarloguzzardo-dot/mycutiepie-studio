@@ -6738,8 +6738,9 @@ async function renderProjectWorkflowPanel(){
       <button class="btn primary" id="orchestrator-btn" style="width:100%">${orchBtnLabel}</button>
       <div id="orchestrator-log" style="margin-top:12px"></div>
     </div>`;
-
-  $('studio-content').innerHTML = orchestratorHtml + `<div class="panel">
+// Auto-render section (Sprint 1B Step 3 Phase 3)
+  const autoRenderHtml = await renderAutoRenderSection(p);
+$('studio-content').innerHTML = orchestratorHtml + autoRenderHtml + `<div class="panel">
     <div class="panel-title">🗂 Workflow</div>
     <div class="panel-desc">Assign tasks for this video. Freelancers get magic links to work on their part.</div>
     <div class="ai-action-bar">
