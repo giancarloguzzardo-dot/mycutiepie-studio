@@ -6549,6 +6549,321 @@ OUTPUT FORMAT (raw JSON only, no markdown fences):
 
   return pack;
 }
+
+   // ============================================================
+// PUBLISH PACK UI (Sprint 1B Step 4 — Phase 4.2 + 4.3)
+//
+// Native UI panel for the AI-generated publish bundle.
+// Features: read, edit (textarea), autosave debounced (500ms),
+//           per-field copy button, regenerate all, copy all.
+// 
+// Tab integration: new "📤 Publish Pack" tab in studio sidebar.
+// ============================================================
+
+// Debounced save state
+let __publishPackSaveTimer = null;
+
+async function savePackToDb(pack) {
+  if (!APP.currentProject?.id) return;
+  if (__publishPackSaveTimer) clearTimeout(__publishPackSaveTimer);
+  __publishPackSaveTimer = setTimeout(async () => {
+    try {
+      const { error } = await APP.sb
+        .from('projects')
+        .update({ publish_pack: pack })
+        .eq('id', APP.currentProject.id);
+      if (error) {
+        console.error('Pack autosave error:', error);
+        const ind = document.getElementById('pack-save-indicator');
+        if (ind) ind.innerHTML = '<span style="color:var(--color-danger,#e5484d)">✗ Save failed</span>';
+      } else {
+        const ind = document.getElementById('pack-save-indicator');
+        if (ind) ind.innerHTML = '<span style="color:var(--color-text-muted);font-size:11px">✓ Saved</span>';
+        setTimeout(() => { if (ind) ind.innerHTML = ''; }, 1500);
+      }
+    } catch (e) { console.error('Pack autosave failed:', e); }
+  }, 500);
+}
+
+function copyPackField(text, btnEl) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (!btnEl) return;
+    const orig = btnEl.innerHTML;
+    btnEl.innerHTML = '✓ Copied';
+    btnEl.disabled = true;
+    setTimeout(() => { btnEl.innerHTML = orig; btnEl.disabled = false; }, 1200);
+  });
+}
+
+// Render the "Publish Pack" tab content
+async function renderPublishPackPanel() {
+  const p = APP.currentProject;
+  if (!p) { $('studio-content').innerHTML = '<div class="panel"><div class="panel-desc">No project selected.</div></div>'; return; }
+
+  const pack = p.publish_pack;
+
+  // ── EMPTY STATE — no pack yet ──
+  if (!pack) {
+    $('studio-content').innerHTML = `
+      <div class="panel" style="text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">📤</div>
+        <div class="panel-title">Publish Pack</div>
+        <div class="panel-desc" style="margin-bottom:24px;max-width:520px;margin-left:auto;margin-right:auto">
+          AI generates everything you need for YouTube publish in one click:<br>
+          description with hooks + chapters, optimized tags, pinned comment,<br>
+          Community post, 60-sec Short teaser script, and reply templates.
+        </div>
+        <button class="btn primary" id="pack-generate-btn" style="font-size:14px;padding:12px 24px">
+          ✨ Generate Publish Pack (~$0.05)
+        </button>
+        <div style="font-size:11px;color:var(--color-text-muted);margin-top:12px">
+          Takes 15-30 seconds. Uses ${p.title ? 'this video\'s' : 'the project\'s'} title, script, and channel context.
+        </div>
+      </div>`;
+    document.getElementById('pack-generate-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('pack-generate-btn');
+      btn.disabled = true;
+      btn.innerHTML = '🤖 Generating... (15-30 sec)';
+      try {
+        await generatePublishPack();
+        renderPublishPackPanel();
+        toast('Publish pack generated ✓', 'success');
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = '✨ Generate Publish Pack (~$0.05)';
+        toast('Generation failed: ' + (e.message || e), 'error');
+      }
+    });
+    return;
+  }
+
+  // ── POPULATED STATE — show the cards ──
+  const generatedAt = pack._generated_at
+    ? new Date(pack._generated_at).toLocaleString()
+    : 'unknown';
+
+  const tagsLine = Array.isArray(pack.tags) ? pack.tags.join(', ') : '';
+  const tagsCharCount = tagsLine.length;
+
+  const cardStyle = 'background:var(--color-surface);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:14px';
+  const labelStyle = 'font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-subtle);margin-bottom:6px';
+  const counterStyle = 'font-size:11px;color:var(--color-text-muted);font-family:monospace';
+  const taStyle = 'width:100%;background:var(--color-surface-2);border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--color-text);font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box';
+
+  const charBadge = (n, min, max, hardCap) => {
+    let color = 'var(--color-success)';
+    if (hardCap && n > hardCap) color = 'var(--color-danger,#e5484d)';
+    else if (n < min || n > max) color = '#d97706'; // warning
+    return `<span style="${counterStyle};color:${color}">${n} chars${max ? ` (target ${min}-${max}${hardCap ? `, cap ${hardCap}` : ''})` : ''}</span>`;
+  };
+
+  const html = `
+    <div class="panel" style="border:1.5px solid var(--color-accent-soft)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div class="panel-title">📤 Publish Pack</div>
+          <div class="panel-desc">Edit any field — autosaved. Last generated: ${generatedAt}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="pack-save-indicator"></span>
+          <button class="btn sm" id="pack-copy-all-btn">📋 Copy all</button>
+          <button class="btn sm" id="pack-regenerate-btn">🔄 Regenerate all</button>
+        </div>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div style="${cardStyle}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div style="${labelStyle}">📝 Description</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${charBadge(pack.description.length, 1500, 2000, 5000)}
+            <button class="btn sm" data-copy-field="description">📋 Copy</button>
+          </div>
+        </div>
+        <textarea id="pack-field-description" rows="10" style="${taStyle}">${escapeHtml(pack.description)}</textarea>
+      </div>
+
+      <!-- TAGS -->
+      <div style="${cardStyle}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div style="${labelStyle}">🏷️ Tags (${pack.tags.length})</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${charBadge(tagsCharCount, 200, 480, 500)}
+            <button class="btn sm" data-copy-field="tags">📋 Copy</button>
+          </div>
+        </div>
+        <textarea id="pack-field-tags" rows="3" style="${taStyle}">${escapeHtml(tagsLine)}</textarea>
+        <div style="font-size:10px;color:var(--color-text-muted);margin-top:4px">Comma-separated. Editing updates the underlying array.</div>
+      </div>
+
+      <!-- PINNED COMMENT -->
+      <div style="${cardStyle}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div style="${labelStyle}">📌 Pinned Comment</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${charBadge(pack.pinned_comment.length, 300, 500, 1000)}
+            <button class="btn sm" data-copy-field="pinned_comment">📋 Copy</button>
+          </div>
+        </div>
+        <textarea id="pack-field-pinned_comment" rows="4" style="${taStyle}">${escapeHtml(pack.pinned_comment)}</textarea>
+      </div>
+
+      <!-- COMMUNITY POST -->
+      <div style="${cardStyle}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div style="${labelStyle}">📢 Community Post</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${charBadge((pack.first_hour_strategy?.community_post || '').length, 150, 250, 700)}
+            <button class="btn sm" data-copy-field="community_post">📋 Copy</button>
+          </div>
+        </div>
+        <textarea id="pack-field-community_post" rows="3" style="${taStyle}">${escapeHtml(pack.first_hour_strategy?.community_post || '')}</textarea>
+      </div>
+
+      <!-- SHORT TEASER -->
+      <div style="${cardStyle}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div style="${labelStyle}">📱 Short Teaser Script (60-sec)</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${charBadge((pack.first_hour_strategy?.short_teaser_script || '').length, 400, 1500)}
+            <button class="btn sm" data-copy-field="short_teaser_script">📋 Copy</button>
+          </div>
+        </div>
+        <textarea id="pack-field-short_teaser_script" rows="10" style="${taStyle}">${escapeHtml(pack.first_hour_strategy?.short_teaser_script || '')}</textarea>
+      </div>
+
+      <!-- REPLY TEMPLATES -->
+      <div style="${cardStyle}">
+        <div style="${labelStyle};margin-bottom:8px">💬 Reply Templates (${(pack.first_hour_strategy?.reply_templates || []).length})</div>
+        ${(pack.first_hour_strategy?.reply_templates || []).map((r, i) => `
+          <div style="background:var(--color-surface-2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px">
+            <div style="font-size:10px;color:var(--color-text-muted);padding-top:2px;flex-shrink:0">${i + 1}</div>
+            <textarea id="pack-field-reply_${i}" rows="2" style="${taStyle};background:transparent;border:none;padding:0;flex:1">${escapeHtml(r)}</textarea>
+            <button class="btn sm" data-copy-field="reply_${i}" style="flex-shrink:0">📋</button>
+          </div>`).join('')}
+      </div>
+
+      <!-- PUBLISH CHECKLIST -->
+      <div style="${cardStyle};background:var(--color-surface-2)">
+        <div style="${labelStyle};margin-bottom:10px">📋 Publish Checklist</div>
+        <div style="font-size:12px;color:var(--color-text);line-height:1.8">
+          □ Title set in YouTube Studio<br>
+          □ Description pasted (from above)<br>
+          □ Tags pasted (from above)<br>
+          □ Thumbnail uploaded<br>
+          □ Category: Education (or appropriate)<br>
+          □ Audience: Not for kids<br>
+          □ Chapters detected by YouTube (auto-from description)<br>
+          □ Pinned comment posted after publish<br>
+          □ Community post scheduled or published<br>
+          □ Short teaser uploaded as YouTube Short
+        </div>
+      </div>
+    </div>`;
+
+  $('studio-content').innerHTML = html;
+
+  // ── WIRE COPY BUTTONS ──
+  document.querySelectorAll('[data-copy-field]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const field = e.currentTarget.getAttribute('data-copy-field');
+      let text = '';
+      if (field === 'tags') {
+        text = document.getElementById('pack-field-tags').value;
+      } else if (field.startsWith('reply_')) {
+        const idx = parseInt(field.split('_')[1], 10);
+        text = document.getElementById('pack-field-reply_' + idx).value;
+      } else {
+        const el = document.getElementById('pack-field-' + field);
+        if (el) text = el.value;
+      }
+      copyPackField(text, e.currentTarget);
+    });
+  });
+
+  // ── WIRE EDIT / AUTOSAVE ──
+  const fieldEls = [
+    ['description', () => document.getElementById('pack-field-description')],
+    ['tags', () => document.getElementById('pack-field-tags')],
+    ['pinned_comment', () => document.getElementById('pack-field-pinned_comment')],
+    ['community_post', () => document.getElementById('pack-field-community_post')],
+    ['short_teaser_script', () => document.getElementById('pack-field-short_teaser_script')],
+  ];
+
+  fieldEls.forEach(([key, getter]) => {
+    const el = getter();
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const newPack = APP.currentProject.publish_pack || {};
+      if (key === 'tags') {
+        newPack.tags = el.value.split(',').map(t => t.trim()).filter(Boolean);
+      } else if (key === 'community_post' || key === 'short_teaser_script') {
+        if (!newPack.first_hour_strategy) newPack.first_hour_strategy = {};
+        newPack.first_hour_strategy[key] = el.value;
+      } else {
+        newPack[key] = el.value;
+      }
+      APP.currentProject.publish_pack = newPack;
+      savePackToDb(newPack);
+    });
+  });
+
+  // Reply templates autosave
+  (pack.first_hour_strategy?.reply_templates || []).forEach((_, i) => {
+    const el = document.getElementById('pack-field-reply_' + i);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const newPack = APP.currentProject.publish_pack || {};
+      if (!newPack.first_hour_strategy) newPack.first_hour_strategy = {};
+      if (!Array.isArray(newPack.first_hour_strategy.reply_templates)) newPack.first_hour_strategy.reply_templates = [];
+      newPack.first_hour_strategy.reply_templates[i] = el.value;
+      APP.currentProject.publish_pack = newPack;
+      savePackToDb(newPack);
+    });
+  });
+
+  // ── WIRE COPY ALL ──
+  document.getElementById('pack-copy-all-btn').addEventListener('click', (e) => {
+    const text = `═══ TITLE ═══
+${APP.currentProject.title || ''}
+
+═══ DESCRIPTION ═══
+${pack.description || ''}
+
+═══ TAGS ═══
+${tagsLine}
+
+═══ PINNED COMMENT (post after publish) ═══
+${pack.pinned_comment || ''}
+
+═══ COMMUNITY POST ═══
+${pack.first_hour_strategy?.community_post || ''}
+
+═══ SHORT TEASER SCRIPT ═══
+${pack.first_hour_strategy?.short_teaser_script || ''}
+
+═══ REPLY TEMPLATES ═══
+${(pack.first_hour_strategy?.reply_templates || []).map((r, i) => `[${i + 1}] ${r}`).join('\n\n')}`;
+    copyPackField(text, e.currentTarget);
+  });
+
+  // ── WIRE REGENERATE ALL ──
+  document.getElementById('pack-regenerate-btn').addEventListener('click', async () => {
+    if (!confirm('Regenerate the entire publish pack? Current edits will be overwritten. Cost ~$0.05.')) return;
+    const btn = document.getElementById('pack-regenerate-btn');
+    btn.disabled = true;
+    btn.innerHTML = '🤖 Regenerating...';
+    try {
+      await generatePublishPack();
+      renderPublishPackPanel();
+      toast('Publish pack regenerated ✓', 'success');
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '🔄 Regenerate all';
+      toast('Regeneration failed: ' + (e.message || e), 'error');
+    }
+  });
+}
    
 // ============================================================
 // AUTO-RENDER (Sprint 1B Step 3 Phase 3)
