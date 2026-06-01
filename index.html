@@ -6324,6 +6324,200 @@ async function generateAllVoices(vocalSections, existingClips){
   toast(`Generated ${toGenerate.length} voice clips ✓`, 'success');
 }
 // ============================================================
+// PUBLISH PACK (Sprint 1B Step 4 — Phase 4.1)
+//
+// Generates a complete YouTube publish bundle for a project:
+//   - description (1500-2000 chars, optimized for above-fold hook)
+//   - tags (20-25 tags, <500 chars total)
+//   - pinned_comment (engagement-driving)
+//   - first_hour_strategy { community_post, short_teaser_script, reply_templates[] }
+//
+// Storage: projects.publish_pack (jsonb column, see migration)
+// AI capability: uses analyze_topic with custom prompt (no new ai-router code)
+//
+// Test in console:
+//   await generatePublishPack();
+//   APP.currentProject.publish_pack  // see the result
+// ============================================================
+async function generatePublishPack(projectId) {
+  projectId = projectId || APP.currentProject?.id;
+  if (!projectId) throw new Error('No project selected');
+
+  // ---- 1. Load project + channel context ----
+  const { data: project, error: pErr } = await APP.sb
+    .from('projects').select('*').eq('id', projectId).single();
+  if (pErr || !project) throw new Error('Load project: ' + (pErr?.message || 'not found'));
+
+  const { data: channel, error: cErr } = await APP.sb
+    .from('channels')
+    .select('*, active_niche_profile:niche_profiles!channels_active_niche_profile_id_fkey(*), default_tone_template:tone_templates!channels_default_tone_template_id_fkey(*)')
+    .eq('id', project.channel_id).single();
+  if (cErr || !channel) throw new Error('Load channel: ' + (cErr?.message || 'not found'));
+
+  const nicheName = channel.active_niche_profile?.name || 'general topic';
+  const audience = channel.active_niche_profile?.target_audience || 'general audience';
+  const toneName = channel.default_tone_template?.name || 'neutral';
+  const lang = channel.active_niche_profile?.language || 'en';
+  const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
+
+  // ---- 2. Extract script summary (avoid sending huge script in prompt) ----
+  const script = project.script || '';
+  const outline = project.outline || '';
+  const title = project.title || '(untitled)';
+
+  // Get section headers + first sentence of each (compact representation)
+  let scriptSummary = '';
+  const sectionRegex = /(?:###?\s*|SECTION\s+\d+:?\s*|##\s*)([^\n]{5,100})/gi;
+  let matches = [];
+  let m;
+  while ((m = sectionRegex.exec(script)) !== null && matches.length < 12) {
+    matches.push(m[1].trim());
+  }
+  if (matches.length === 0 && outline) {
+    while ((m = sectionRegex.exec(outline)) !== null && matches.length < 12) {
+      matches.push(m[1].trim());
+    }
+  }
+  scriptSummary = matches.length > 0 
+    ? matches.map((s, i) => `${i + 1}. ${s}`).join('\n')
+    : (script || outline).slice(0, 1500);
+
+  // Duration estimate
+  const { data: clips } = await APP.sb.from('project_voice_clips')
+    .select('duration_sec').eq('project_id', projectId);
+  const totalDuration = (clips || []).reduce((s, c) => s + (c.duration_sec || 0), 0);
+  const durationStr = totalDuration > 0 
+    ? `${Math.floor(totalDuration / 60)}:${String(Math.round(totalDuration % 60)).padStart(2, '0')}`
+    : 'unknown';
+
+  // ---- 3. Build prompts ----
+  const system = `You are a YouTube growth strategist specializing in ${nicheName} for ${audience}. You generate complete publish packs that maximize algorithmic distribution while maintaining channel voice. You ALWAYS respond with valid JSON only — no markdown fences, no preamble, no explanation.`;
+
+  const prompt = `Generate a complete YouTube publish pack for this video.
+
+VIDEO:
+- Title: "${title}"
+- Duration: ${durationStr}
+- Section structure:
+${scriptSummary}
+
+CHANNEL CONTEXT:
+- Niche: ${nicheName}
+- Sub-focus: ${channel.active_niche_profile?.sub_niche || channel.active_niche_profile?.description || ''}
+- Target audience: ${audience}
+- Tone: ${toneName}
+- Language: ${langName}
+
+REQUIREMENTS FOR EACH FIELD:
+
+DESCRIPTION (1500-2000 chars):
+- First 2 lines must hook readers BEFORE the "Show more" fold (~90 chars/line visible)
+- Lead with specific number/claim from the video (NO generic intros)
+- Value proposition: what viewer learns concretely
+- Auto-extract chapter timestamps from section structure above (format "MM:SS — Title")
+- Resources mentioned: line items, forms, sources referenced
+- Subscribe CTA anchored to channel value (NO "smash subscribe")
+- Comment CTA with specific question demanding replies (not "let me know your thoughts")
+- 5-8 hashtags at end
+- Financial/legal disclaimer if niche requires it (finance niches MUST have one)
+
+TAGS (20-25 tags):
+- Mix: 30% broad (high volume), 50% specific long-tail (low competition), 20% channel-branded
+- Total chars under 500
+- No quotes, no dashes, no special characters
+- Most relevant first (first 3-5 matter most)
+
+PINNED_COMMENT (300-500 chars):
+- Drive engagement: question demanding replies, OR additional resource, OR controversial extension
+- Match channel tone precisely
+- NO "let me know what you think" generic asks
+- Make replying require LOW effort but feel rewarding
+
+FIRST_HOUR_STRATEGY:
+- community_post (150-250 chars): YouTube Community tab post announcing the video, channel tone
+- short_teaser_script (60-second YouTube Short script): vertical format, hooks in 3 sec, drives traffic to main video
+- reply_templates (3-5 templates): for likely first comments, personable + on-brand, each 100-200 chars
+
+OUTPUT FORMAT (raw JSON, no markdown):
+{
+  "description": "...",
+  "tags": ["tag1", "tag2", ...],
+  "pinned_comment": "...",
+  "first_hour_strategy": {
+    "community_post": "...",
+    "short_teaser_script": "...",
+    "reply_templates": ["...", "..."]
+  }
+}`;
+   
+  // ---- 4. Invoke AI ----
+  console.log('🤖 Generating publish pack...');
+  const result = await AI.invoke('analyze_topic', {
+    prompt, system,
+    topic_query: 'publish_pack_generation',
+  }, { projectId });
+
+  const rawText = result.content?.[0]?.text || result.text || '';
+  
+  // ---- 5. Parse JSON output ----
+  let pack;
+  try {
+    // Try direct parse
+    pack = JSON.parse(rawText);
+  } catch (e1) {
+    // Try extracting JSON block
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error('AI raw output:', rawText);
+      throw new Error('AI returned malformed publish pack JSON');
+    }
+    try {
+      pack = JSON.parse(jsonMatch[0]);
+    } catch (e2) {
+      console.error('AI raw output:', rawText);
+      throw new Error('AI returned malformed JSON: ' + e2.message);
+    }
+  }
+
+  // ---- 6. Validate structure ----
+  if (!pack.description || !Array.isArray(pack.tags) || !pack.pinned_comment) {
+    console.error('Pack structure invalid:', pack);
+    throw new Error('AI output missing required fields (description/tags/pinned_comment)');
+  }
+
+  // ---- 7. Save to DB ----
+  pack._generated_at = new Date().toISOString();
+  pack._video_title = title;
+  pack._video_duration_sec = totalDuration;
+
+  const { error: saveErr } = await APP.sb
+    .from('projects')
+    .update({ publish_pack: pack })
+    .eq('id', projectId);
+
+  if (saveErr) {
+    console.error('Save failed:', saveErr);
+    throw new Error('Could not save pack: ' + saveErr.message);
+  }
+
+  // ---- 8. Update local state ----
+  if (APP.currentProject?.id === projectId) {
+    APP.currentProject.publish_pack = pack;
+  }
+
+  // ---- 9. Log summary ----
+  console.log('✅ Publish pack generated and saved:');
+  console.log(`  Description: ${pack.description.length} chars`);
+  console.log(`  Tags: ${pack.tags.length} (${pack.tags.join(', ').length} chars)`);
+  console.log(`  Pinned comment: ${pack.pinned_comment.length} chars`);
+  console.log(`  Community post: ${pack.first_hour_strategy?.community_post?.length || 0} chars`);
+  console.log(`  Short teaser: ${pack.first_hour_strategy?.short_teaser_script?.length || 0} chars`);
+  console.log(`  Reply templates: ${pack.first_hour_strategy?.reply_templates?.length || 0}`);
+  console.log('\nFull pack: APP.currentProject.publish_pack');
+
+  return pack;
+}
+// ============================================================
 // AUTO-RENDER (Sprint 1B Step 3 Phase 3)
 // Native UI for one-click MP4 render via assemble-video → JSON2Video.
 // Replaces the manual console-paste 3-line workflow.
