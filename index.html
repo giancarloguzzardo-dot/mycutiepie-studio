@@ -6339,6 +6339,14 @@ async function generateAllVoices(vocalSections, existingClips){
 //   await generatePublishPack();
 //   APP.currentProject.publish_pack  // see the result
 // ============================================================
+// ============================================================
+// PUBLISH PACK (Sprint 1B Step 4 — Phase 4.1-bis)
+// Tweaks vs 4.1:
+//   - Stricter tag char limits in prompt (≤480 chars)
+//   - title_card in short_teaser must use exact video title
+//   - Code-side validation: trim tags if over 490 chars
+//   - Code-side validation: warn if pinned_comment short
+// ============================================================
 async function generatePublishPack(projectId) {
   projectId = projectId || APP.currentProject?.id;
   if (!projectId) throw new Error('No project selected');
@@ -6360,12 +6368,11 @@ async function generatePublishPack(projectId) {
   const lang = channel.active_niche_profile?.language || 'en';
   const langName = {en:'English',it:'Italian',es:'Spanish',pt:'Portuguese',fr:'French',de:'German'}[lang] || 'English';
 
-  // ---- 2. Extract script summary (avoid sending huge script in prompt) ----
+  // ---- 2. Extract script summary ----
   const script = project.script || '';
   const outline = project.outline || '';
   const title = project.title || '(untitled)';
 
-  // Get section headers + first sentence of each (compact representation)
   let scriptSummary = '';
   const sectionRegex = /(?:###?\s*|SECTION\s+\d+:?\s*|##\s*)([^\n]{5,100})/gi;
   let matches = [];
@@ -6396,7 +6403,7 @@ async function generatePublishPack(projectId) {
   const prompt = `Generate a complete YouTube publish pack for this video.
 
 VIDEO:
-- Title: "${title}"
+- Exact title: "${title}"
 - Duration: ${durationStr}
 - Section structure:
 ${scriptSummary}
@@ -6421,24 +6428,32 @@ DESCRIPTION (1500-2000 chars):
 - 5-8 hashtags at end
 - Financial/legal disclaimer if niche requires it (finance niches MUST have one)
 
-TAGS (20-25 tags):
+TAGS — STRICT LIMITS:
+- TOTAL character count INCLUDING the ", " separators between tags MUST be ≤ 480
+- YouTube hard cap is 500 chars — leave 20-char safety buffer
+- COUNT your characters before finalizing. If over 480, drop the LAST (least relevant) tag.
+- 18-22 tags is the sweet spot. NEVER force 25 if it breaks the 480 cap.
 - Mix: 30% broad (high volume), 50% specific long-tail (low competition), 20% channel-branded
-- Total chars under 500
 - No quotes, no dashes, no special characters
-- Most relevant first (first 3-5 matter most)
+- Most relevant first (first 3-5 matter most for algorithm)
 
 PINNED_COMMENT (300-500 chars):
 - Drive engagement: question demanding replies, OR additional resource, OR controversial extension
 - Match channel tone precisely
 - NO "let me know what you think" generic asks
 - Make replying require LOW effort but feel rewarding
+- AIM for 350-450 chars (not below 300)
 
 FIRST_HOUR_STRATEGY:
 - community_post (150-250 chars): YouTube Community tab post announcing the video, channel tone
-- short_teaser_script (60-second YouTube Short script): vertical format, hooks in 3 sec, drives traffic to main video
+- short_teaser_script (60-second YouTube Short script): 
+  * Vertical format, hooks viewer in first 3 seconds
+  * The title_card screen MUST display the EXACT video title given above: "${title}"
+  * NEVER use the channel name as title card fallback
+  * Drives traffic to main video
 - reply_templates (3-5 templates): for likely first comments, personable + on-brand, each 100-200 chars
 
-OUTPUT FORMAT (raw JSON, no markdown):
+OUTPUT FORMAT (raw JSON only, no markdown fences):
 {
   "description": "...",
   "tags": ["tag1", "tag2", ...],
@@ -6449,7 +6464,7 @@ OUTPUT FORMAT (raw JSON, no markdown):
     "reply_templates": ["...", "..."]
   }
 }`;
-   
+
   // ---- 4. Invoke AI ----
   console.log('🤖 Generating publish pack...');
   const result = await AI.invoke('analyze_topic', {
@@ -6462,10 +6477,8 @@ OUTPUT FORMAT (raw JSON, no markdown):
   // ---- 5. Parse JSON output ----
   let pack;
   try {
-    // Try direct parse
     pack = JSON.parse(rawText);
   } catch (e1) {
-    // Try extracting JSON block
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.error('AI raw output:', rawText);
@@ -6483,6 +6496,25 @@ OUTPUT FORMAT (raw JSON, no markdown):
   if (!pack.description || !Array.isArray(pack.tags) || !pack.pinned_comment) {
     console.error('Pack structure invalid:', pack);
     throw new Error('AI output missing required fields (description/tags/pinned_comment)');
+  }
+
+  // ---- 6b. Code-side validation: trim tags if over YouTube cap ----
+  const tagsCharCount = () => pack.tags.join(', ').length;
+  const initialTagsLen = tagsCharCount();
+  if (initialTagsLen > 490) {
+    console.warn(`⚠️ Tags ${initialTagsLen} chars (>490), trimming to fit YouTube 500-char cap`);
+    while (tagsCharCount() > 480 && pack.tags.length > 15) {
+      const dropped = pack.tags.pop();
+      console.warn(`  Dropped tag: "${dropped}"`);
+    }
+  }
+
+  // ---- 6c. Soft warnings on quality ----
+  if (pack.pinned_comment.length < 300) {
+    console.warn(`⚠️ Pinned comment is ${pack.pinned_comment.length} chars (target 300-500)`);
+  }
+  if (pack.description.length < 1500) {
+    console.warn(`⚠️ Description is ${pack.description.length} chars (target 1500-2000)`);
   }
 
   // ---- 7. Save to DB ----
@@ -6508,7 +6540,7 @@ OUTPUT FORMAT (raw JSON, no markdown):
   // ---- 9. Log summary ----
   console.log('✅ Publish pack generated and saved:');
   console.log(`  Description: ${pack.description.length} chars`);
-  console.log(`  Tags: ${pack.tags.length} (${pack.tags.join(', ').length} chars)`);
+  console.log(`  Tags: ${pack.tags.length} (${tagsCharCount()} chars)`);
   console.log(`  Pinned comment: ${pack.pinned_comment.length} chars`);
   console.log(`  Community post: ${pack.first_hour_strategy?.community_post?.length || 0} chars`);
   console.log(`  Short teaser: ${pack.first_hour_strategy?.short_teaser_script?.length || 0} chars`);
@@ -6517,6 +6549,7 @@ OUTPUT FORMAT (raw JSON, no markdown):
 
   return pack;
 }
+   
 // ============================================================
 // AUTO-RENDER (Sprint 1B Step 3 Phase 3)
 // Native UI for one-click MP4 render via assemble-video → JSON2Video.
