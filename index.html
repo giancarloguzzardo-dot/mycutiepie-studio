@@ -5589,6 +5589,14 @@ function isVocalSection(title, body){
 
   // Hard rule 1: skip empty/tiny bodies
   if (!body || body.length < 50) return false;
+   // Hard rule 1b: skip B-roll/visual sections marked with **bold** markdown.
+  // Script gen uses **SECTION X** for B-roll descriptions (duplicates of voice sections)
+  // and **Prompt N** for AI image prompts. Both are NOT spoken text.
+  if (t.startsWith('**')) return false;
+
+  // Hard rule 1c: skip "Prompt N" AI visual generation prompts (with or without ** wrap)
+  const tStripped = t.replace(/\*/g, '').trim();
+  if (/^prompt\s+\d+/i.test(tStripped)) return false;
 
    // Hard rule 1b: skip B-roll/visual sections marked with **bold** markdown.
   // Script gen uses **SECTION X** for B-roll descriptions (duplicates of voice sections)
