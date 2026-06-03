@@ -2718,7 +2718,93 @@ function createVideoFromIdea(title, angle){
   APP.vwizard.angle = angle || '';
   toast('Idea loaded — pick a format and create', 'success');
 }
+// ============================================================
+// IMPORT IDEA — bring external ideas with rich brief (Sprint 1B 4-ter D)
+// Use case: user finds an idea outside (article, competitor video, newsletter)
+// and wants to bring it in with title + description already written, skipping
+// the Suggest pipeline. Auto-creates project + auto-runs Idea Gate using
+// channel DNA for grounded scoring.
+// ============================================================
+function openImportIdea(){
+  if (!APP.currentChannel) { toast('Open a channel first', 'error'); return; }
+  $('import-title').value = '';
+  $('import-description').value = '';
+  $('import-angle').value = '';
+  $('import-source-url').value = '';
+  show('import-idea-modal');
+  setTimeout(() => $('import-title').focus(), 50);
+}
 
+// Static wire (run once at module load via the existing modal wiring pattern below)
+$('import-cancel').addEventListener('click', () => hide('import-idea-modal'));
+$('import-idea-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'import-idea-modal') hide('import-idea-modal');
+});
+
+$('import-submit').addEventListener('click', async () => {
+  const title = $('import-title').value.trim();
+  const description = $('import-description').value.trim();
+  const angle = $('import-angle').value.trim();
+  const sourceUrl = $('import-source-url').value.trim();
+
+  if (!title) { toast('Title required', 'error'); $('import-title').focus(); return; }
+  if (!description || description.length < 50) {
+    toast('Description required (min 50 chars for good scoring)', 'error');
+    $('import-description').focus();
+    return;
+  }
+
+  const ch = APP.currentChannel;
+  if (!ch) { toast('No channel selected', 'error'); return; }
+
+  showLoader('Creating project from imported idea...');
+  try {
+    // Build rich idea_brief JSON that the Idea panel pre-fill (post-C1) can use
+    const ideaBriefData = {
+      input_brief: description,
+      source_url: sourceUrl || null,
+      imported_externally: true,
+      imported_at: new Date().toISOString(),
+    };
+
+    const { data: project, error } = await APP.sb.from('projects').insert({
+      user_id: APP.user.id,
+      channel_id: ch.id,
+      title: title,
+      psychological_angle: angle || null,
+      format: 'deep_dive',  // default; user can change in studio
+      current_stage: 'idea',
+      idea_brief: JSON.stringify(ideaBriefData),
+    }).select().single();
+    if (error) throw error;
+
+    hide('import-idea-modal');
+    hideLoader();
+    toast('Project created — opening studio + auto-running Idea Gate', 'success');
+
+    // Set state + navigate to the video studio
+    APP.currentProject = project;
+    navigate(`/channels/${ch.id}/videos/${project.id}`);
+
+    // After studio renders, override the brief textarea with the full description
+    // (title + description + angle) and auto-trigger Idea Gate. Wait for DOM ready.
+    setTimeout(async () => {
+      const briefInput = $('idea-brief-input');
+      if (briefInput) {
+        const fullBrief = description + (angle ? `\n\nAngle: ${angle}` : '');
+        briefInput.value = fullBrief;
+        // Auto-trigger Idea Gate — uses channel DNA + topic_query for real YouTube data
+        await runIdeaGate();
+      } else {
+        console.warn('Idea brief input not found post-navigation, manual run required');
+      }
+    }, 1500);
+
+  } catch (e) {
+    hideLoader();
+    toast('Error: ' + e.message, 'error');
+  }
+});
 // ============================================================
 // KANBAN BOARD (channel-level multi-project pipeline)
 // ============================================================
