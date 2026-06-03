@@ -6015,6 +6015,26 @@ function extractAnnotations(text) {
   // e.g. "(pause)", "(beat)", "(whispering)" — only when short & directive
   const parenDirective = /\((?:pause|beat|long pause|brief pause|silence|whisper[a-z]*|laughs?|sighs?|breathes?)[^)]*\)/gi;
   cleanText = cleanText.replace(parenDirective, '');
+   
+  // Pattern 5 (Sprint 1B Step 4-ter A1): strip markdown bold labels that script gen
+  // sometimes leaves inside body sections (e.g. "**CTA:**", "**THESIS RESTATEMENT:**",
+  // "**ARCHITECTURE:**"). These are outline/structural labels, not spoken text — but
+  // ElevenLabs reads them aloud verbatim. Strip them in 2 sub-patterns:
+
+  // 5a. Bold label alone on its own line: "**CTA:**" or "**THESIS RESTATEMENT**"
+  // Matches: 2+ uppercase chars + optional colon, wrapped in ** **, on its own line.
+  const boldLabelOwnLine = /^\s*\*\*[A-Z][A-Z\s_:\-]{2,}:?\*\*\s*$/gm;
+  cleanText = cleanText.replace(boldLabelOwnLine, '');
+
+  // 5b. Inline bold label at start of paragraph: "**CTA**: blablabla" → "blablabla"
+  // Strips the label + separator, keeps the actual prose that follows.
+  const boldLabelInline = /^\s*\*\*[A-Z][A-Z\s_:\-]{2,}\*\*\s*[:\-—]\s*/gm;
+  cleanText = cleanText.replace(boldLabelInline, '');
+
+  // 5c. Plain ALL-CAPS label lines without bold: "CTA:" or "THESIS RESTATEMENT:"
+  // Same logic — these are structural, not spoken.
+  const plainCapsLabel = /^\s*[A-Z][A-Z\s_]{3,}:\s*$/gm;
+  cleanText = cleanText.replace(plainCapsLabel, '');
 
   // Cleanup: strip leftover markdown bold/italic markers used for emphasis on directions,
   // collapse whitespace, remove empty lines left behind.
