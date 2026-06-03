@@ -2586,6 +2586,7 @@ async function renderChannelWorkspace(){
     ${bodyHtml}`;
 
   if ($('suggest-ideas-btn')) $('suggest-ideas-btn').addEventListener('click', generateChannelIdeas);
+  if ($('import-idea-btn')) $('import-idea-btn').addEventListener('click', openImportIdea);
   if (projects.length > 0) attachKanbanHandlers(ch, projects);
 }
 
