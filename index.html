@@ -3981,8 +3981,13 @@ async function renderIdeaPanel(){
     </div>`;
 
   // Pre-fill textarea
+  // Sprint 1B 4-ter C1: when project has both title + psychological_angle (from Suggest
+  // ideas, Import idea, or Competitor analysis), pre-fill the FULL rich brief, not just
+  // the short title. Prevents the "min 15 chars" re-typing friction.
   if (hasGate && gateData?.input_brief) {
     $('idea-brief-input').value = gateData.input_brief;
+  } else if (p.title && p.psychological_angle) {
+    $('idea-brief-input').value = `${p.title}\n\n${p.psychological_angle}`;
   } else if (p.title) {
     $('idea-brief-input').value = p.title;
   }
