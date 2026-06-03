@@ -5487,30 +5487,130 @@ Write in the ${toneName} tone, in ${langName}. Do NOT write the main body yet.`;
 
     parts.push('## 6. MAIN BODY\n');
 
+    // ─── PHASE 2 with HARD-ENFORCE 18-MIN CAP (Sprint 1B Step 4-ter A2) ───
+    // Budget calculation based on 18-min cap:
+    //   - Total cap: 18 min = 1080 sec @ 12.5 chars/sec = 13500 chars total budget
+    //   - Reserve for HOOK + INTRO + OUTRO: 180 sec = 2250 chars
+    //   - Body budget: 11250 chars distributed across body sections
+    //   - Per section target = remaining_budget / remaining_sections (recalculated each iteration
+    //     to absorb under/over from previous sections)
+    //
+    // Retry strategy: up to 3 attempts per section. First attempt with explicit char target.
+    // Retries with "REDUCE BY X%" instruction pointing to previous draft. Accept first attempt
+    // within budget; if all 3 attempts over budget, use shortest (best-of-3).
+    const CAP_TOTAL_SEC = 18 * 60;            // 1080s hard cap
+    const CHARS_PER_SEC = 12.5;                // ElevenLabs avg
+    const RESERVE_SEC = 180;                   // HOOK + INTRO + OUTRO reserve
+    const BODY_BUDGET_CHARS = (CAP_TOTAL_SEC - RESERVE_SEC) * CHARS_PER_SEC;  // 11250
+    const MAX_RETRY = 2;                       // 2 retries = 3 total attempts
+
+    let cumulativeBodyChars = 0;
+
     for (let i = 0; i < bodySections.length; i++){
       const sec = bodySections[i];
-      showLoader(`Generating script — part 2/3: body section ${i+1}/${bodySections.length}...`);
-      const p2 = `${ctx}
+      const remainingSections = bodySections.length - i;
+      const remainingBudget = Math.max(800, BODY_BUDGET_CHARS - cumulativeBodyChars);
+      const targetChars = Math.floor(remainingBudget / remainingSections);
+      const targetCharsMin = Math.floor(targetChars * 0.70);
+      const targetCharsMax = Math.floor(targetChars * 1.15);
+
+      let bestText = null;
+      let bestLen = Infinity;
+      let acceptedAttempt = null;
+
+      for (let attempt = 0; attempt <= MAX_RETRY; attempt++){
+        const retryLabel = attempt > 0 ? ` (retry ${attempt}/${MAX_RETRY})` : '';
+        showLoader(`Generating script — body section ${i+1}/${bodySections.length}${retryLabel}...`);
+
+        let p2;
+        if (attempt === 0) {
+          // First attempt: explicit budget target
+          p2 = `${ctx}
 
 OUTLINE TO FOLLOW:
 ${p.outline}
 
 You are writing the MAIN BODY of the script, one section at a time. Write ONLY this section, in full, as exact spoken narration (every word the narrator says). This is section ${i+1} of ${bodySections.length}.
 
+HARD LENGTH BUDGET FOR THIS SECTION:
+- TARGET: ${targetChars} characters (~${Math.round(targetChars/CHARS_PER_SEC)} seconds spoken)
+- ACCEPTABLE RANGE: ${targetCharsMin}-${targetCharsMax} characters
+- This is a HARD CAP enforced by code. Output over ${targetCharsMax} chars will be REJECTED and regenerated.
+- Total video is capped at 18 minutes. ${remainingSections} body section${remainingSections>1?'s':''} remain in this budget pool.
+
 Generate this section now, using a markdown h3 header:
 
 ### ${sec.title}
 
 Requirements:
-- Write the COMPLETE spoken narration for this section — aim for 600-1000 words so it fills its time slot.
-- Include light scenic directions ONLY inside square brackets like [Camera: ...] or [Brief pause] — these will be stripped from the voiceover automatically.
-- End the section with a one-line cliffhanger transition to the next section (unless it's the last).
+- Write the COMPLETE spoken narration within the char budget above.
+- Light scenic directions inside [square brackets] are OK — they'll be stripped automatically.
+- DO NOT use markdown bold labels like **CTA:**, **THESIS:**, **ARCHITECTURE:** — these get read aloud verbatim and break the voiceover.
+- DO NOT repeat the hook, intro, or setup framing from previous sections. The listener has already heard them.
+- DO NOT include "Here's what we're decoding..." or similar setup phrases — those belong only in INTRO.
+- End with a 1-line cliffhanger transition to the next section (unless this is the last section).
 - Tone: ${toneName}. Language: ${langName}.
-- Do NOT repeat the hook or intro. Do NOT write other sections.`;
-      const r2 = await AI.invoke('generate_script', { prompt: p2, system }, { projectId: p.id });
-      parts.push(r2.content?.[0]?.text || r2.text || '');
+- COUNT YOUR CHARACTERS. Stay within ${targetCharsMin}-${targetCharsMax}.`;
+        } else {
+          // Retry: explicit reduction instruction with previous draft as anchor
+          const currentLen = bestText ? bestText.length : 9999;
+          const reductionPct = Math.max(10, Math.ceil(((currentLen - targetChars) / currentLen) * 100));
+          p2 = `${ctx}
+
+PREVIOUS DRAFT (REJECTED — over length budget):
+"""
+${bestText}
+"""
+
+The previous draft was ${currentLen} characters but the HARD CAP is ${targetCharsMax} characters.
+REDUCE BY ${reductionPct}% to fit. Cut filler words, redundant examples, transition phrases, repeated framings.
+Keep the CORE INSIGHT and the section's main argument. Tighten every sentence.
+
+Same h3 header "### ${sec.title}". Same tone (${toneName}) and language (${langName}).
+Same constraints: no markdown bold labels, no hook/intro repetition, end with cliffhanger if not last section.
+
+Output the rewritten section ONLY. No preamble, no explanation, no apology.`;
+        }
+
+        const r2 = await AI.invoke('generate_script', { prompt: p2, system }, { projectId: p.id });
+        const text = r2.content?.[0]?.text || r2.text || '';
+
+        // Measure char count of the BODY only (strip leading h3 header line for accurate count)
+        const textForBudget = text.replace(/^#{1,3}\s+[^\n]+\n+/, '');
+        const len = textForBudget.length;
+
+        // Track best (shortest) draft as fallback
+        if (len < bestLen) {
+          bestText = text;
+          bestLen = len;
+        }
+
+        // Accept first within-budget draft
+        if (len <= targetCharsMax) {
+          acceptedAttempt = attempt + 1;
+          console.log(`✓ Section ${i+1} accepted: ${len} chars (budget ${targetCharsMin}-${targetCharsMax}) on attempt ${attempt+1}`);
+          break;
+        }
+
+        if (attempt < MAX_RETRY) {
+          console.warn(`⚠ Section ${i+1} attempt ${attempt+1}: ${len} chars > ${targetCharsMax} cap, retrying...`);
+        } else {
+          acceptedAttempt = attempt + 1;
+          console.warn(`⚠ Section ${i+1}: all ${MAX_RETRY+1} attempts over budget, accepting best-of-${MAX_RETRY+1} (${bestLen} chars)`);
+        }
+      }
+
+      parts.push(bestText);
+      cumulativeBodyChars += bestLen;
     }
 
+    // Summary log
+    const bodyEstSec = Math.round(cumulativeBodyChars / CHARS_PER_SEC);
+    const totalEstSec = bodyEstSec + RESERVE_SEC;
+    const totalEstMin = (totalEstSec / 60).toFixed(1);
+    const overBudget = totalEstSec > CAP_TOTAL_SEC;
+    console.log(`📊 Body total: ${cumulativeBodyChars} chars / ${BODY_BUDGET_CHARS} budget = ${bodyEstSec}s body + ${RESERVE_SEC}s reserve = ${totalEstMin} min total ${overBudget ? '⚠ STILL OVER CAP' : '✓ within cap'}`);
+     
     // ---- PHASE 3: outro + b-roll + AI video prompts ----
     showLoader('Generating script — part 3/3: outro, b-roll, prompts...');
     const p3 = `${ctx}
