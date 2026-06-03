@@ -4099,12 +4099,14 @@ async function runIdeaGate(){
   const p = APP.currentProject;
   const ch = APP.currentChannel;
   const brief = $('idea-brief-input').value.trim();
-  if (!brief || brief.length < 15) {
-    toast('Describe your idea in more detail (min 15 chars)', 'error');
+// Sprint 1B 4-ter C2: 15-char minimum was too strict. Specific short titles like
+  // "Roth IRA Truth" (14 chars) are valid inputs. Lower to 10 — still filters out
+  // accidental clicks but accepts real ideas.
+  if (!brief || brief.length < 10) {
+    toast('Describe your idea in more detail (min 10 chars)', 'error');
     $('idea-brief-input').focus();
     return;
   }
-
   const nicheName = ch.active_niche_profile?.name || 'general topic';
   const audience = ch.active_niche_profile?.target_audience || 'general audience';
   const toneName = ch.default_tone_template?.name || 'neutral';
