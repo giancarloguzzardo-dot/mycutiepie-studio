@@ -5469,12 +5469,19 @@ YouTube title (60 chars max), description (300+ words optimized), 15-20 tags, ch
 Detailed prompt for designer or AI image generator.
 
 ## 4. HOOK (0:00-0:35)
-Exact spoken lines, punchy, irresistible.
+Exact spoken lines, punchy, irresistible. TARGET: 350-500 characters (~30s spoken).
 
 ## 5. INTRO (0:35-1:30)
-Setup, promise, social proof if relevant. Exact spoken lines.
+Setup, promise, social proof if relevant. Exact spoken lines. TARGET: 800-1100 characters (~70s spoken).
 
-Write in the ${toneName} tone, in ${langName}. Do NOT write the main body yet.`;
+CRITICAL FORMATTING RULES for HOOK and INTRO (sections 4 and 5):
+- These are SPOKEN sections. Every word will be read aloud by ElevenLabs.
+- DO NOT use markdown bold labels like **CTA:**, **THESIS:**, **PROMISE:**, **ARCHITECTURE:**. Those get read aloud verbatim and break the voiceover.
+- Light scenic directions inside [square brackets] are OK — they'll be stripped automatically.
+- HOOK and INTRO together must not exceed 90 seconds total (~1400 chars combined).
+- Sections 1-3 are METADATA only (file header, SEO, thumbnail) — they are NOT spoken. Write them as plain prose, no special formatting needed.
+
+Write in the ${toneName} tone, in ${langName}. Do NOT write the main body yet — that comes in a separate generation step.`;
     const r1 = await AI.invoke('generate_script', { prompt: p1, system }, { projectId: p.id });
     parts.push(r1.content?.[0]?.text || r1.text || '');
 
