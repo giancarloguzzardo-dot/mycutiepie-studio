@@ -4483,14 +4483,30 @@ function pexelsBestFile(video){
 async function pexelsSearch(query){
   const key = APP.profile && APP.profile.pexels_api_key;
   if (!key) throw new Error('No Pexels API key set');
-  const url = 'https://api.pexels.com/videos/search?per_page=3&orientation=landscape&query=' + encodeURIComponent(query || '');
+  // Sprint 1B 4-ter B2: fetch more candidates, tier-filter by duration, sort longest first.
+  // Longer videos reduce freeze problem when cue duration exceeds video duration.
+  // Tier strategy: try ≥8s first (ideal), fallback ≥5s (acceptable), fallback any (last resort).
+  const url = 'https://api.pexels.com/videos/search?per_page=15&orientation=landscape&query=' + encodeURIComponent(query || '');
   const resp = await fetch(url, { headers: { Authorization: key } });
   if (resp.status === 401) throw new Error('Pexels rejected the key (401). Check it and re-save.');
   if (!resp.ok) throw new Error('Pexels error ' + resp.status);
   const data = await resp.json();
-  return data.videos || [];
-}
+  const allVideos = data.videos || [];
 
+  // Tier 1: videos ≥8s (ideal for most cues)
+  let candidates = allVideos.filter(v => (v.duration || 0) >= 8);
+  // Tier 2 fallback: ≥5s (acceptable)
+  if (candidates.length === 0) candidates = allVideos.filter(v => (v.duration || 0) >= 5);
+  // Tier 3 fallback: any duration (last resort, loop:true will repeat short clips)
+  if (candidates.length === 0) candidates = allVideos;
+
+  // Sort by duration DESC — longer = better visual continuity
+  candidates.sort((a, b) => (b.duration || 0) - (a.duration || 0));
+
+  // Return top 3 for the picker UI / bulk auto-pick
+  return candidates.slice(0, 3);
+}
+   
 async function findClipsForCue(idx){
   const container = $('vs-clips-' + idx);
   if (!container) return;
