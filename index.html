@@ -1441,7 +1441,40 @@ body{
     </div>
   </div>
 </div>
+<!-- IMPORT IDEA MODAL (Sprint 1B 4-ter Traccia D) -->
+<div class="overlay" id="import-idea-modal">
+  <div class="modal">
+    <h2>📥 Import idea</h2>
+    <p class="modal-sub">Idea esterna (articolo, video competitor, conversazione, newsletter). Riempi i campi che hai, l'AI completa il resto.</p>
 
+    <div class="fld">
+      <label>Title *</label>
+      <input type="text" id="import-title" placeholder="e.g. The Mega Backdoor Roth Most Advisors Won't Mention" maxlength="100" />
+    </div>
+
+    <div class="fld">
+      <label>Description *</label>
+      <textarea id="import-description" placeholder="2-3 frasi sull'idea centrale. Cosa impara il viewer? Perché interessante?" maxlength="1000"></textarea>
+      <div class="fld-hint">Min 50 chars. Più dettaglio = miglior Idea Gate scoring.</div>
+    </div>
+
+    <div class="fld">
+      <label>Psychological angle (optional)</label>
+      <input type="text" id="import-angle" placeholder="e.g. Authority debunked + curiosity gap" maxlength="200" />
+      <div class="fld-hint">L'hook che renderebbe questa idea irresistibile. Se non sai, lascia vuoto.</div>
+    </div>
+
+    <div class="fld" style="margin-bottom:0">
+      <label>Source URL (optional)</label>
+      <input type="url" id="import-source-url" placeholder="https://... articolo o video che ti ha ispirato" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" id="import-cancel">Cancel</button>
+      <button class="btn primary" id="import-submit">Create + Run Idea Gate</button>
+    </div>
+  </div>
+</div>
 <!-- LOADER + TOASTS -->
 <div id="loader">
   <div class="spinner"></div>
