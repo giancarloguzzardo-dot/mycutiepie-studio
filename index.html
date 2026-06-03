@@ -1940,7 +1940,7 @@ function initMcpAggregator() {
       .filter((s) => s.picked?.video_url || s.picked?.thumbnail)
       .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-    const regularCues = matchedShots.map((shot) => {
+   const regularCues = matchedShots.map((shot) => {
       let startAt, timingSource = "script_fallback";
       if (hasAlignment) {
         const match = findKeywordInAlignment(alignment, shot.keyword) ||
@@ -1948,16 +1948,21 @@ function initMcpAggregator() {
         if (match) { startAt = match.start_sec; timingSource = "alignment"; }
       }
       if (startAt === undefined) startAt = Number(shot.timestamp) || 0;
+      const isVideo = !!shot.picked.video_url;
       return {
         _kind: 'visual',
         start_at: startAt,
         url: shot.picked.video_url || shot.picked.thumbnail,
-        type: shot.picked.video_url ? "video" : "image",
+        type: isVideo ? "video" : "image",
+        // Sprint 1B 4-ter B1: loop video when cue duration > video duration.
+        // Without this, JSON2Video freezes the last frame for the remaining time,
+        // producing the static-image freeze bug visible in Video #4.
+        ...(isVideo && { loop: true }),
         keyword: shot.keyword,
         timing_source: timingSource,
       };
     });
-
+     
     const sectionEnd = sectionStartSec + duration;
     const dataVizCues = [];
     for (const d of dataViz || []) {
