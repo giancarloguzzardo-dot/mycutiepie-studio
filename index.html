@@ -2718,6 +2718,189 @@ function createVideoFromIdea(title, angle){
   APP.vwizard.angle = angle || '';
   toast('Idea loaded — pick a format and create', 'success');
 }
+   // ============================================================
+// AVATAR BRAND IDENTITY — Sprint 1B 4-ter E.0
+// Per-channel avatar reference image + character prompt.
+// Powers cinematic multi-shot pipeline (Traccia E.3 future).
+// ============================================================
+
+// Returns 4 character archetypes appropriate to channel niche.
+// Hardcoded for finance/history for now. Future: AI-generated from channelDNA.
+function suggestChannelAvatars(channel) {
+  const niche = ((channel.niche_summary || '') + ' ' + (channel.name || '')).toLowerCase();
+  const isHistory = niche.includes('history') || niche.includes('untold') || niche.includes('catchy');
+
+  const baseFrame = "Modern minimalist home office with subtle out-of-focus bookshelves in background, soft natural daylight from camera-left, sharp cinematic editorial photography, photorealistic, 16:9 aspect ratio, medium shot from chest up, subject looking directly at camera with confident intelligent expression. No watermark, no text, no logo.";
+
+  if (isHistory) {
+    return [
+      { key: 'academic_curator', name: 'The Academic Curator', description: 'Mid-40s scholarly, warm authority',
+        prompt: `A 42-year-old man with warm intelligent features, slightly greying short hair, glasses, neat short beard, wearing a tweed jacket over collared shirt. ${baseFrame} Bookshelves more prominent in background with leather-bound books visible.` },
+      { key: 'narrative_journalist', name: 'The Narrative Journalist', description: 'Late 30s storyteller, warm but rigorous',
+        prompt: `A 36-year-old woman with shoulder-length dark hair, warm intelligent expression, wearing a navy wool sweater over white collared shirt. ${baseFrame}` },
+      { key: 'cosmopolitan_explorer', name: 'The Cosmopolitan Explorer', description: 'Mid-30s well-traveled, multilingual depth',
+        prompt: `A 34-year-old man with Mediterranean features, short well-groomed dark hair, light stubble, intelligent warm expression suggesting cultural depth, wearing a charcoal turtleneck. ${baseFrame} Vintage globe or world map subtly visible in background.` },
+      { key: 'archivist_storyteller', name: 'The Archivist Storyteller', description: 'Early 30s archival curator',
+        prompt: `A 31-year-old woman with sharp intelligent features, brunette hair pulled back, glasses, calm focused expression, wearing a charcoal blazer over cream blouse. ${baseFrame} Aged map or vintage document subtly visible in background.` }
+    ];
+  }
+
+  // Default: finance/money/business archetypes
+  return [
+    { key: 'insider_analyst', name: 'The Insider Analyst', description: 'Mid-30s ex-finance professional, contrarian intelligence',
+      prompt: `A 32-year-old man with Mediterranean features, short dark hair, light stubble, wearing dark charcoal grey casual button-down shirt (no tie, no suit). ${baseFrame}` },
+    { key: 'forensic_reporter', name: 'The Forensic Reporter', description: 'Sharp analytical female, late 20s, evidence-driven',
+      prompt: `A 28-year-old woman with sharp intelligent features, dark hair pulled back loosely, minimal makeup, confident analytical expression with slight knowing look, wearing a charcoal grey blazer over white blouse. ${baseFrame}` },
+    { key: 'veteran_skeptic', name: 'The Veteran Skeptic', description: 'Late 40s experienced, gravitas, salt-and-pepper',
+      prompt: `A 45-year-old man with salt-and-pepper hair, well-groomed short beard, intelligent slightly skeptical expression with deep eye contact, wearing a dark navy casual button-down shirt with rolled sleeves. ${baseFrame}` },
+    { key: 'sharp_outsider', name: 'The Sharp Outsider', description: 'Young contrarian female, mid-20s, modern',
+      prompt: `A 25-year-old woman with dark wavy hair, sharp intelligent features, slight contrarian smirk suggesting hidden wisdom, wearing a dark crew neck sweater minimalist style. ${baseFrame}` }
+  ];
+}
+
+// Calls Nano Banana Pro for a single archetype prompt.
+// Reuses same edge function powering Pre-publish > Generate thumbnail.
+async function generateAvatarOption(archetype) {
+  try {
+    // First attempt: known thumbnail generation edge function name
+    const { data, error } = await APP.sb.functions.invoke('generate-thumbnail', {
+      body: { prompt: archetype.prompt, aspect_ratio: '16:9', n: 1, model: 'fal-ai/nano-banana-pro' }
+    });
+    if (error) throw error;
+    // Try common response shapes
+    const url = data?.images?.[0]?.url || data?.url || data?.image_url || data?.thumbnail_url;
+    if (!url) throw new Error('No URL in response: ' + JSON.stringify(data).slice(0,200));
+    return url;
+  } catch (e) {
+    console.error('[Avatar generation]', archetype.name, e);
+    throw e;
+  }
+}
+
+// Renders the Brand Identity card (collapsed or expanded based on state).
+function renderBrandIdentitySection(channel) {
+  const hasAvatar = !!channel.avatar_reference_image;
+  const archetypeName = channel.avatar_archetype_name || 'Custom';
+
+  return `
+    <div class="brand-identity-section" style="background:var(--bg-card,#fff);border:1px solid var(--border,#e5e5e7);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px">🎭 Brand Identity</div>
+          <div style="font-size:13px;color:var(--text-muted,#666)">
+            ${hasAvatar ? `Avatar: <strong>${escapeHtml(archetypeName)}</strong> — used for cinematic talking-head pipeline` : 'Choose your channel avatar for cinematic talking-head videos'}
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
+          ${hasAvatar ? `<img src="${escapeHtml(channel.avatar_reference_image)}" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--border,#e5e5e7)" />` : ''}
+          <button class="btn ${hasAvatar ? '' : 'primary'}" id="brand-identity-setup-btn">
+            ${hasAvatar ? 'Change' : '✨ Set up avatar'}
+          </button>
+        </div>
+      </div>
+      <div id="brand-identity-grid" style="display:none"></div>
+    </div>
+  `;
+}
+
+// Expand the grid with 4 archetype options + generate buttons.
+async function openBrandIdentitySetup() {
+  const ch = APP.currentChannel;
+  if (!ch) { toast('No channel selected', 'error'); return; }
+
+  const grid = $('brand-identity-grid');
+  if (!grid) return;
+
+  const archetypes = suggestChannelAvatars(ch);
+
+  // Toggle: if already open, collapse
+  if (grid.style.display === 'block') { grid.style.display = 'none'; grid.innerHTML = ''; return; }
+  grid.style.display = 'block';
+
+  grid.innerHTML = `
+    <div style="border-top:1px solid var(--border,#e5e5e7);padding-top:14px;margin-top:12px">
+      <div style="font-size:13px;color:var(--text-muted,#666);margin-bottom:12px">
+        Pick a character archetype. Click <strong>Generate</strong> to preview, then <strong>Use this</strong> to save as channel avatar.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        ${archetypes.map((a, i) => `
+          <div class="archetype-card" data-key="${a.key}" data-idx="${i}" style="border:1px solid var(--border,#e5e5e7);border-radius:8px;padding:12px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:4px">${escapeHtml(a.name)}</div>
+            <div style="font-size:12px;color:var(--text-muted,#666);margin-bottom:10px;min-height:32px">${escapeHtml(a.description)}</div>
+            <div id="archetype-preview-${i}" style="aspect-ratio:16/9;background:var(--bg,#f5f5f7);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-muted,#999);font-size:11px;overflow:hidden;margin-bottom:10px">
+              <span>Click Generate to preview</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn ghost" style="flex:1;font-size:12px;padding:6px 10px" data-action="generate" data-key="${a.key}" data-idx="${i}">🎨 Generate</button>
+              <button class="btn primary" style="flex:1;font-size:12px;padding:6px 10px;display:none" data-action="use" data-key="${a.key}" data-idx="${i}">Use this</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--text-muted,#666)">
+        💡 Each generation ~$0.08 (Nano Banana Pro). Regenerate freely to refine.
+      </div>
+    </div>
+  `;
+
+  // Wire all archetype buttons
+  grid.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const key = btn.dataset.key;
+      const idx = parseInt(btn.dataset.idx);
+      const archetype = archetypes.find(a => a.key === key);
+      if (!archetype) return;
+
+      if (action === 'generate') {
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳ Generating...';
+        try {
+          const imageUrl = await generateAvatarOption(archetype);
+          const preview = $(`archetype-preview-${idx}`);
+          if (preview) preview.innerHTML = `<img src="${imageUrl}" data-url="${imageUrl}" style="width:100%;height:100%;object-fit:cover" />`;
+          const useBtn = grid.querySelector(`button[data-action="use"][data-key="${key}"]`);
+          if (useBtn) useBtn.style.display = 'block';
+          btn.innerHTML = '🔄 Regenerate';
+          btn.disabled = false;
+        } catch (err) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          toast('Generation failed: ' + (err.message || 'check console'), 'error');
+        }
+      } else if (action === 'use') {
+        const preview = $(`archetype-preview-${idx}`);
+        const img = preview?.querySelector('img');
+        const imageUrl = img?.dataset?.url || img?.src;
+        if (!imageUrl) { toast('Generate first', 'error'); return; }
+
+        showLoader('Saving avatar...');
+        try {
+          await APP.sb.from('channels').update({
+            avatar_reference_image: imageUrl,
+            avatar_character_prompt: archetype.prompt,
+            avatar_archetype_name: archetype.name,
+            avatar_enabled: true,
+          }).eq('id', ch.id);
+
+          ch.avatar_reference_image = imageUrl;
+          ch.avatar_character_prompt = archetype.prompt;
+          ch.avatar_archetype_name = archetype.name;
+          ch.avatar_enabled = true;
+
+          hideLoader();
+          toast(`Avatar set: ${archetype.name}`, 'success');
+          renderChannelWorkspace();
+        } catch (err) {
+          hideLoader();
+          toast('Save failed: ' + (err.message || 'check console'), 'error');
+        }
+      }
+    });
+  });
+}
 // ============================================================
 // IMPORT IDEA — bring external ideas with rich brief (Sprint 1B 4-ter D)
 // Use case: user finds an idea outside (article, competitor video, newsletter)
