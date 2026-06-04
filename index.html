@@ -2569,7 +2569,8 @@ async function renderChannelWorkspace(){
         <a href="#/channels/${ch.id}/settings" class="btn">⚙️ Settings</a>
       </div>
     </div>
-    <div class="idea-bridge">
+    ${renderBrandIdentitySection(ch)}
+      <div class="idea-bridge">
       <div class="idea-bridge-head">
         <div>
           <div class="idea-bridge-title">💡 Need your next video idea?</div>
