@@ -2761,6 +2761,125 @@ function suggestChannelAvatars(channel) {
   ];
 }
 
+// Renders the Brand Identity card (collapsed or expanded based on state).
+function renderBrandIdentitySection(channel) {
+  const hasAvatar = !!channel.avatar_reference_image;
+  const archetypeName = channel.avatar_archetype_name || 'Custom';
+
+  return `
+    <div class="brand-identity-section" style="background:var(--color-surface,#fff);border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px">🎭 Brand Identity</div>
+          <div style="font-size:13px;color:var(--color-text-muted,#666)">
+            ${hasAvatar ? `Avatar: <strong>${escapeHtml(archetypeName)}</strong> — used for cinematic talking-head pipeline` : 'Choose your channel avatar for cinematic talking-head videos'}
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
+          ${hasAvatar ? `<img src="${escapeHtml(channel.avatar_reference_image)}" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--color-border-subtle,#e5e5e7)" />` : ''}
+          <button class="btn ${hasAvatar ? '' : 'primary'}" id="brand-identity-setup-btn">
+            ${hasAvatar ? 'Change' : '✨ Set up avatar'}
+          </button>
+        </div>
+      </div>
+      <div id="brand-identity-grid" style="display:none"></div>
+    </div>
+  `;
+}
+
+// Expand the grid with 4 archetype options + URL paste (E.0 v2 manual workflow).
+async function openBrandIdentitySetup() {
+  const ch = APP.currentChannel;
+  if (!ch) { toast('No channel selected', 'error'); return; }
+
+  const grid = $('brand-identity-grid');
+  if (!grid) return;
+
+  const archetypes = suggestChannelAvatars(ch);
+
+  if (grid.style.display === 'block') { grid.style.display = 'none'; grid.innerHTML = ''; return; }
+  grid.style.display = 'block';
+
+  grid.innerHTML = `
+    <div style="border-top:1px solid var(--color-border-subtle,#e5e5e7);padding-top:14px;margin-top:12px">
+      <div style="font-size:13px;color:var(--color-text-muted,#666);margin-bottom:12px;line-height:1.5">
+        <strong>Workflow</strong>: Pick an archetype below → Copy its prompt → Open any project's Pre-publish &gt; Generate thumbnail → paste prompt → Generate → copy result URL → paste it back here → Save.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+        ${archetypes.map((a, i) => `
+          <div class="archetype-card" data-key="${a.key}" data-idx="${i}" style="border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:8px;padding:12px;background:var(--color-surface-2,#fafafa)">
+            <div style="font-weight:600;font-size:14px;margin-bottom:4px">${escapeHtml(a.name)}</div>
+            <div style="font-size:12px;color:var(--color-text-muted,#666);margin-bottom:10px">${escapeHtml(a.description)}</div>
+            <textarea readonly id="archetype-prompt-${i}" style="width:100%;min-height:80px;font-size:11px;font-family:monospace;padding:6px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:4px;background:#fff;resize:vertical;box-sizing:border-box">${escapeHtml(a.prompt)}</textarea>
+            <button class="btn ghost" style="width:100%;margin-top:6px;font-size:12px;padding:6px" data-action="copy-prompt" data-idx="${i}">📋 Copy prompt</button>
+            <div style="margin-top:10px">
+              <input type="url" id="archetype-url-${i}" placeholder="Paste generated image URL here" style="width:100%;font-size:12px;padding:6px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:4px;box-sizing:border-box" />
+              <button class="btn primary" style="width:100%;margin-top:6px;font-size:12px;padding:6px" data-action="save" data-key="${a.key}" data-idx="${i}">💾 Save as channel avatar</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--color-text-muted,#666)">
+        💡 Auto-generation will be wired in next sprint. For now manual via existing thumbnail flow.
+      </div>
+    </div>
+  `;
+
+  grid.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const idx = parseInt(btn.dataset.idx);
+      const archetype = archetypes[idx];
+      if (!archetype) return;
+
+      if (action === 'copy-prompt') {
+        const ta = $(`archetype-prompt-${idx}`);
+        if (!ta) return;
+        try {
+          await navigator.clipboard.writeText(archetype.prompt);
+          const orig = btn.innerHTML;
+          btn.innerHTML = '✓ Copied!';
+          setTimeout(() => btn.innerHTML = orig, 1500);
+        } catch (err) {
+          ta.select();
+          toast('Prompt selected — Cmd+C to copy', 'default');
+        }
+      } else if (action === 'save') {
+        const urlInput = $(`archetype-url-${idx}`);
+        const imageUrl = urlInput?.value?.trim();
+        if (!imageUrl || !imageUrl.startsWith('http')) {
+          toast('Paste a valid image URL first', 'error');
+          urlInput?.focus();
+          return;
+        }
+
+        showLoader('Saving avatar...');
+        try {
+          await APP.sb.from('channels').update({
+            avatar_reference_image: imageUrl,
+            avatar_character_prompt: archetype.prompt,
+            avatar_archetype_name: archetype.name,
+            avatar_enabled: true,
+          }).eq('id', ch.id);
+
+          ch.avatar_reference_image = imageUrl;
+          ch.avatar_character_prompt = archetype.prompt;
+          ch.avatar_archetype_name = archetype.name;
+          ch.avatar_enabled = true;
+
+          hideLoader();
+          toast(`Avatar set: ${archetype.name}`, 'success');
+          renderChannelWorkspace();
+        } catch (err) {
+          hideLoader();
+          toast('Save failed: ' + (err.message || 'check console'), 'error');
+        }
+      }
+    });
+  });
+}
+   
 // ============================================================
 // IMPORT IDEA — bring external ideas with rich brief (Sprint 1B 4-ter D)
 // Use case: user finds an idea outside (article, competitor video, newsletter)
