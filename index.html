@@ -2802,27 +2802,45 @@ async function openBrandIdentitySetup() {
   grid.innerHTML = `
     <div style="border-top:1px solid var(--color-border-subtle,#e5e5e7);padding-top:14px;margin-top:12px">
       <div style="font-size:13px;color:var(--color-text-muted,#666);margin-bottom:12px;line-height:1.5">
-        <strong>Workflow</strong>: Pick an archetype below → Copy its prompt → Open any project's Pre-publish &gt; Generate thumbnail → paste prompt → Generate → copy result URL → paste it back here → Save.
+        Click <strong>✨ Generate</strong> on an archetype → preview appears → click <strong>💾 Save</strong> to set as channel avatar.
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
         ${archetypes.map((a, i) => `
           <div class="archetype-card" data-key="${a.key}" data-idx="${i}" style="border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:8px;padding:12px;background:var(--color-surface-2,#fafafa)">
             <div style="font-weight:600;font-size:14px;margin-bottom:4px">${escapeHtml(a.name)}</div>
             <div style="font-size:12px;color:var(--color-text-muted,#666);margin-bottom:10px">${escapeHtml(a.description)}</div>
-            <textarea readonly id="archetype-prompt-${i}" style="width:100%;min-height:80px;font-size:11px;font-family:monospace;padding:6px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:4px;background:#fff;resize:vertical;box-sizing:border-box">${escapeHtml(a.prompt)}</textarea>
-            <button class="btn ghost" style="width:100%;margin-top:6px;font-size:12px;padding:6px" data-action="copy-prompt" data-idx="${i}">📋 Copy prompt</button>
-            <div style="margin-top:10px">
-              <input type="url" id="archetype-url-${i}" placeholder="Paste generated image URL here" style="width:100%;font-size:12px;padding:6px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:4px;box-sizing:border-box" />
-              <button class="btn primary" style="width:100%;margin-top:6px;font-size:12px;padding:6px" data-action="save" data-key="${a.key}" data-idx="${i}">💾 Save as channel avatar</button>
+            <details style="margin-bottom:10px"><summary style="font-size:11px;color:var(--color-text-muted,#666);cursor:pointer">View prompt</summary>
+              <textarea readonly id="archetype-prompt-${i}" style="width:100%;min-height:70px;font-size:11px;font-family:monospace;padding:6px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:4px;background:#fff;resize:vertical;box-sizing:border-box;margin-top:6px">${escapeHtml(a.prompt)}</textarea>
+            </details>
+            <div id="archetype-preview-${i}" style="display:none;margin-bottom:10px"></div>
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+              <button class="btn primary" style="flex:1;font-size:12px;padding:8px" data-action="generate" data-idx="${i}">✨ Generate (~$0.08)</button>
+              <button class="btn ghost" style="font-size:12px;padding:8px" data-action="copy-prompt" data-idx="${i}" title="Copy prompt for manual generation">📋</button>
             </div>
+            <input type="url" id="archetype-url-${i}" placeholder="Or paste image URL manually" style="width:100%;font-size:12px;padding:6px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:4px;box-sizing:border-box;margin-bottom:6px" />
+            <button class="btn" style="width:100%;font-size:12px;padding:6px" data-action="save" data-key="${a.key}" data-idx="${i}" disabled>💾 Save as channel avatar</button>
           </div>
         `).join('')}
       </div>
-      <div style="margin-top:14px;font-size:12px;color:var(--color-text-muted,#666)">
-        💡 Auto-generation will be wired in next sprint. For now manual via existing thumbnail flow.
-      </div>
     </div>
   `;
+
+  // Helper: enable save button when URL is set
+  const updateSaveButton = (idx) => {
+    const urlInput = $(`archetype-url-${idx}`);
+    const saveBtn = grid.querySelector(`button[data-action="save"][data-idx="${idx}"]`);
+    if (urlInput && saveBtn) {
+      const hasUrl = !!urlInput.value?.trim().startsWith('http');
+      saveBtn.disabled = !hasUrl;
+      saveBtn.classList.toggle('primary', hasUrl);
+    }
+  };
+
+  // Wire URL input listeners (manual paste fallback)
+  archetypes.forEach((_, i) => {
+    const urlInput = $(`archetype-url-${i}`);
+    if (urlInput) urlInput.addEventListener('input', () => updateSaveButton(i));
+  });
 
   grid.querySelectorAll('button[data-action]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
@@ -2833,26 +2851,49 @@ async function openBrandIdentitySetup() {
       if (!archetype) return;
 
       if (action === 'copy-prompt') {
-        const ta = $(`archetype-prompt-${idx}`);
-        if (!ta) return;
         try {
           await navigator.clipboard.writeText(archetype.prompt);
           const orig = btn.innerHTML;
-          btn.innerHTML = '✓ Copied!';
+          btn.innerHTML = '✓';
           setTimeout(() => btn.innerHTML = orig, 1500);
         } catch (err) {
-          ta.select();
-          toast('Prompt selected — Cmd+C to copy', 'default');
+          toast('Copy failed', 'error');
         }
-      } else if (action === 'save') {
+      }
+
+      else if (action === 'generate') {
+        const generateBtn = btn;
+        const previewDiv = $(`archetype-preview-${idx}`);
+        const urlInput = $(`archetype-url-${idx}`);
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '⏳ Generating... (15-40s)';
+        try {
+          const imageUrl = await genOneThumb(archetype.prompt);
+          if (!imageUrl) throw new Error('No image returned');
+          previewDiv.style.display = 'block';
+          previewDiv.innerHTML = `
+            <img src="${imageUrl}" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid var(--color-border-subtle,#e5e5e7)" />
+            <div style="font-size:11px;color:var(--color-text-muted,#666);margin-top:4px;text-align:center">Preview generated · click 💾 Save below</div>
+          `;
+          urlInput.value = imageUrl;
+          updateSaveButton(idx);
+          generateBtn.innerHTML = '🔄 Regenerate (~$0.08)';
+          toast('Preview ready ✓', 'success');
+        } catch (err) {
+          generateBtn.innerHTML = '✨ Generate (~$0.08)';
+          toast('Generation failed: ' + (err.message || 'check console'), 'error');
+        } finally {
+          generateBtn.disabled = false;
+        }
+      }
+
+      else if (action === 'save') {
         const urlInput = $(`archetype-url-${idx}`);
         const imageUrl = urlInput?.value?.trim();
         if (!imageUrl || !imageUrl.startsWith('http')) {
-          toast('Paste a valid image URL first', 'error');
-          urlInput?.focus();
+          toast('Generate or paste a URL first', 'error');
           return;
         }
-
         showLoader('Saving avatar...');
         try {
           await APP.sb.from('channels').update({
@@ -2877,8 +2918,7 @@ async function openBrandIdentitySetup() {
       }
     });
   });
-}
-   
+}   
 // ============================================================
 // IMPORT IDEA — bring external ideas with rich brief (Sprint 1B 4-ter D)
 // Use case: user finds an idea outside (article, competitor video, newsletter)
