@@ -2980,6 +2980,46 @@ async function openAddBaseVideoForm() {
   $('bv-cancel').addEventListener('click', close);
   modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
 
+   // Manual URL save handler (workaround when auto-generate fails)
+  $('bv-save-manual').addEventListener('click', async () => {
+    const poseId = $('bv-pose-select').value;
+    const motionPrompt = $('bv-motion-prompt').value.trim();
+    const manualUrl = $('bv-manual-url').value.trim();
+    
+    if (!manualUrl || !manualUrl.startsWith('http')) {
+      toast('Paste a valid URL first', 'error');
+      $('bv-manual-url').focus();
+      return;
+    }
+    
+    const preset = availablePresets.find(p => p.id === poseId);
+    if (!preset) return;
+    
+    const btn = $('bv-save-manual');
+    btn.disabled = true;
+    btn.innerHTML = '💾 Saving...';
+    
+    try {
+      await saveBaseVideo(ch, {
+        id: preset.id,
+        label: preset.label,
+        video_url: manualUrl,
+        duration_sec: 5,
+        use_cases: preset.use_cases,
+        pose_notes: motionPrompt,
+        generated_at: new Date().toISOString(),
+        manual_paste: true
+      });
+      toast(`✓ ${preset.label} added to library`, 'success');
+      modal.remove();
+      renderChannelWorkspace();
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '💾 Save from URL';
+      toast('Save failed: ' + (err.message || 'check console'), 'error');
+    }
+  });
+   
   // Generate handler
   $('bv-generate').addEventListener('click', async () => {
     const poseId = $('bv-pose-select').value;
