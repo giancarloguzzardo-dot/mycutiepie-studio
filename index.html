@@ -2787,6 +2787,82 @@ function renderBrandIdentitySection(channel) {
 }
 
 // Expand the grid with 4 archetype options + URL paste (E.0 v2 manual workflow).
+// Renders the Base Videos Library section inside the Brand Identity expanded view.
+// Displays a 2x3 grid of saved base videos, with "Add new" button.
+// Used by InfiniteTalk video-to-video pipeline for cinematic talking-head cutaways.
+function renderBaseVideosLibrary(channel) {
+  const hasAvatar = !!channel.avatar_reference_image;
+  const baseVideos = channel.avatar_base_videos || [];
+  const MAX_VIDEOS = 6;
+
+  // Predefined pose options for the "Add new" form (Step 3 wiring)
+  const POSE_PRESETS = [
+    { id: 'medium_shot_neutral', label: 'Medium shot — neutral desk', use_cases: ['main_talking', 'default'] },
+    { id: 'closeup_lean_in', label: 'Close-up — lean in', use_cases: ['emphasis', 'key_insight', 'warning'] },
+    { id: 'wide_relaxed', label: 'Wide shot — relaxed', use_cases: ['intro', 'conclusion', 'context_setting'] },
+    { id: 'profile_thinking', label: '3/4 profile — reflective', use_cases: ['reflective_moment', 'philosophical_pause'] },
+    { id: 'closeup_skeptical', label: 'Close-up — skeptical', use_cases: ['debunking', 'myth_busting', 'contrarian'] },
+    { id: 'medium_engaged_gesture', label: 'Medium shot — engaged gesture', use_cases: ['explainer', 'numbered_list', 'active_teaching'] }
+  ];
+
+  if (!hasAvatar) {
+    return `
+      <div style="border-top:1px solid var(--color-border-subtle,#e5e5e7);padding-top:14px;margin-top:14px">
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">📹 Base Videos Library</div>
+        <div style="font-size:12px;color:var(--color-text-muted,#666);padding:14px;background:var(--color-surface-2,#fafafa);border-radius:6px;text-align:center">
+          Generate &amp; save an archetype above first → then come back here to build your base videos library.
+        </div>
+      </div>
+    `;
+  }
+
+  // Build grid: existing videos + empty slots up to MAX_VIDEOS
+  let gridCards = '';
+  baseVideos.forEach((bv, idx) => {
+    const preset = POSE_PRESETS.find(p => p.id === bv.id) || { label: bv.label || bv.id };
+    gridCards += `
+      <div style="border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:8px;padding:10px;background:var(--color-surface,#fff)">
+        <div style="aspect-ratio:16/9;background:#000;border-radius:4px;margin-bottom:8px;overflow:hidden;position:relative">
+          ${bv.video_url ? `<video src="${escapeHtml(bv.video_url)}" muted loop preload="metadata" style="width:100%;height:100%;object-fit:cover" onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0"></video>` : ''}
+        </div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:3px">${escapeHtml(preset.label)}</div>
+        <div style="font-size:10px;color:var(--color-text-muted,#666);margin-bottom:8px">${bv.duration_sec || 5}s · use cases: ${(bv.use_cases || []).slice(0, 2).join(', ') || 'general'}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn ghost" style="flex:1;font-size:11px;padding:5px" data-bv-action="preview" data-bv-id="${escapeHtml(bv.id)}">▶ Preview</button>
+          <button class="btn ghost" style="font-size:11px;padding:5px" data-bv-action="delete" data-bv-id="${escapeHtml(bv.id)}" title="Delete this base video">🗑</button>
+        </div>
+      </div>
+    `;
+  });
+
+  // Empty slot cards (placeholder up to MAX_VIDEOS)
+  const emptySlots = Math.max(0, MAX_VIDEOS - baseVideos.length);
+  for (let i = 0; i < emptySlots; i++) {
+    const isFirstEmpty = (i === 0);
+    gridCards += `
+      <div style="border:1.5px dashed var(--color-border-subtle,#e5e5e7);border-radius:8px;padding:10px;background:var(--color-surface-2,#fafafa);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;${isFirstEmpty ? 'cursor:pointer' : 'opacity:0.5'}" ${isFirstEmpty ? 'data-bv-action="add"' : ''}>
+        <div style="font-size:32px;color:var(--color-text-muted,#666);margin-bottom:6px">+</div>
+        <div style="font-size:12px;color:var(--color-text-muted,#666);text-align:center">${isFirstEmpty ? 'Add base video' : 'Empty slot'}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div style="border-top:1px solid var(--color-border-subtle,#e5e5e7);padding-top:14px;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:600">📹 Base Videos Library (${baseVideos.length}/${MAX_VIDEOS})</div>
+        <div style="font-size:11px;color:var(--color-text-muted,#666)">Cinematic cutaways for talking-head pipeline</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+        ${gridCards}
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--color-text-muted,#666);line-height:1.5">
+        💡 These videos serve as base for InfiniteTalk video-to-video. Same character, different poses → cinematic variety. Generate once, reuse across all your channel's videos.
+      </div>
+    </div>
+  `;
+}
+   
 async function openBrandIdentitySetup() {
   const ch = APP.currentChannel;
   if (!ch) { toast('No channel selected', 'error'); return; }
