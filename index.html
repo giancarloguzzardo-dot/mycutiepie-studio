@@ -3212,7 +3212,44 @@ async function openBrandIdentitySetup() {
       }
     });
   });
-}   
+
+  // Wire base videos library actions
+  const libraryAddBtn = grid.querySelector('[data-bv-action="add"]');
+  if (libraryAddBtn) {
+    libraryAddBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openAddBaseVideoForm();
+    });
+  }
+
+  grid.querySelectorAll('button[data-bv-action="delete"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const bvId = btn.dataset.bvId;
+      if (!bvId) return;
+      if (!confirm('Delete this base video from library?')) return;
+      const ch = APP.currentChannel;
+      const newLibrary = (ch.avatar_base_videos || []).filter(bv => bv.id !== bvId);
+      APP.sb.from('channels').update({ avatar_base_videos: newLibrary }).eq('id', ch.id).then(({ error }) => {
+        if (error) { toast('Delete failed: ' + error.message, 'error'); return; }
+        ch.avatar_base_videos = newLibrary;
+        toast('Base video deleted', 'success');
+        renderChannelWorkspace();
+      });
+    });
+  });
+
+  grid.querySelectorAll('button[data-bv-action="preview"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const bvId = btn.dataset.bvId;
+      const ch = APP.currentChannel;
+      const bv = (ch.avatar_base_videos || []).find(v => v.id === bvId);
+      if (bv && bv.video_url) window.open(bv.video_url, '_blank');
+    });
+  });
+}
+   
 // ============================================================
 // IMPORT IDEA — bring external ideas with rich brief (Sprint 1B 4-ter D)
 // Use case: user finds an idea outside (article, competitor video, newsletter)
