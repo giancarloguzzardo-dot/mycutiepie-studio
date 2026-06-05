@@ -2771,7 +2771,7 @@ function renderBrandIdentitySection(channel) {
         <div style="flex:1;min-width:200px">
           <div style="font-size:16px;font-weight:600;margin-bottom:4px">🎭 Brand Identity</div>
           <div style="font-size:13px;color:var(--color-text-muted,#666)">
-            ${hasAvatar ? `Avatar: <strong>${escapeHtml(archetypeName)}</strong> — used for cinematic talking-head pipeline` : 'Choose your channel avatar for cinematic talking-head videos'}
+          ${hasAvatar ? `Avatar: <strong>${escapeHtml(archetypeName)}</strong> — used for cinematic talking-head pipeline<div style="font-size:12px;color:var(--color-text-muted,#666);margin-top:4px">📹 ${(channel.avatar_base_videos || []).length}/6 base videos in library</div>` : 'Choose your channel avatar for cinematic talking-head videos'}
           </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
