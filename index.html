@@ -2951,9 +2951,17 @@ async function openAddBaseVideoForm() {
         <div style="font-size:11px;color:var(--color-text-muted,#666);margin-top:4px">⚠️ "Mouth closed, no talking" must stay — InfiniteTalk will animate the mouth from audio.</div>
       </div>
       <div id="bv-preview" style="display:none;margin-bottom:14px"></div>
+     <div style="border-top:1px solid var(--color-border-subtle,#e5e5e7);padding-top:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted,#666);margin-bottom:8px">Option B — Manual URL paste</div>
+        <div style="font-size:12px;color:var(--color-text-muted,#666);margin-bottom:8px;line-height:1.5">
+          Generate base video on <a href="https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/image-to-video" target="_blank" style="color:var(--color-accent)">fal.ai Kling 2.5 Turbo image-to-video</a> using avatar reference + motion prompt above. Then paste output URL here.
+        </div>
+        <input type="url" id="bv-manual-url" placeholder="https://v3b.fal.media/..." style="width:100%;padding:8px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:6px;font-family:inherit;font-size:12px;box-sizing:border-box;margin-bottom:8px" />
+      </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn ghost" id="bv-cancel">Cancel</button>
-        <button class="btn primary" id="bv-generate">✨ Generate (~$0.35)</button>
+        <button class="btn primary" id="bv-generate">✨ Auto-Generate (~$0.35)</button>
+        <button class="btn primary" id="bv-save-manual">💾 Save from URL</button>
       </div>
       <div id="bv-status" style="margin-top:10px;font-size:12px;color:var(--color-text-muted,#666)"></div>
     </div>
