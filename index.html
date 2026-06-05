@@ -2862,6 +2862,223 @@ function renderBaseVideosLibrary(channel) {
     </div>
   `;
 }
+
+// ============================================================
+// BASE VIDEOS LIBRARY — Generate & save base videos per channel
+// ============================================================
+
+const BASE_VIDEO_POSE_PRESETS = [
+  { 
+    id: 'medium_shot_neutral', 
+    label: 'Medium shot — neutral desk', 
+    use_cases: ['main_talking', 'default'],
+    motion_hint: 'Subtle natural movement, slight breathing, occasional blink, hands relaxed visible on desk, mouth in neutral closed position, no talking, no lip movement. Camera static medium shot.'
+  },
+  { 
+    id: 'closeup_lean_in', 
+    label: 'Close-up — lean in', 
+    use_cases: ['emphasis', 'key_insight', 'warning'],
+    motion_hint: 'Subtle lean forward 10 degrees, direct eye contact intensifying, slight intensity in expression, mouth closed neutral, no talking, no lip movement. Close-up framing chest up.'
+  },
+  { 
+    id: 'wide_relaxed', 
+    label: 'Wide shot — relaxed', 
+    use_cases: ['intro', 'conclusion', 'context_setting'],
+    motion_hint: 'Wider framing showing both arms and desk, relaxed open posture, both hands on desk, occasional small gesture, slight breathing, mouth neutral closed, no talking, no lip movement. Wide shot from waist up.'
+  },
+  { 
+    id: 'profile_thinking', 
+    label: '3/4 profile — reflective', 
+    use_cases: ['reflective_moment', 'philosophical_pause'],
+    motion_hint: 'Body slightly turned 3/4 angle, gaze slightly past camera then back to camera, contemplative reflective expression, slight head tilt, mouth neutral closed, no talking, no lip movement.'
+  },
+  { 
+    id: 'closeup_skeptical', 
+    label: 'Close-up — skeptical', 
+    use_cases: ['debunking', 'myth_busting', 'contrarian'],
+    motion_hint: 'Slight eyebrow raise, almost imperceptible headshake hint, knowing skeptical expression, mouth in slight smirk closed, no talking, no lip movement. Close-up dramatic framing.'
+  },
+  { 
+    id: 'medium_engaged_gesture', 
+    label: 'Medium shot — engaged gesture', 
+    use_cases: ['explainer', 'numbered_list', 'active_teaching'],
+    motion_hint: 'Hands gesture mid-explanation, animated but controlled, occasional point or palm-up gesture, eyes engaged direct to camera, mouth in slight smile closed, no talking, no lip movement. Medium shot.'
+  }
+];
+
+async function openAddBaseVideoForm() {
+  const ch = APP.currentChannel;
+  if (!ch || !ch.avatar_reference_image) {
+    toast('Set up avatar archetype first', 'error');
+    return;
+  }
+
+  const baseVideos = ch.avatar_base_videos || [];
+  const usedPoseIds = new Set(baseVideos.map(bv => bv.id));
+  const availablePresets = BASE_VIDEO_POSE_PRESETS.filter(p => !usedPoseIds.has(p.id));
+
+  if (availablePresets.length === 0) {
+    toast('All 6 pose slots filled. Delete one to add a new pose.', 'error');
+    return;
+  }
+
+  // Remove any existing modal
+  const existing = $('base-video-modal');
+  if (existing) existing.remove();
+
+  // Build modal
+  const modal = document.createElement('div');
+  modal.id = 'base-video-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--color-surface,#fff);border-radius:12px;padding:24px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:18px;font-weight:600">📹 Add Base Video</div>
+        <button class="btn ghost" id="bv-modal-close" style="font-size:14px;padding:4px 10px">✕</button>
+      </div>
+      <div style="font-size:13px;color:var(--color-text-muted,#666);margin-bottom:16px;line-height:1.5">
+        Select a pose preset. We'll generate a 5-second video starting from <strong>${escapeHtml(ch.avatar_archetype_name || 'your avatar')}</strong> reference image, with motion appropriate for that pose. Uses Kling 2.5 Turbo image-to-video (~$0.35).
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Pose preset</label>
+        <select id="bv-pose-select" style="width:100%;padding:8px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:6px;background:var(--color-surface,#fff);color:var(--color-text);font-family:inherit;font-size:13px">
+          ${availablePresets.map(p => `<option value="${p.id}">${escapeHtml(p.label)}</option>`).join('')}
+        </select>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Motion description (editable)</label>
+        <textarea id="bv-motion-prompt" rows="4" style="width:100%;padding:10px;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:6px;background:var(--color-surface,#fff);color:var(--color-text);font-family:inherit;font-size:12px;line-height:1.5;resize:vertical;box-sizing:border-box">${escapeHtml(availablePresets[0].motion_hint)}</textarea>
+        <div style="font-size:11px;color:var(--color-text-muted,#666);margin-top:4px">⚠️ "Mouth closed, no talking" must stay — InfiniteTalk will animate the mouth from audio.</div>
+      </div>
+      <div id="bv-preview" style="display:none;margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost" id="bv-cancel">Cancel</button>
+        <button class="btn primary" id="bv-generate">✨ Generate (~$0.35)</button>
+      </div>
+      <div id="bv-status" style="margin-top:10px;font-size:12px;color:var(--color-text-muted,#666)"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Update motion prompt when pose changes
+  $('bv-pose-select').addEventListener('change', (e) => {
+    const preset = availablePresets.find(p => p.id === e.target.value);
+    if (preset) $('bv-motion-prompt').value = preset.motion_hint;
+  });
+
+  // Close handlers
+  const close = () => { modal.remove(); };
+  $('bv-modal-close').addEventListener('click', close);
+  $('bv-cancel').addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+  // Generate handler
+  $('bv-generate').addEventListener('click', async () => {
+    const poseId = $('bv-pose-select').value;
+    const motionPrompt = $('bv-motion-prompt').value.trim();
+    if (!motionPrompt) { toast('Motion prompt required', 'error'); return; }
+
+    const preset = availablePresets.find(p => p.id === poseId);
+    if (!preset) return;
+
+    const btn = $('bv-generate');
+    const statusEl = $('bv-status');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Generating... (1-3 min)';
+    statusEl.innerHTML = '⏳ Sending to Kling image-to-video... keep this tab open.';
+
+    try {
+      const videoUrl = await generateBaseVideo(ch.avatar_reference_image, motionPrompt);
+      if (!videoUrl) throw new Error('No video URL returned');
+
+      // Preview before saving
+      $('bv-preview').style.display = 'block';
+      $('bv-preview').innerHTML = `
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">Preview:</div>
+        <video src="${videoUrl}" controls muted loop autoplay playsinline style="width:100%;border-radius:6px;border:1px solid var(--color-border-subtle,#e5e5e7);aspect-ratio:16/9;object-fit:cover"></video>
+        <div style="font-size:11px;color:var(--color-text-muted,#666);margin-top:4px;text-align:center">Review preview, click 💾 Save to add to library</div>
+      `;
+      btn.innerHTML = '💾 Save to library';
+      btn.disabled = false;
+      statusEl.innerHTML = '✓ Generated — review and save.';
+
+      // Replace button click handler
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', async () => {
+        newBtn.disabled = true;
+        newBtn.innerHTML = '💾 Saving...';
+        try {
+          await saveBaseVideo(ch, {
+            id: preset.id,
+            label: preset.label,
+            video_url: videoUrl,
+            duration_sec: 5,
+            use_cases: preset.use_cases,
+            pose_notes: motionPrompt,
+            generated_at: new Date().toISOString()
+          });
+          toast(`✓ ${preset.label} added to library`, 'success');
+          close();
+          renderChannelWorkspace();
+        } catch (err) {
+          newBtn.disabled = false;
+          newBtn.innerHTML = '💾 Save to library';
+          toast('Save failed: ' + (err.message || 'check console'), 'error');
+        }
+      });
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate (~$0.35)';
+      statusEl.innerHTML = '❌ ' + (err.message || 'Generation failed');
+      toast('Generation failed: ' + (err.message || 'check console'), 'error');
+    }
+  });
+}
+
+async function generateBaseVideo(referenceImageUrl, motionPrompt) {
+  // Use Kling 2.5 Turbo image-to-video via existing generate-video-clip edge function
+  const fullPrompt = motionPrompt + ', cinematic editorial photography aesthetic, 16:9, 1080p quality, no watermark, no text, no captions';
+  
+  const cr = await APP.sb.functions.invoke('generate-video-clip', {
+    body: {
+      provider: 'fal',
+      action: 'create',
+      model: 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video',
+      prompt: fullPrompt,
+      duration: 5,
+      image_url: referenceImageUrl
+    }
+  });
+
+  const data = cr.data || {};
+  if (data.error || !data.id) throw new Error(data.error || 'Create failed (edge function may need image_url support)');
+
+  // Poll for completion (similar to genOneThumb / genAiClipForCue pattern)
+  const started = Date.now();
+  while (Date.now() - started < 8 * 60 * 1000) {
+    await new Promise(r => setTimeout(r, 8000));
+    const st = await APP.sb.functions.invoke('generate-video-clip', {
+      body: { provider: 'fal', action: 'status', status_url: data.status_url, response_url: data.response_url }
+    });
+    const sd = st.data || {};
+    if (sd.error) throw new Error(sd.error);
+    if (sd.status === 'succeeded') return sd.output;
+  }
+  throw new Error('Timed out after 8 minutes');
+}
+
+async function saveBaseVideo(channel, baseVideoData) {
+  const currentLibrary = channel.avatar_base_videos || [];
+  const newLibrary = [...currentLibrary, baseVideoData];
+  
+  const { error } = await APP.sb.from('channels')
+    .update({ avatar_base_videos: newLibrary })
+    .eq('id', channel.id);
+  
+  if (error) throw error;
+  channel.avatar_base_videos = newLibrary;
+}
    
 async function openBrandIdentitySetup() {
   const ch = APP.currentChannel;
