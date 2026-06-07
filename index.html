@@ -9444,6 +9444,102 @@ window.addEventListener('load', initApp);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(addBtn, 500));
   else setTimeout(addBtn, 500);
 })();
+// ============================================================
+// vidIQ Title Enrichment — wraps AI.invoke('score_titles')
+// ENRICH not REPLACE. Graceful fallback on any error.
+// ============================================================
+(function vqEnrichTitles() {
+  if (window._vqEnrichTitles) return;
+  window._vqEnrichTitles = true;
+
+  function waitForAI(cb, tries) {
+    tries = tries || 0;
+    if (typeof window.AI?.invoke === 'function') return cb();
+    if (tries > 40) return console.warn('[vidIQ enrich] AI.invoke not found, skipping');
+    setTimeout(() => waitForAI(cb, tries + 1), 250);
+  }
+
+  waitForAI(() => {
+    const origInvoke = window.AI.invoke.bind(window.AI);
+
+    window.AI.invoke = async function(action, params, opts) {
+      if (action !== 'score_titles') return origInvoke(action, params, opts);
+
+      try {
+        const p = window.APP?.currentProject;
+        const ch = window.APP?.currentChannel;
+        if (!p || !ch) return origInvoke(action, params, opts);
+
+        const seedTopic = (p.title || '').match(/\b\w{4,}\b/g)?.slice(0, 3).join(' ')
+                          || ch.active_niche_profile?.name || 'general';
+
+        console.log('[vidIQ enrich] Fetching context for:', seedTopic);
+
+        const [outliersRes, keywordRes] = await Promise.allSettled([
+          window.APP.sb.functions.invoke('vidiq-discover', {
+            body: {
+              action: 'outliers',
+              tool_name: 'vidiq_outliers',
+              arguments: { keyword: seedTopic, limit: 10, publishedWithin: 'threeMonths', contentType: 'long' },
+              channel_id: ch.id,
+              use_cache: true
+            }
+          }),
+          window.APP.sb.functions.invoke('vidiq-discover', {
+            body: {
+              action: 'keyword_research',
+              tool_name: 'vidiq_keyword_research',
+              arguments: { keyword: seedTopic, includeRelated: true },
+              channel_id: ch.id,
+              use_cache: true
+            }
+          })
+        ]);
+
+        let outlierLines = '';
+        const oVal = outliersRes.value?.data?.data?.structuredContent?.videos;
+        if (outliersRes.status === 'fulfilled' && Array.isArray(oVal)) {
+          outlierLines = oVal.slice(0, 8).map(v =>
+            '- "' + v.videoTitle + '" — ' + (v.viewCount || 0).toLocaleString() + ' views, breakout ' + Math.round(v.breakoutScore || 0)
+          ).join('\n');
+        }
+
+        let kwLines = '';
+        const kVal = keywordRes.value?.data?.data?.structuredContent;
+        if (keywordRes.status === 'fulfilled' && kVal?.seedKeyword) {
+          const s = kVal.seedKeyword;
+          const related = (kVal.relatedKeywords || []).filter(r => (r.volume || 0) > 50).slice(0, 5);
+          kwLines = 'SEED "' + s.keyword + '": volume ' + Math.round(s.volume || 0) + ', competition ' + Math.round(s.competition || 0) + ', ' + (s.estimatedMonthlySearch || 0) + ' searches/mo\nTOP RELATED:\n' +
+            related.map(r => '- "' + r.keyword + '": vol ' + Math.round(r.volume) + ', comp ' + Math.round(r.competition || 0) + ', ' + (r.estimatedMonthlySearch || 0) + '/mo').join('\n');
+        }
+
+        if (!outlierLines && !kwLines) {
+          console.warn('[vidIQ enrich] No vidIQ data returned, falling back to original');
+          return origInvoke(action, params, opts);
+        }
+
+        const ctxBlock = '\n\n--- VIDIQ LIVE CONTEXT (real YouTube data) ---\n\nTOP VIRAL OUTLIERS in this niche:\n' +
+          (outlierLines || '(no outliers data)') +
+          '\n\nKEYWORD METRICS for "' + seedTopic + '":\n' +
+          (kwLines || '(no keyword data)') +
+          '\n\n--- END VIDIQ CONTEXT ---\n\nLEVERAGE THIS DATA: extract structural patterns from the outliers (numbers, hooks, framing, format) WITHOUT copying them. Target high-volume / low-competition keywords. Surface contrarian angles that can beat these outliers.';
+
+        const enrichedParams = Object.assign({}, params, {
+          prompt: (params?.prompt || '') + ctxBlock
+        });
+
+        console.log('[vidIQ enrich] Prompt enriched (+' + ctxBlock.length + ' chars of live vidIQ data)');
+        return origInvoke(action, enrichedParams, opts);
+      } catch (err) {
+        console.warn('[vidIQ enrich] Enrichment failed, falling back to original:', err);
+        return origInvoke(action, params, opts);
+      }
+    };
+
+    console.log('[vidIQ enrich] AI.invoke wrapped — score_titles is now vidIQ-grounded');
+  });
+})();
+
 </script>
 
 </body>
