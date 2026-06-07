@@ -9454,15 +9454,15 @@ window.addEventListener('load', initApp);
 
   function waitForAI(cb, tries) {
     tries = tries || 0;
-    if (typeof window.AI?.invoke === 'function') return cb();
+    if (typeof AI?.invoke === 'function') return cb();
     if (tries > 40) return console.warn('[vidIQ enrich] AI.invoke not found, skipping');
     setTimeout(() => waitForAI(cb, tries + 1), 250);
   }
 
   waitForAI(() => {
-    const origInvoke = window.AI.invoke.bind(window.AI);
+    const origInvoke = AI.invoke.bind(AI);
 
-    window.AI.invoke = async function(action, params, opts) {
+    AI.invoke = async function(action, params, opts) {
       if (action !== 'score_titles') return origInvoke(action, params, opts);
 
       try {
