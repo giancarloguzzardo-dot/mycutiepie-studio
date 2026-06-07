@@ -9391,7 +9391,59 @@ window.addEventListener('load', initApp);
     addEntryButton();
   }
 })();
+// ============================================================
+// vidIQ Title Generator — LITE (prompt-based, paste-safe)
+// ============================================================
+(function vqTitlesLite() {
+  if (window._vqTitlesLite) return;
+  window._vqTitlesLite = true;
 
+  async function genTitles(title, desc) {
+    const sb = window.APP?.sb;
+    if (!sb) { alert('Supabase not loaded'); return; }
+    const args = { numTitles: 5, type: 'long', language: 'en', regionCode: 'US' };
+    if (title) args.title = title;
+    if (desc) args.description = desc;
+    console.log('vidIQ Titles call:', args);
+    const { data, error } = await sb.functions.invoke('vidiq-discover', {
+      body: { action: 'titles', tool_name: 'vidiq_generate_titles', arguments: args, use_cache: false }
+    });
+    if (error || data?.error) {
+      alert('vidIQ error: ' + (error?.message || data?.error || 'unknown'));
+      console.error(error, data);
+      return;
+    }
+    const titles = data?.data?.structuredContent?.titles || [];
+    if (!titles.length) { alert('No titles generated'); return; }
+    const sorted = [...titles].sort((a, b) => b.score - a.score);
+    console.log('vidIQ Titles result:', sorted);
+    const lines = sorted.map(t => Math.round(t.score) + ' — ' + t.title);
+    alert('CTR score — Title\n\n' + lines.join('\n\n'));
+  }
+  window.vqGenTitles = genTitles;
+
+  function addBtn() {
+    if (document.getElementById('vq-titles-btn')) return;
+    const ref = document.getElementById('vidiq-settings-trigger');
+    const btn = document.createElement('button');
+    btn.id = 'vq-titles-btn';
+    btn.textContent = '✨ Titles';
+    btn.title = 'AI Title Generator (vidIQ, 5 cr/call)';
+    btn.style.cssText = 'padding:6px 12px;background:transparent;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;margin-left:8px;color:inherit';
+    btn.onclick = async () => {
+      const t = prompt('Working title or topic:');
+      if (!t) return;
+      const d = prompt('Description (optional):') || '';
+      btn.textContent = '⏳';
+      btn.disabled = true;
+      try { await genTitles(t, d); } finally { btn.textContent = '✨ Titles'; btn.disabled = false; }
+    };
+    if (ref?.parentElement) ref.parentElement.insertBefore(btn, ref);
+    else { btn.style.cssText += ';position:fixed;bottom:20px;right:140px;z-index:99999'; document.body.appendChild(btn); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(addBtn, 500));
+  else setTimeout(addBtn, 500);
+})();
 </script>
 
 </body>
