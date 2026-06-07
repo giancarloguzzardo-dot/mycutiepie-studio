@@ -9184,6 +9184,214 @@ $('vw-finish').addEventListener('click', async () => {
 // START
 // ============================================================
 window.addEventListener('load', initApp);
+
+   // ============================================================
+// vidIQ Integration Settings Modal (Sprint Traccia I)
+// ============================================================
+(function initVidiqSettings() {
+  if (window._vidiqSettingsInit) return;
+  window._vidiqSettingsInit = true;
+
+  function getSupabase() { return window.APP?.sb || window.supabase || null; }
+
+  async function getCurrentUser() {
+    const sb = getSupabase();
+    if (!sb) return null;
+    const { data } = await sb.auth.getUser();
+    return data?.user || null;
+  }
+
+  async function loadCurrentStatus() {
+    const sb = getSupabase();
+    const user = await getCurrentUser();
+    if (!sb || !user) return { configured: false };
+    const { data } = await sb.from('user_profiles')
+      .select('vidiq_api_key')
+      .eq('id', user.id)
+      .single();
+    const key = data?.vidiq_api_key;
+    return {
+      configured: !!key,
+      keyPreview: key ? key.slice(0, 10) + '...' + key.slice(-4) : null
+    };
+  }
+
+  async function testVidiqConnection(apiKey) {
+    const sb = getSupabase();
+    if (!sb) return { ok: false, error: 'Supabase client not loaded' };
+    const user = await getCurrentUser();
+    if (!user) return { ok: false, error: 'Not logged in' };
+
+    const { error: saveErr } = await sb.from('user_profiles')
+      .update({ vidiq_api_key: apiKey })
+      .eq('id', user.id);
+    if (saveErr) return { ok: false, error: 'Could not save key: ' + saveErr.message };
+
+    const { data, error } = await sb.functions.invoke('vidiq-discover', {
+      body: { action: 'utility', tool_name: 'vidiq_balance', arguments: {} }
+    });
+
+    if (error) return { ok: false, error: error.message || String(error) };
+    if (data?.error) return { ok: false, error: data.error };
+    const balance = data?.data?.structuredContent;
+    if (!balance) return { ok: false, error: 'Invalid response from vidIQ' };
+    return { ok: true, balance };
+  }
+
+  async function disconnectVidiq() {
+    const sb = getSupabase();
+    const user = await getCurrentUser();
+    if (!sb || !user) return false;
+    const { error } = await sb.from('user_profiles')
+      .update({ vidiq_api_key: null })
+      .eq('id', user.id);
+    return !error;
+  }
+
+  function openVidiqSettings() {
+    document.getElementById('vidiq-settings-modal')?.remove();
+
+    const dark = document.documentElement.classList.contains('dark') ||
+                 window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const bg = dark ? '#1C1C1E' : '#FFFFFF';
+    const border = dark ? '#2C2C2E' : '#E5E5E7';
+    const text = dark ? '#FFFFFF' : '#1C1C1E';
+    const subtext = dark ? '#8E8E93' : '#6E6E73';
+    const surface = dark ? '#2C2C2E' : '#F2F2F7';
+    const accent = '#0A84FF';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'vidiq-settings-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)';
+
+    overlay.innerHTML = `
+      <div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:28px;width:480px;max-width:92vw;color:${text};font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <h2 style="margin:0;font-size:20px;font-weight:600">vidIQ Integration</h2>
+          <button id="vq-close" style="background:none;border:none;color:${subtext};font-size:24px;cursor:pointer;padding:0;line-height:1">×</button>
+        </div>
+        <p style="color:${subtext};font-size:13px;margin:0 0 20px 0;line-height:1.5">
+          Connect your vidIQ Max account to enable live YouTube data — keyword research, outliers, channel analytics, trending videos.
+        </p>
+
+        <div id="vq-status" style="background:${surface};border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:${subtext}">Loading status...</div>
+
+        <label style="display:block;font-size:13px;font-weight:500;margin-bottom:6px">vidIQ API Key</label>
+        <input id="vq-input" type="password" placeholder="vidiq_..." style="width:100%;padding:10px 12px;background:${surface};border:1px solid ${border};border-radius:8px;color:${text};font-family:'JetBrains Mono',monospace;font-size:13px;box-sizing:border-box;margin-bottom:6px" />
+        <p style="font-size:11px;color:${subtext};margin:0 0 18px 0;line-height:1.5">
+          Get your key at <a href="https://app.vidiq.com" target="_blank" style="color:${accent};text-decoration:none">app.vidiq.com</a> → Account → API. Requires Max plan (€39/mo).
+        </p>
+
+        <div id="vq-result" style="display:none;margin-bottom:14px;font-size:13px"></div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+          <button id="vq-disconnect" style="padding:10px 18px;background:transparent;border:1px solid ${border};border-radius:8px;color:#FF3B30;font-size:13px;font-weight:500;cursor:pointer;display:none">Disconnect</button>
+          <button id="vq-test" style="padding:10px 18px;background:transparent;border:1px solid ${border};border-radius:8px;color:${text};font-size:13px;font-weight:500;cursor:pointer">Test Connection</button>
+          <button id="vq-save" style="padding:10px 20px;background:${accent};border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer">Save</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const $ = (id) => overlay.querySelector('#' + id);
+    const close = () => overlay.remove();
+    $('vq-close').onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    loadCurrentStatus().then(s => {
+      if (s.configured) {
+        $('vq-status').innerHTML = `✅ Connected — key: <code style="font-family:'JetBrains Mono',monospace;font-size:12px">${s.keyPreview}</code>`;
+        $('vq-disconnect').style.display = 'inline-block';
+      } else {
+        $('vq-status').innerHTML = `⚠️ Not connected — add your vidIQ API key below`;
+      }
+    });
+
+    async function doTest(silent) {
+      const key = $('vq-input').value.trim();
+      if (!key) {
+        $('vq-result').style.display = 'block';
+        $('vq-result').style.color = '#FF3B30';
+        $('vq-result').innerHTML = '⚠️ Insert a key first';
+        return null;
+      }
+      $('vq-test').disabled = true; $('vq-save').disabled = true;
+      $('vq-test').textContent = 'Testing...';
+      $('vq-result').style.display = 'block';
+      $('vq-result').style.color = subtext;
+      $('vq-result').innerHTML = '⏳ Connecting to vidIQ...';
+      const result = await testVidiqConnection(key);
+      if (result.ok) {
+        const b = result.balance;
+        $('vq-result').style.color = '#34C759';
+        $('vq-result').innerHTML = `✅ Connected! <br><span style="color:${subtext};font-size:12px">Credits: ${b.totalCredits} (${b.renewableCredits}/${b.maxRenewableCredits} renewable + ${b.addOnCredits} bonus). Resets ${new Date(b.renewableResetsAt).toLocaleDateString()}</span>`;
+      } else {
+        $('vq-result').style.color = '#FF3B30';
+        $('vq-result').innerHTML = '❌ ' + (result.error || 'Connection failed');
+      }
+      $('vq-test').disabled = false; $('vq-save').disabled = false;
+      $('vq-test').textContent = 'Test Connection';
+      return result;
+    }
+
+    $('vq-test').onclick = () => doTest(false);
+
+    $('vq-save').onclick = async () => {
+      $('vq-save').textContent = 'Saving...';
+      const r = await doTest(true);
+      if (r?.ok) {
+        $('vq-result').style.color = '#34C759';
+        $('vq-result').innerHTML += '<br>✅ Saved. Closing...';
+        setTimeout(close, 1500);
+      }
+      $('vq-save').textContent = 'Save';
+    };
+
+    $('vq-disconnect').onclick = async () => {
+      if (!confirm('Disconnect vidIQ? You can reconnect anytime.')) return;
+      $('vq-disconnect').disabled = true;
+      const ok = await disconnectVidiq();
+      if (ok) {
+        $('vq-status').innerHTML = '⚠️ Not connected — add your vidIQ API key below';
+        $('vq-input').value = '';
+        $('vq-disconnect').style.display = 'none';
+        $('vq-result').style.display = 'none';
+      } else {
+        alert('Could not disconnect. Try again.');
+      }
+      $('vq-disconnect').disabled = false;
+    };
+  }
+
+  function addEntryButton() {
+    if (document.getElementById('vidiq-settings-trigger')) return;
+    const candidates = ['header nav', '.topbar', 'header .actions', '[data-topbar]', 'header'];
+    let target = null;
+    for (const sel of candidates) { target = document.querySelector(sel); if (target) break; }
+    const btn = document.createElement('button');
+    btn.id = 'vidiq-settings-trigger';
+    btn.innerHTML = '⚡ vidIQ';
+    btn.title = 'vidIQ Integration Settings';
+    btn.onclick = openVidiqSettings;
+    if (target) {
+      btn.style.cssText = 'padding:6px 12px;background:transparent;border:1px solid var(--color-border-subtle,#e5e5e7);border-radius:6px;color:inherit;font-size:13px;font-weight:500;cursor:pointer;margin-left:8px';
+      target.appendChild(btn);
+    } else {
+      btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:99999;padding:10px 16px;background:#0A84FF;border:none;border-radius:20px;color:white;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+      document.body.appendChild(btn);
+    }
+  }
+
+  window.openVidiqSettings = openVidiqSettings;
+  window.disconnectVidiq = disconnectVidiq;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addEntryButton);
+  } else {
+    addEntryButton();
+  }
+})();
+   
 </script>
 
 </body>
