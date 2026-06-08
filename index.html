@@ -9452,6 +9452,18 @@ window.addEventListener('load', initApp);
   if (window._vqEnrichTitles) return;
   window._vqEnrichTitles = true;
 
+    function vqToast(seed) {
+      try {
+        var el = document.createElement('div');
+        el.textContent = '\u26a1 Titles grounded in live vidIQ data \u00b7 seed: ' + seed;
+        el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1000000;padding:10px 18px;border-radius:9999px;font:600 13px -apple-system,system-ui,sans-serif;color:#fff;background:#0A84FF;box-shadow:0 8px 28px rgba(10,132,255,0.45);opacity:0;transition:opacity .25s';
+        document.body.appendChild(el);
+        requestAnimationFrame(function(){ el.style.opacity = '1'; });
+        setTimeout(function(){ el.style.opacity = '0'; setTimeout(function(){ el.remove(); }, 300); }, 3500);
+      } catch (e) {}
+    }
+
+
   function waitForAI(cb, tries) {
     tries = tries || 0;
     if (typeof AI?.invoke === 'function') return cb();
@@ -9541,6 +9553,8 @@ window.addEventListener('load', initApp);
         });
 
         console.log('[vidIQ enrich] Prompt enriched (+' + ctxBlock.length + ' chars of live vidIQ data)');
+        window.__vqLastEnrich = { seed: seedTopic, chars: ctxBlock.length, ts: Date.now() };
+        vqToast(seedTopic);
         return origInvoke(action, enrichedParams, opts);
       } catch (err) {
         console.warn('[vidIQ enrich] Enrichment failed, falling back to original:', err);
