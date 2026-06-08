@@ -9566,6 +9566,145 @@ window.addEventListener('load', initApp);
   });
 })();
 
+// ============================================================
+// vidIQ Outliers Panel — floating explorer for niche outliers
+// Self-contained: injects a FAB + modal. Reuses vidiq-discover.
+// ============================================================
+(function vqOutliersPanel() {
+  if (window._vqOutliersPanel) return;
+  window._vqOutliersPanel = true;
+
+  function dark() {
+    return document.documentElement.classList.contains('dark') ||
+           window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c];
+    });
+  }
+  function fmtViews(n) {
+    n = Number(n) || 0;
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return Math.round(n/1e3) + 'K';
+    return String(n);
+  }
+  function defaultKeyword() {
+    var ch = window.APP && window.APP.currentChannel;
+    var niche = ch && ch.active_niche_profile;
+    if (niche && Array.isArray(niche.keywords) && niche.keywords.length) return niche.keywords[0];
+    if (niche && niche.sub_niche) return String(niche.sub_niche).replace(/_/g, ' ');
+    return '';
+  }
+  async function fetchOutliers(keyword) {
+    var ch = window.APP && window.APP.currentChannel;
+    if (!ch) return { error: 'Open a channel first to explore its niche outliers.' };
+    if (!window.APP.sb) return { error: 'Not connected.' };
+    try {
+      var res = await window.APP.sb.functions.invoke('vidiq-discover', {
+        body: {
+          action: 'outliers',
+          tool_name: 'vidiq_outliers',
+          arguments: { keyword: keyword, limit: 20, publishedWithin: 'threeMonths', contentType: 'long' },
+          channel_id: ch.id,
+          use_cache: true
+        }
+      });
+      if (res.error) return { error: res.error.message || String(res.error) };
+      if (res.data && res.data.error) return { error: res.data.error };
+      var videos = res.data && res.data.data && res.data.data.structuredContent && res.data.data.structuredContent.videos;
+      return { videos: Array.isArray(videos) ? videos : [] };
+    } catch (e) {
+      return { error: e.message || String(e) };
+    }
+  }
+  function renderRows(videos) {
+    if (!videos.length) return '<div style="padding:32px;text-align:center;opacity:.6">No outliers found for this keyword.</div>';
+    return videos.map(function(v){
+      var title = esc(v.videoTitle || v.title || 'Untitled');
+      var views = fmtViews(v.viewCount || v.views);
+      var breakout = Math.round(v.breakoutScore || v.breakout || 0);
+      var channel = esc(v.channelTitle || v.channelName || '');
+      var vid = v.videoId || v.id;
+      var link = vid ? 'https://www.youtube.com/watch?v=' + encodeURIComponent(vid) : '';
+      var bColor = breakout >= 50 ? '#30D158' : (breakout >= 20 ? '#FF9F0A' : '#8E8E93');
+      return '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 4px;border-bottom:1px solid var(--vq-border)">' +
+        '<div style="flex-shrink:0;width:46px;height:46px;border-radius:10px;background:' + bColor + ';color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:15px;line-height:1">' + breakout + '<span style="font-size:8px;font-weight:600;opacity:.85;margin-top:2px">BREAK</span></div>' +
+        '<div style="flex:1;min-width:0">' +
+          (link ? '<a href="' + link + '" target="_blank" rel="noopener" style="color:var(--vq-text);text-decoration:none;font-weight:600;font-size:14px;display:block">' + title + '</a>' : '<div style="font-weight:600;font-size:14px">' + title + '</div>') +
+          '<div style="font-size:12px;opacity:.6;margin-top:3px">' + views + ' views' + (channel ? ' \u00b7 ' + channel : '') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+  function openModal() {
+    var existing = document.getElementById('vq-outliers-modal');
+    if (existing) existing.remove();
+    var d = dark();
+    var bg = d ? '#1C1C1E' : '#FFFFFF';
+    var border = d ? '#2C2C2E' : '#E5E5E7';
+    var text = d ? '#FFFFFF' : '#1C1C1E';
+    var surface = d ? '#2C2C2E' : '#F2F2F7';
+    var overlay = document.createElement('div');
+    overlay.id = 'vq-outliers-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)';
+    overlay.style.setProperty('--vq-border', border);
+    overlay.style.setProperty('--vq-text', text);
+    var panel = document.createElement('div');
+    panel.style.cssText = 'background:' + bg + ';color:' + text + ';width:min(640px,92vw);max-height:84vh;border-radius:20px;border:1px solid ' + border + ';display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.4);font-family:-apple-system,system-ui,sans-serif';
+    panel.innerHTML =
+      '<div style="padding:20px 22px 14px;border-bottom:1px solid ' + border + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+          '<div style="font-size:17px;font-weight:700">\u26a1 vidIQ Outliers</div>' +
+          '<button id="vq-out-close" style="border:none;background:' + surface + ';color:' + text + ';width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px">\u00d7</button>' +
+        '</div>' +
+        '<div style="font-size:12px;opacity:.6;margin-top:4px">Videos breaking out in your niche right now — the same data that grounds your titles.</div>' +
+        '<div style="display:flex;gap:8px;margin-top:14px">' +
+          '<input id="vq-out-kw" placeholder="keyword (e.g. 401k)" style="flex:1;padding:9px 12px;border-radius:10px;border:1px solid ' + border + ';background:' + surface + ';color:' + text + ';font-size:14px;outline:none">' +
+          '<button id="vq-out-go" style="border:none;background:#0A84FF;color:#fff;padding:9px 18px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px">Search</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="vq-out-body" style="overflow-y:auto;padding:6px 22px 18px"></div>';
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.remove(); });
+    panel.querySelector('#vq-out-close').addEventListener('click', function(){ overlay.remove(); });
+    var kwInput = panel.querySelector('#vq-out-kw');
+    var body = panel.querySelector('#vq-out-body');
+    kwInput.value = defaultKeyword();
+    async function run() {
+      var kw = (kwInput.value || '').trim();
+      if (!kw) { body.innerHTML = '<div style="padding:24px;text-align:center;opacity:.6">Type a keyword to explore outliers.</div>'; return; }
+      body.innerHTML = '<div style="padding:32px;text-align:center;opacity:.6">Loading outliers\u2026</div>';
+      var out = await fetchOutliers(kw);
+      if (out.error) { body.innerHTML = '<div style="padding:24px;text-align:center;color:#FF453A">' + esc(out.error) + '</div>'; return; }
+      body.innerHTML = renderRows(out.videos);
+    }
+    panel.querySelector('#vq-out-go').addEventListener('click', run);
+    kwInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') run(); });
+    if (kwInput.value) run();
+  }
+  function injectFab() {
+    if (document.getElementById('vq-outliers-fab')) return;
+    var fab = document.createElement('button');
+    fab.id = 'vq-outliers-fab';
+    fab.textContent = '\ud83d\udcc8 Outliers';
+    fab.title = 'Explore vidIQ niche outliers';
+    fab.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:999990;border:none;cursor:pointer;padding:11px 18px;border-radius:9999px;font:600 13px -apple-system,system-ui,sans-serif;color:#fff;background:#0A84FF;box-shadow:0 8px 28px rgba(10,132,255,0.45)';
+    fab.addEventListener('click', openModal);
+    document.body.appendChild(fab);
+  }
+  function start() {
+    injectFab();
+    setInterval(function(){
+      var fab = document.getElementById('vq-outliers-fab');
+      if (fab) fab.style.display = (window.APP && window.APP.currentChannel) ? '' : 'none';
+    }, 1000);
+  }
+  if (document.body) start();
+  else window.addEventListener('load', start);
+})();
+
 </script>
 
 </body>
