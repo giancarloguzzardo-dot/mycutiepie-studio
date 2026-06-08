@@ -1963,7 +1963,20 @@ function initMcpAggregator() {
   }
 
   // ─── v4.3 BUILD SCENE — gap-fill + exclusive data_viz slots ───
-  function buildSceneForClip(clip, allShots, dataViz, sectionStartSec) {
+  function buildSceneForClip(clip, allShots, dataViz, sectionStartSec, avatarBeats) {
+    // Avatar beat override: if this section has a generated talking-head clip,
+    // the scene IS that clip (audio baked in) -- no b-roll, no separate voice_url.
+    const __beat = avatarBeats && avatarBeats[clip.section_index];
+    if (__beat && __beat.video_url) {
+      return {
+        duration: Number(clip.duration_sec) || Number(__beat.duration) || 30,
+        section_title: clip.section_title,
+        video_url: __beat.video_url,
+        is_avatar: true,
+        visuals: [],
+        text_overlays: [],
+      };
+    }
     const duration = Number(clip.duration_sec) || 30;
     const alignment = clip.alignment_data;
     const hasAlignment = !!(alignment?.characters?.length);
@@ -2100,7 +2113,7 @@ function initMcpAggregator() {
 
     const rows = clips.map((clip) => {
       const sectionStart = starts[clip.id] || 0;
-      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart, (project.visual_sync && project.visual_sync.avatar_beats) || {});
       const regular = scene.visuals.filter((v) => !v.is_data_viz);
       const dv = scene.visuals.filter((v) => v.is_data_viz);
       const aligned = scene.visuals.filter(v => v.timing_source === 'alignment').length;
@@ -2139,7 +2152,7 @@ function initMcpAggregator() {
 
     const tasks = clips.map((clip) => {
       const sectionStart = starts[clip.id] || 0;
-      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart, (project.visual_sync && project.visual_sync.avatar_beats) || {});
       const rc = scene.visuals.filter((v) => !v.is_data_viz).length;
       const dc = scene.visuals.filter((v) => v.is_data_viz).length;
       const ac = scene.visuals.filter((v) => v.timing_source === 'alignment').length;
@@ -2173,7 +2186,7 @@ function initMcpAggregator() {
     let totalVisuals = 0, totalCharts = 0, totalAligned = 0;
     const allScenes = clips.map((clip) => {
       const sectionStart = starts[clip.id] || 0;
-      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart, (project.visual_sync && project.visual_sync.avatar_beats) || {});
       totalVisuals += scene.visuals.filter(v => !v.is_data_viz).length;
       totalCharts += scene.visuals.filter(v => v.is_data_viz).length;
       totalAligned += scene.visuals.filter(v => v.timing_source === 'alignment').length;
@@ -2219,7 +2232,7 @@ function initMcpAggregator() {
     let totalVisuals = 0, totalCharts = 0, totalAligned = 0;
     const allScenes = clips.map((clip) => {
       const sectionStart = starts[clip.id] || 0;
-      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart);
+      const scene = buildSceneForClip(clip, allShots, dataViz, sectionStart, (project.visual_sync && project.visual_sync.avatar_beats) || {});
       totalVisuals += scene.visuals.filter(v => !v.is_data_viz).length;
       totalCharts += scene.visuals.filter(v => v.is_data_viz).length;
       totalAligned += scene.visuals.filter(v => v.timing_source === 'alignment').length;
