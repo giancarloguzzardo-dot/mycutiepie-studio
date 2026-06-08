@@ -9470,8 +9470,20 @@ window.addEventListener('load', initApp);
         const ch = window.APP?.currentChannel;
         if (!p || !ch) return origInvoke(action, params, opts);
 
-        const seedTopic = (p.title || '').match(/\b\w{4,}\b/g)?.slice(0, 3).join(' ')
-                          || ch.active_niche_profile?.name || 'general';
+        const niche = ch.active_niche_profile || {};
+        const kws = Array.isArray(niche.keywords) ? niche.keywords : [];
+        const norm = (x) => (x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+        const compact = (x) => (x || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+        const titleNorm = ' ' + norm(p.title) + ' ';
+        const titleCompact = compact(p.title);
+        let seedTopic = '';
+        if (titleCompact && kws.length) {
+          const hits = kws.filter((k) => { const kn = norm(k); const kc = compact(k); return (kn && titleNorm.indexOf(' ' + kn + ' ') !== -1) || (kc.length >= 3 && titleCompact.indexOf(kc) !== -1); }).sort((a, b) => b.length - a.length);
+          if (hits.length) seedTopic = hits.slice(0, 2).join(', ');
+        }
+        if (!seedTopic && niche.sub_niche) seedTopic = String(niche.sub_niche).replace(/_/g, ' ').trim();
+        if (!seedTopic && kws.length) seedTopic = kws.slice(0, 3).join(', ');
+        if (!seedTopic) seedTopic = niche.name || 'general';
 
         console.log('[vidIQ enrich] Fetching context for:', seedTopic);
 
