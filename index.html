@@ -2626,6 +2626,32 @@ async function generateChannelIdeas(){
       });
     }
 
+        // vidIQ live grounding: outliers + high-opportunity keywords for the niche
+    let vidiqContext = '';
+    try {
+      const _vqkw = (Array.isArray(ch.active_niche_profile?.keywords) && ch.active_niche_profile.keywords.length)
+        ? ch.active_niche_profile.keywords[0]
+        : (ch.active_niche_profile?.sub_niche ? String(ch.active_niche_profile.sub_niche).replace(/_/g, ' ') : nicheName);
+      const [_vqo, _vqk] = await Promise.allSettled([
+        APP.sb.functions.invoke('vidiq-discover', { body: { action: 'outliers', tool_name: 'vidiq_outliers', arguments: { keyword: _vqkw, limit: 12, publishedWithin: 'threeMonths', contentType: 'long' }, channel_id: ch.id, use_cache: true } }),
+        APP.sb.functions.invoke('vidiq-discover', { body: { action: 'keyword_research', tool_name: 'vidiq_keyword_research', arguments: { keyword: _vqkw, includeRelated: true }, channel_id: ch.id, use_cache: true } })
+      ]);
+      var _vqoL = '';
+      var _vqov = _vqo.value && _vqo.value.data && _vqo.value.data.data && _vqo.value.data.data.structuredContent && _vqo.value.data.data.structuredContent.videos;
+      if (_vqo.status === 'fulfilled' && Array.isArray(_vqov)) {
+        _vqoL = _vqov.slice(0, 10).map(function(v){ return '- "' + v.videoTitle + '" (' + (v.viewCount || 0).toLocaleString() + ' views, breakout ' + Math.round(v.breakoutScore || 0) + ')'; }).join('\n');
+      }
+      var _vqkL = '';
+      var _vqkv = _vqk.value && _vqk.value.data && _vqk.value.data.data && _vqk.value.data.data.structuredContent;
+      if (_vqk.status === 'fulfilled' && _vqkv && _vqkv.relatedKeywords) {
+        _vqkL = (_vqkv.relatedKeywords || []).filter(function(r){ return (r.volume || 0) > 50; }).slice(0, 8).map(function(r){ return '- "' + r.keyword + '" (vol ' + Math.round(r.volume) + ', comp ' + Math.round(r.competition || 0) + ')'; }).join('\n');
+      }
+      if (_vqoL || _vqkL) {
+        vidiqContext = '\n\nVIDIQ LIVE DATA (real YouTube — ground every idea in this):\nTOP VIRAL OUTLIERS in this niche:\n' + (_vqoL || '(none)') + '\nHIGH-OPPORTUNITY KEYWORDS (high volume / low competition):\n' + (_vqkL || '(none)') + '\n\nPRIORITIZE ideas that mirror the structural patterns of these outliers (numbers, hooks, framing) WITHOUT copying, and that target the high-opportunity keywords above. Mark such ideas as "source":"trend".';
+        console.log('[vidIQ ideas] grounded with vidIQ data, seed:', _vqkw);
+      }
+    } catch (_vqe) { console.warn('[vidIQ ideas] enrichment skipped:', _vqe); }
+
     const system = `You are a YouTube content strategist. You generate specific, high-potential video ideas tuned to a channel's niche and audience. You ALWAYS respond with valid JSON only — no markdown, no preamble.`;
     const prompt = `Generate 12 specific YouTube video ideas for this channel.
 
@@ -2635,7 +2661,7 @@ CHANNEL DNA:
 - Target audience: ${audience}
 - Tone: ${toneName}
 - Language: ${langName}
-${competitorContext}
+${competitorContext}${vidiqContext}
 
 For each idea, provide:
 - "title": a click-worthy YouTube title (under 70 chars)
