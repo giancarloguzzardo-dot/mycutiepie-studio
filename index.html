@@ -9331,6 +9331,51 @@ $('vw-finish').addEventListener('click', async () => {
 })();
 /* === end MCP Director === */
 
+(function(){
+  if(!window.MCPDirector) return;
+  async function discoverCompetitors(channelId, opts){ opts=opts||{};
+    const log=(...a)=>console.log('[competitors]',...a);
+    if(channelId.length<36){const {data:all}=await APP.sb.from('channels').select('id');const hit=(all||[]).find(c=>c.id.startsWith(channelId));if(!hit){console.warn('no channel');return;}channelId=hit.id;}
+    const {data:ch}=await APP.sb.from('channels').select('*').eq('id',channelId).single();
+    let niche=opts.niche||ch.niche||ch.category||ch.topic||'';
+    if(!niche && ch.active_niche_profile_id){try{const {data:np}=await APP.sb.from('niche_profiles').select('*').eq('id',ch.active_niche_profile_id).single();niche=(np&&(np.name||np.niche||np.description))||'';}catch(e){}}
+    if(!niche)niche=ch.name||'';
+    log('niche:',niche);
+    const call=(tool,args)=>APP.sb.functions.invoke('vidiq-discover',{body:{action:'trending',tool_name:tool,arguments:args,use_cache:true}}).then(r=>r.data);
+    const parse=t=>{try{return JSON.parse(t);}catch(e){return null;}};
+    let comps=[];
+    try{ const r=await call('vidiq_similar_channels',{niche:niche});
+      const sc=(r&&r.data&&r.data.structuredContent)||{};
+      let arr=sc.channels||sc.similar||sc.similarChannels||sc.results||[];
+      if((!arr||!arr.length)&&r&&r.data&&r.data.content&&r.data.content[0]){const p=parse(r.data.content[0].text);if(p)arr=p.channels||p.similar||p.results||(Array.isArray(p)?p:[]);}
+      comps=(Array.isArray(arr)?arr:[]).map(c=>({title:(c.title||c.channelTitle||c.name||'').trim(),channelId:c.channelId||c.id,subs:c.subscriberCount||c.subscribers||c.subs||0}));
+    }catch(e){log('similar failed',e);}
+    if(comps.length<3){try{ const r=await call('vidiq_youtube_search',{query:niche});
+      const res=(r&&r.data&&r.data.structuredContent&&r.data.structuredContent.results)||[];
+      for(const v of res){ if(v.channelId) comps.push({title:(v.channelTitle||'').trim(),channelId:v.channelId,subs:0}); }
+    }catch(e){}}
+    const seen={};comps=comps.filter(c=>{if(!c.title)return false;const k=c.channelId||c.title;if(seen[k])return false;seen[k]=1;return true;});
+    comps.sort((a,b)=>(b.subs||0)-(a.subs||0));
+    comps=comps.slice(0,12);
+    await APP.sb.from('channels').update({competitors:comps}).eq('id',channelId);
+    log('saved',comps.length,'competitors'); return comps;
+  }
+  window.MCPDirector.discoverCompetitors=discoverCompetitors;
+})();
+window.directAndGenerateBroll = async function(pid){
+  try{
+    if(!window.MCPDirector){ toast('Director not loaded','error'); return; }
+    if(!confirm('Generate cinematic b-roll for every cue? This runs the AI Director per cue (a few minutes + generation cost). Existing generated clips are kept.')) return;
+    toast('Directing shots\u2026','info');
+    await MCPDirector.directShots(pid);
+    toast('Generating cinematic b-roll\u2026 this can take several minutes','info');
+    const out=await MCPDirector.autoGenerateClips(pid);
+    toast('Cinematic b-roll ready ('+((out&&out.length)||0)+' clips)','success');
+    if(APP.currentTab==='visualsync') renderVisualSyncPanel();
+  }catch(e){ console.error(e); toast('Error: '+e.message,'error'); }
+};
+
+
 window.addEventListener('load', initApp);
 
    // ============================================================
