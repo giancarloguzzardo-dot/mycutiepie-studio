@@ -9172,7 +9172,16 @@ async function finishWizard(){
       });
       hideLoader(); await loadChannels(); closeWizard();
       toast(`🎉 Channel "${w.name}" is ready!`, 'success');
-      navigate(`/channels/${channel.id}`);
+
+      // Auto-setup channel intelligence (Look Book + competitors) in background
+      if (window.MCPDirector) {
+        toast('🎨 Setting up visual identity…', 'info');
+        (async () => {
+          try { await MCPDirector.generateLookBook(channel.id); } catch(e){ console.warn('[onboarding] lookbook', e); }
+          try { if (MCPDirector.discoverCompetitors) await MCPDirector.discoverCompetitors(channel.id); } catch(e){ console.warn('[onboarding] competitors', e); }
+          try { toast('✨ Visual identity ready', 'success'); } catch(e){}
+        })();
+      }      navigate(`/channels/${channel.id}`);
     }
   } catch (e) {
     hideLoader(); console.error(e); toast('Error: ' + e.message, 'error');
