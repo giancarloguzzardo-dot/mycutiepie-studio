@@ -3145,7 +3145,20 @@ async function openAddBaseVideoForm() {
 
 async function generateBaseVideo(referenceImageUrl, motionPrompt) {
   // Use Kling 2.5 Turbo image-to-video via existing generate-video-clip edge function
-  const fullPrompt = motionPrompt + ', cinematic editorial photography aesthetic, 16:9, 1080p quality, no watermark, no text, no captions';
+  // Inherit the channel's Look Book (lighting/palette/texture) so the avatar lives in the channel's visual world
+  let lookSuffix = ', cinematic editorial photography aesthetic';
+  try {
+    const __chId = APP.currentChannel && APP.currentChannel.id;
+    if (__chId) {
+      const { data: __ch } = await APP.sb.from('channels').select('look_book').eq('id', __chId).single();
+      const __lb = __ch && __ch.look_book;
+      if (__lb) {
+        const __grade = [__lb.lighting, __lb.palette, __lb.texture].filter(Boolean).join('. ');
+        if (__grade) lookSuffix = '. ' + __grade;
+      }
+    }
+  } catch (e) { /* fall back to default aesthetic */ }
+  const fullPrompt = motionPrompt + lookSuffix + ', 16:9, 1080p quality, no watermark, no text, no captions';
   
   const cr = await APP.sb.functions.invoke('generate-video-clip', {
     body: {
