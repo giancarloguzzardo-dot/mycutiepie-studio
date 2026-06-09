@@ -5017,6 +5017,7 @@ async function renderVisualSyncPanel(){
 
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn primary" id="vs-generate-btn">${saved ? '🔄 Re-generate shot list' : '🎬 Generate shot list'}</button>
+      ${saved ? '<button class="btn" id="vs-direct-btn">🎥 Direct & generate cinematic b-roll</button>' : ''}
       ${saved ? '<button class="btn" id="vs-copy-btn">📋 Copy as text</button>' : ''}
       ${saved ? '<button class="btn" id="vs-export-btn">⬇ Export .txt</button>' : ''}
     </div>
@@ -5029,6 +5030,7 @@ async function renderVisualSyncPanel(){
   $('vs-generate-btn').addEventListener('click', () => generateVisualSync());
   if (saved) {
     $('vs-copy-btn').addEventListener('click', () => copyVisualSyncText(saved));
+    const _db=document.getElementById('vs-direct-btn'); if(_db) _db.addEventListener('click', () => directAndGenerateBroll(p.id));
     $('vs-export-btn').addEventListener('click', () => exportVisualSyncText(saved));
   }
 }
