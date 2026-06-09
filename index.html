@@ -9376,6 +9376,77 @@ window.directAndGenerateBroll = async function(pid){
 };
 
 
+
+/* === MCP Director v2 (batched briefs + incremental save) === */
+(function(){
+  if(!window.MCPDirector) return;
+  async function resolveProj(projectId){
+    if(projectId.length<36){const {data:all}=await APP.sb.from('projects').select('id');const hit=(all||[]).find(p=>p.id.startsWith(projectId));if(hit)return hit.id;}
+    return projectId;
+  }
+  window.MCPDirector.directShots = async function(projectId, opts){ opts=opts||{};
+    const log=(...a)=>console.log('[director]',...a);
+    projectId=await resolveProj(projectId);
+    const {data:proj}=await APP.sb.from('projects').select('id, visual_sync, channel_id').eq('id',projectId).single();
+    const vs=proj.visual_sync; const shots=(vs&&vs.shots)||[]; if(!shots.length){console.warn('no shots');return 0;}
+    let LOOKBOOK='Cinematic, filmic, professional color grade, shallow depth of field, dramatic lighting, film grain. Avoid: text, logos, watermark, stock-generic look.';
+    if(proj.channel_id){const {data:ch}=await APP.sb.from('channels').select('look_book, name').eq('id',proj.channel_id).single(); if(ch&&ch.look_book&&ch.look_book.prompt_block){LOOKBOOK=ch.look_book.prompt_block; log('Look Book:',ch.name);}}
+    let idxs=shots.map((_,i)=>i); if(opts.limit)idxs=idxs.slice(0,opts.limit);
+    const system='You are an AFI/USC-caliber cinematographer-director writing b-roll shot briefs for an AI text-to-video generator. Apply the LOOK BOOK to EVERY shot. Interpret each narration cue into a meaningful, often metaphorical, intentional shot, never a literal transcription. Each brief = ONE rich cinematic prompt (subject+action, composition, lens, lighting, color, camera movement), coherent across the sequence. Output ONLY valid JSON (no markdown): array of {"i":<index>,"prompt":"<30-45 word cinematic prompt ending with: no text, no captions, no watermark>"}.';
+    const BATCH=10; let total=0;
+    for(let b=0;b<idxs.length;b+=BATCH){
+      const slice=idxs.slice(b,b+BATCH);
+      const cues=slice.map(i=>i+': '+shots[i].keyword+' ('+(shots[i].search_query||'')+')').join('\n');
+      const prompt=LOOKBOOK+'\n\nCUES in order:\n'+cues+'\n\nReturn the JSON array for exactly these '+slice.length+' cues now.';
+      log('briefs',b,'..',b+slice.length-1);
+      try{
+        const res=await AI.invoke('analyze_topic',{prompt:prompt,system:system,topic_query:'cinematography shot briefs'},{projectId:null});
+        let txt=(typeof res==='string')?res:(res&&(res.text||res.content)||JSON.stringify(res));
+        txt=txt.replace(/```json|```/g,'').trim();
+        const briefs=JSON.parse(txt);
+        for(const br of briefs){ if(shots[br.i]&&br.prompt){ shots[br.i].director_brief=br.prompt; total++; } }
+        await APP.sb.from('projects').update({visual_sync:vs}).eq('id',projectId);
+      }catch(e){ console.warn('[director] batch',b,'failed:',e&&e.message||e); }
+    }
+    log('briefs saved:',total,'/',idxs.length);
+    return total;
+  };
+  window.MCPDirector.autoGenerateClips = async function(projectId, opts){ opts=opts||{};
+    const log=(...a)=>console.log('[gen-broll]',...a);
+    projectId=await resolveProj(projectId);
+    const {data:proj}=await APP.sb.from('projects').select('id, visual_sync').eq('id',projectId).single();
+    const vs=proj.visual_sync; const shots=(vs&&vs.shots)||[]; if(!shots.length){console.warn('no shots');return 0;}
+    const STYLE=', cinematic, filmic, dramatic lighting, shallow depth of field, film grain, no text, no captions, no watermark';
+    const inv=bd=>APP.sb.functions.invoke('generate-video-clip',{body:bd}).then(r=>r.data);
+    const persist=(url,path)=>APP.sb.functions.invoke('persist-asset',{body:{url:url,bucket:'avatar-clips',path:path}}).then(r=>r.data);
+    const saveVS=async()=>{ try{ await APP.sb.from('projects').update({visual_sync:vs}).eq('id',projectId);
+      if(APP.currentProject&&APP.currentProject.id===projectId){ APP.currentProject.visual_sync=vs; APP._vsPayload=vs; APP._visualSyncCache=APP._visualSyncCache||{}; APP._visualSyncCache[projectId]=vs; }
+    }catch(e){ console.warn('[gen-broll] save failed',e&&e.message||e); } };
+    let idxs=shots.map((_,i)=>i); if(opts.limit)idxs=idxs.slice(0,opts.limit);
+    let done=0;
+    for(const i of idxs){ const s=shots[i];
+      if(s.picked&&s.picked.video_url&&!opts.force){continue;}
+      const prompt=s.director_brief||((s.search_query||s.keyword||'abstract finance')+STYLE);
+      log('gen',i,(s.director_brief?'[directed] ':'')+String(prompt).slice(0,48));
+      try{
+        const c=await inv({provider:'fal',action:'create',prompt:prompt,duration:5,aspect_ratio:'16:9'});
+        if(!c||c.error||!c.id){ throw new Error((c&&c.error)||'create failed'); }
+        let r;for(let k=0;k<70;k++){ r=await inv({provider:'fal',action:'status',status_url:c.status_url,response_url:c.response_url}); if(r&&(r.status==='succeeded'||r.error))break; await new Promise(z=>setTimeout(z,8000)); }
+        if(r&&r.status==='succeeded'&&r.output){
+          let url=r.output; try{ const p=await persist(r.output,'broll/'+projectId+'/cue'+i+'.mp4'); if(p&&p.public_url)url=p.public_url; }catch(e){}
+          s.picked={source:'ai',provider:'fal',model:'kling',video_url:url,thumbnail:null,prediction_id:c.id,generated:true,gen_prompt:prompt,directed:!!s.director_brief};
+          done++;
+          await saveVS();
+        } else { console.warn('[gen-broll] cue',i,'no output'); }
+      }catch(e){ console.warn('[gen-broll] cue',i,'failed:',e&&e.message||e); }
+    }
+    await saveVS();
+    log('done',done,'/',idxs.length,'clips');
+    return done;
+  };
+})();
+/* === end MCP Director v2 === */
+
 window.addEventListener('load', initApp);
 
    // ============================================================
