@@ -9320,7 +9320,7 @@ $('vw-finish').addEventListener('click', async () => {
       if(s.picked&&s.picked.generated&&!opts.force){continue;}
       const prompt=s.director_brief||((s.search_query||s.keyword||'abstract finance')+STYLE);
       log('gen',i,prompt.slice(0,55));
-      const c=await inv({provider:'fal',action:'create',prompt:prompt,duration:5,aspect_ratio:'16:9'});
+      const c=await inv({provider:'fal',action:'create',prompt:prompt,model:(opts.model||'fal-ai/kling-video/v2.5-turbo/pro/text-to-video'),duration:5,aspect_ratio:'16:9'});
       let r; for(let k=0;k<60;k++){r=await inv({provider:'fal',action:'status',status_url:c.status_url,response_url:c.response_url});if(r.status==='succeeded'||r.error)break;await new Promise(z=>setTimeout(z,8000));}
       if(r.status==='succeeded'&&r.output){const p=await persist(r.output,'broll/'+projectId+'/cue'+i+'.mp4'); s.picked={video_url:(p&&p.public_url)||r.output,generated:true,gen_prompt:prompt,directed:!!s.director_brief}; out.push({i:i,url:s.picked.video_url});}
     }
@@ -9429,7 +9429,7 @@ window.directAndGenerateBroll = async function(pid){
       const prompt=s.director_brief||((s.search_query||s.keyword||'abstract finance')+STYLE);
       log('gen',i,(s.director_brief?'[directed] ':'')+String(prompt).slice(0,48));
       try{
-        const c=await inv({provider:'fal',action:'create',prompt:prompt,duration:5,aspect_ratio:'16:9'});
+        const c=await inv({provider:'fal',action:'create',prompt:prompt,model:(opts.model||'fal-ai/kling-video/v2.5-turbo/pro/text-to-video'),duration:5,aspect_ratio:'16:9'});
         if(!c||c.error||!c.id){ throw new Error((c&&c.error)||'create failed'); }
         let r;for(let k=0;k<70;k++){ r=await inv({provider:'fal',action:'status',status_url:c.status_url,response_url:c.response_url}); if(r&&(r.status==='succeeded'||r.error))break; await new Promise(z=>setTimeout(z,8000)); }
         if(r&&r.status==='succeeded'&&r.output){
