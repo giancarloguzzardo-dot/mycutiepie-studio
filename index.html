@@ -9447,6 +9447,21 @@ window.directAndGenerateBroll = async function(pid){
 })();
 /* === end MCP Director v2 === */
 
+
+/* === gen-broll concurrency guard (prevents duplicate spend) === */
+(function(){
+  if(!window.MCPDirector || window.MCPDirector.__guarded) return;
+  const _orig = window.MCPDirector.autoGenerateClips;
+  window.MCPDirector.autoGenerateClips = async function(){
+    if(window.__genBrollRunning){ console.warn('[gen-broll] a run is already in progress in this tab \u2014 ignored to avoid duplicate spend'); return; }
+    window.__genBrollRunning = true;
+    try { return await _orig.apply(this, arguments); }
+    finally { window.__genBrollRunning = false; }
+  };
+  window.MCPDirector.__guarded = true;
+})();
+/* === end gen-broll concurrency guard === */
+
 window.addEventListener('load', initApp);
 
    // ============================================================
