@@ -5054,9 +5054,10 @@ async function generateVisualSync(){
       showLoader(`Analyzing visuals — section ${i+1}/${vocalSections.length}...`);
       const { cleanText } = extractAnnotations(sec.body);
       const sectionDuration = estimateAudioDuration(cleanText);
+      const targetCues = Math.max(4, Math.min(26, Math.round(sectionDuration / 11)));
 
       const system = `You are a video editor's assistant. You identify the most visually-representable keywords/phrases in a narration script and suggest B-roll for each. You ALWAYS respond with valid JSON only, no markdown, no preamble.`;
-      const prompt = `Below is a narration section. Identify 4-8 key VISUAL moments — words or short phrases that a viewer would benefit from seeing illustrated with B-roll footage (concrete nouns, places, objects, actions, concepts that have a clear visual: e.g. "Wall Street", "stacked coins", "luxury yacht", "stock chart crashing", "bank vault").
+      const prompt = `Below is a narration section. Identify exactly ${targetCues} key VISUAL moments, spread as evenly as possible across the whole section, — words or short phrases that a viewer would benefit from seeing illustrated with B-roll footage (concrete nouns, places, objects, actions, concepts that have a clear visual: e.g. "Wall Street", "stacked coins", "luxury yacht", "stock chart crashing", "bank vault").
 
 For each, return:
 - "keyword": the exact word/phrase from the script
@@ -5067,7 +5068,7 @@ For each, return:
 Section title: ${sec.title}
 Narration:
 """
-${cleanText.slice(0, 3000)}
+${cleanText.slice(0, 6000)}
 """
 
 Respond with ONLY a JSON array like:
