@@ -7147,7 +7147,7 @@ async function generateVoiceForSection(sectionIndex, voiceIdOverride, voiceNameO
 
       // CHANGED: pass with_alignment: true
       const result = await invokeVoiceWithRetry(
-        { text: chunks[i], voice_id: voiceId, model_id: 'eleven_turbo_v2_5', with_alignment: true },
+        { text: chunks[i], voice_id: voiceId, model_id: 'eleven_multilingual_v2', with_alignment: true },
         { projectId: p.id },
         (next, total) => {
           showLoader(`Generating voice for "${section.title}"${chunks.length > 1 ? ` — part ${i + 1}/${chunks.length}` : ''} — retry ${next}/${total} (transient hiccup)...`);
