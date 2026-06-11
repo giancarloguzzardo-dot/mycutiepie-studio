@@ -3183,7 +3183,7 @@ async function generateBaseVideo(referenceImageUrl, motionPrompt) {
     });
     const sd = st.data || {};
     if (sd.error) throw new Error(sd.error);
-    if (sd.status === 'succeeded') return sd.output;
+    if (sd.status === 'succeeded') return sd.output || (sd.raw && sd.raw.images && sd.raw.images[0] && sd.raw.images[0].url) || null;
   }
   throw new Error('Timed out after 8 minutes');
 }
@@ -5665,7 +5665,7 @@ async function genOneThumb(prompt){
     const st = await APP.sb.functions.invoke('generate-video-clip', { body:{ provider:'fal', action:'status', status_url:data.status_url, response_url:data.response_url }});
     const sd = st.data || {};
     if (sd.error) throw new Error(sd.error);
-    if (sd.status === 'succeeded') return sd.output;
+    if (sd.status === 'succeeded') return sd.output || (sd.raw && sd.raw.images && sd.raw.images[0] && sd.raw.images[0].url) || null;
   }
   return null;
 }
