@@ -5682,7 +5682,8 @@ async function genThumbnails(){
   setMsg('⏳ Generating 3 thumbnails… keep this tab open');
   try {
     const settled = await Promise.allSettled([0,1,2].map(() => genOneThumb(prompt)));
-    const ok = settled.filter(s => s.status === 'fulfilled' && s.value).map(s => s.value);
+    let ok = settled.filter(s => s.status === 'fulfilled' && s.value).map(s => s.value);
+    try { const dur = []; for (let _i=0; _i<ok.length; _i++){ try { const _p = await APP.sb.functions.invoke('persist-asset', { body:{ url: ok[_i], bucket:'avatar-clips', path:'thumbnails/'+APP.currentProject.id+'/t'+Date.now()+'_'+_i+'.png' }}); dur.push((_p.data && _p.data.public_url) || ok[_i]); } catch(_e){ dur.push(ok[_i]); } } ok = dur; } catch(_e){}
     if (!ok.length){
       const firstErr = settled.find(s => s.status === 'rejected');
       throw new Error(firstErr ? (firstErr.reason?.message || String(firstErr.reason)) : 'No images returned');
@@ -5690,7 +5691,7 @@ async function genThumbnails(){
     resultEl.innerHTML = ok.map((u, i) => `
       <div style="border:1px solid var(--color-border-subtle);border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface-2)">
         <img src="${u}" style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover" />
-        <div style="padding:8px"><a class="btn" href="${u}" target="_blank" rel="noopener" style="display:block;text-align:center">↗ Open / save image ${i+1}</a></div>
+        <div style="padding:8px"><a class="btn" href="${u}" download="thumbnail_${i+1}.png" target="_blank" rel="noopener" style="display:block;text-align:center">⬇ Download image ${i+1}</a></div>
       </div>`).join('');
     const failed = 3 - ok.length;
     setMsg(`${ok.length} thumbnail${ok.length>1?'s':''} ready ✓${failed ? ` · ${failed} failed (try again)` : ''} · right-click → Save image`);
