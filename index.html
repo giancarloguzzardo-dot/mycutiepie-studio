@@ -1994,7 +1994,7 @@ function initMcpAggregator() {
         if (match) { startAt = match.start_sec; timingSource = "alignment"; }
       }
       if (startAt === undefined) startAt = Number(shot.timestamp) || 0;
-      const isVideo = !!shot.picked.video_url;
+      const _u = shot.picked.video_url || shot.picked.thumbnail || ''; const isVideo = !(shot.picked.type === 'image' || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(_u));
       return {
         _kind: 'visual',
         start_at: startAt,
