@@ -2011,7 +2011,7 @@ function initMcpAggregator() {
      
     const sectionEnd = sectionStartSec + duration;
     const dataVizCues = [];
-    for (const d of dataViz || []) {
+    const CHARTS_ENABLED = false; for (const d of (CHARTS_ENABLED ? (dataViz || []) : [])) {
       const t = parseTimestamp(d.timestamp_label);
       if (t == null) continue;
       if (t < sectionStartSec || t >= sectionEnd) continue;
